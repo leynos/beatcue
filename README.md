@@ -5,7 +5,7 @@
 BeatCue is being designed as both a Python library and an agent-friendly CLI
 for extracting editorial timing cues from video files. The planned package
 identifies cuts, transitions, audio beats, ease-in and ease-out ramps, rising
-and falling audio-visual intensity, object entries and exits, and selected
+and falling audiovisual intensity, object entries and exits, and selected
 image-to-text annotations.
 
 ______________________________________________________________________

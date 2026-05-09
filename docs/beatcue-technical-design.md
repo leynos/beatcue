@@ -8,12 +8,12 @@
 
 BeatCue is a Python package and command-line interface (CLI) for extracting
 editorial timing cues from video files. It identifies cuts, transitions, audio
-beats, ease-in and ease-out ramps, rising and falling audio-visual intensity,
+beats, ease-in and ease-out ramps, rising and falling audiovisual intensity,
 action peaks, object entries and exits, and selected semantic annotations.
 
 The package emits machine-readable cue sheets, not creative judgement. The
 domain model treats "rising action" and "falling action" as measured changes in
-audio-visual intensity. Narrative interpretation is optional annotation with
+audiovisual intensity. Narrative interpretation is optional annotation with
 lower confidence unless a trained evaluator validates it.
 
 BeatCue uses WebVTT metadata cues for time-aligned machine-readable playback
@@ -70,8 +70,8 @@ execution.
 | Colourgram          | A stacked time-series of colour, luminance, saturation, contrast, edge, and adjacent-frame deltas.           |
 | Ease-in             | An interval where motion or action intensity follows a rising non-linear curve.                              |
 | Ease-out            | An interval where motion or action intensity follows a falling non-linear curve.                             |
-| Rising action       | A measured increase in audio-visual intensity over a minimum duration.                                       |
-| Falling action      | A measured decrease in audio-visual intensity over a minimum duration.                                       |
+| Rising action       | A measured increase in audiovisual intensity over a minimum duration.                                        |
+| Falling action      | A measured decrease in audiovisual intensity over a minimum duration.                                        |
 | Semantic annotation | A caption or structured VLM response attached to an existing cue or keyframe.                                |
 | Port                | A domain-owned protocol that describes a dependency or use case boundary.                                    |
 | Adapter             | Infrastructure code that implements a port or drives the application.                                        |
