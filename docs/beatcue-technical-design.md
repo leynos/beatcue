@@ -407,11 +407,15 @@ class MediaProbe(typ.Protocol):
 
 
 class FrameSampler(typ.Protocol):
-    def sample(self, source: pathlib.Path, *, sample_fps: float) -> typ.Iterable[FrameSample]: ...
+    def sample(
+        self, source: pathlib.Path, *, sample_fps: float
+    ) -> typ.Iterable[FrameSample]: ...
 
 
 class AudioFeatureExtractor(typ.Protocol):
-    def extract(self, source: pathlib.Path, media: MediaMetadata) -> AudioFeatureSeries: ...
+    def extract(
+        self, source: pathlib.Path, media: MediaMetadata
+    ) -> AudioFeatureSeries: ...
 
 
 class CueWriter(typ.Protocol):

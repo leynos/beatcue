@@ -64,7 +64,7 @@ for cue in result.cues:
 ```
 
 The returned analysis result is the canonical representation. Writers derive
-WebVTT, BeatCue JSON, and OTIO from that result so output formats stay
+WebVTT, BeatCue JSON, and OTIO from that result, so output formats stay
 consistent.
 
 ## Planned CLI usage
