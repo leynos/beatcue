@@ -381,11 +381,12 @@ OTIO metadata. See beatcue-technical-design.md §§8, 9, 12, 17, and 19.
     configuration.
 - [ ] 5.1.2. Implement the local caption adapter contract.
   - Requires 5.1.1 and 1.1.3.
-  - Validate structured model responses, provenance, enum values, and ASCII
-    output policy.
+  - Validate structured model responses, provenance, enum values, ASCII output
+    policy, local model availability, and no implicit remote downloads.
   - See beatcue-technical-design.md §§8, 12, 17, and 19.
   - Success: invalid model output records diagnostics and cannot create timing
-    cues.
+    cues; missing local model weights fail before inference with an actionable
+    diagnostic.
 
 ### 5.2. Add object entry and exit cues
 

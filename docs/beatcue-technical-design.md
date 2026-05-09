@@ -145,11 +145,38 @@ The dependency rule is strict:
 - `beatcue.adapters` imports infrastructure packages and implements ports.
 - `beatcue.cli` imports application services and the composition root.
 - `beatcue.config` is the composition root and constructs concrete adapters.
+  It is the only package that may import both application services and concrete
+  outbound adapters.
 
 The import boundary is a CI fitness function. A future implementation must add
 an import-lint rule or equivalent static check that fails if domain code
 imports from adapters, Cyclopts, Rich, OpenCV, librosa, Transformers, Cuprum,
 or CmdMox.
+
+### 5.1. Alternatives considered
+
+The architecture decision was made against three viable shapes:
+
+- A flat procedural pipeline would be fastest to write, but it would couple
+  media probing, feature extraction, cue classification, and writers tightly
+  enough that library callers and CLI callers would be difficult to keep in
+  parity.
+- The selected hexagonal pipeline keeps domain rules, application
+  orchestration, and infrastructure adapters separate. This costs more
+  interface design upfront, but it gives BeatCue testable cue logic,
+  replaceable subprocess/media adapters, and one composition root for
+  dependency injection.
+- A pipeline-as-directed-acyclic-graph (DAG) executor would make partial
+  re-runs and stage caching easier, but it adds scheduling machinery before the
+  first deterministic v1 product exists. The DAG option remains post-v1 if
+  BeatCue later needs pluggable detector chains or incremental re-analysis.
+
+Prior art informs the boundaries rather than being replaced. FFprobe already
+solves media probing, PySceneDetect already solves scene-candidate detection,
+librosa already solves audio beat features, WebVTT already supplies timed
+metadata cues, and OpenTimelineIO already supplies editorial interchange. The
+BeatCue-specific work is aligning those outputs on one timeline and turning
+them into explainable cue contracts.
 
 ## 6. Package structure
 
@@ -193,6 +220,28 @@ beatcue/
     cli_config.py
     compose.py
 ```
+
+### 6.1. Dependency groups and optional capabilities
+
+The package should expose dependency groups so a minimal installation stays
+small and deterministic:
+
+| Group       | Purpose                                                          |
+| ----------- | ---------------------------------------------------------------- |
+| `core`      | Library values, BeatCue JSON, WebVTT, Cyclopts, Rich, and Cuprum |
+| `media`     | Deterministic analysis with OpenCV, librosa, and PySceneDetect   |
+| `editorial` | Post-v1 OTIO marker writing                                      |
+| `models`    | Post-v1 local Transformers, Florence-2, and Qwen adapters        |
+| `dev`       | pytest, pytest-bdd, syrupy, Hypothesis, CmdMox, and lint tools   |
+
+_Table 2: Dependency groups and capability boundaries._
+
+Missing optional dependencies are capability errors, not import-time crashes.
+`agent-context` reports unavailable capabilities. `inspect` may run with only
+`core` and subprocess tools installed. `analyse` requires the `media` group and
+fails before side effects if a required deterministic dependency is missing.
+Post-v1 model commands require locally available model dependencies and model
+weights; BeatCue v1 must not trigger remote downloads.
 
 ## 7. Domain model
 
@@ -287,6 +336,12 @@ class AnalysisResult:
 `TimeRange` enforces `0 <= start_seconds <= end_seconds`. Cue confidence is a
 closed interval from `0.0` to `1.0`. A cue ID is stable for a given input,
 configuration, and cue ordering so snapshot tests can compare complete outputs.
+V1 cue IDs are deterministic sequence IDs assigned after final cue sorting and
+fusion: `cue_000001`, `cue_000002`, and so on. The sort key is
+`(start_seconds, end_seconds, kind, label, feature fingerprint)`. Source media
+fingerprints, command identities, and model names belong in `provenance`, not
+in the cue ID. This keeps snapshot diffs readable while preserving enough
+provenance to diagnose why a cue changed.
 
 `AnalysisResult` is the canonical application return value and the object that
 all writers consume. It enforces these invariants:
@@ -314,22 +369,59 @@ those interchange formats.
 
 The domain owns these driven ports:
 
-| Port                    | Responsibility                                                       |
-| ----------------------- | -------------------------------------------------------------------- |
-| `MediaProbe`            | Return duration, streams, frame rate, dimensions, and time base.     |
-| `FrameSampler`          | Produce sampled frames and timestamps from a video source.           |
-| `AudioExtractor`        | Extract normalized mono audio or report absence of audio.            |
-| `AudioFeatureExtractor` | Return RMS, onset strength, tempo, and beat times.                   |
-| `SceneDetector`         | Return cut, fade, dissolve, and scene-change candidates.             |
-| `MotionExtractor`       | Return optical-flow and frame-difference feature series.             |
-| `ObjectTracker`         | Return object tracks, boxes, labels, velocities, entries, and exits. |
-| `SemanticAnnotator`     | Return structured keyframe annotations with provenance.              |
-| `CueWriter`             | Write an analysis result to one output format.                       |
-| `JobLedger`             | Persist submitted and completed CLI jobs.                            |
-| `ProfileStore`          | Persist named configuration profiles.                                |
-| `CommandRunner`         | Execute approved external commands.                                  |
+| Port                    | V1 status | Responsibility                                                       |
+| ----------------------- | --------- | -------------------------------------------------------------------- |
+| `MediaProbe`            | Required  | Return duration, streams, frame rate, dimensions, and time base.     |
+| `FrameSampler`          | Required  | Produce sampled frames and timestamps from a video source.           |
+| `AudioExtractor`        | Required  | Extract normalized mono audio or report absence of audio.            |
+| `AudioFeatureExtractor` | Required  | Return RMS, onset strength, tempo, and beat times.                   |
+| `SceneDetector`         | Required  | Return cut, fade, dissolve, and scene-change candidates.             |
+| `MotionExtractor`       | Required  | Return optical-flow and frame-difference feature series.             |
+| `CueWriter`             | Required  | Write an analysis result to one output format.                       |
+| `CommandRunner`         | Required  | Execute approved external commands.                                  |
+| `ProfileStore`          | Required  | Persist named configuration profiles.                                |
+| `JobLedger`             | Required  | Persist submitted and completed CLI jobs.                            |
+| `ObjectTracker`         | Post-v1   | Return object tracks, boxes, labels, velocities, entries, and exits. |
+| `SemanticAnnotator`     | Post-v1   | Return structured keyframe annotations with provenance.              |
 
-_Table 2: Domain-owned driven ports._
+_Table 3: Domain-owned driven ports._
+
+The twelve-port surface is intentional as the long-term boundary, but v1
+implementation work should prioritize the ports marked required. Object and
+semantic ports exist so post-v1 enrichment cannot leak model packages into the
+domain. ADR 002 records this decision. Group injected dependencies only after
+constructor arity becomes a demonstrated maintenance problem; premature
+grouping would hide the pipeline dependencies that the first implementation
+needs to make visible.
+
+The riskiest v1 ports have these protocol contracts. The names are normative;
+supporting value objects may be split across modules during implementation.
+
+```python
+import pathlib
+import typing as typ
+
+
+class MediaProbe(typ.Protocol):
+    def probe(self, source: pathlib.Path) -> MediaMetadata: ...
+
+
+class FrameSampler(typ.Protocol):
+    def sample(self, source: pathlib.Path, *, sample_fps: float) -> typ.Iterable[FrameSample]: ...
+
+
+class AudioFeatureExtractor(typ.Protocol):
+    def extract(self, source: pathlib.Path, media: MediaMetadata) -> AudioFeatureSeries: ...
+
+
+class CueWriter(typ.Protocol):
+    def write(self, result: AnalysisResult, target: OutputTarget) -> WriteResult: ...
+```
+
+`FrameSample` is a domain-owned timestamp plus an implementation-neutral pixel
+buffer, not an OpenCV or NumPy object. Raw OpenCV frames, NumPy arrays, and
+librosa arrays remain adapter-internal. ADR 001 records that the colourgram is
+a domain-facing feature series derived from adapter-owned frame data.
 
 Application services receive port implementations through constructor
 injection. The CLI never instantiates adapters directly; it calls a composition
@@ -584,8 +676,9 @@ the schema deferral called out in
 ### 13.2. WebVTT
 
 WebVTT output contains metadata cues with compact JSON payloads. The writer
-uses ASCII JSON by default with `ensure_ascii=True`. This keeps agent and LLM
-consumption stable even when human captions contain Unicode.
+uses ASCII JSON by default with `ensure_ascii=True`. Timestamps are rounded to
+the nearest millisecond, and the writer then enforces `start <= end`. This
+keeps agent and LLM consumption stable even when human captions contain Unicode.
 
 ```vtt
 WEBVTT
@@ -609,6 +702,23 @@ standard error. Data output remains on standard output. `--json` suppresses
 Rich renderables and writes structured JSON only. Rich is suitable for this
 human adapter because it is a Python library for styled terminal text, tables,
 Markdown, and syntax-highlighted output.[^10]
+
+### 13.5. Partial output marking
+
+Partial outputs are written only when the user opts into `--partial`.
+Downstream consumers must be able to detect incompleteness from each machine
+format:
+
+- BeatCue JSON sets top-level `is_complete` to `false` and includes at least
+  one diagnostic with severity `error` or `warning`.
+- WebVTT starts with `NOTE BeatCue incomplete analysis` and includes a metadata
+  cue at `00:00:00.000` containing the incomplete diagnostic summary.
+- OTIO is post-v1, but when implemented it stores `is_complete: false` under
+  the BeatCue metadata namespace on the timeline.
+
+Writers must not silently omit the incomplete marker. If a writer cannot mark
+partial output in its target format, `--partial` for that format fails before
+side effects.
 
 ## 14. CLI design
 
@@ -634,7 +744,7 @@ Global options:
 | `--plain`        | Disable Rich styling for human output.                      |
 | `--verbose`      | Include diagnostics in human output.                        |
 
-_Table 3: Root CLI options._
+_Table 4: Root CLI options._
 
 Commands:
 
@@ -647,7 +757,7 @@ Commands:
 | `profile list\|show\|save\|delete` | Manage named configuration profiles.                                               |
 | `feedback add\|list\|send`         | Record CLI friction and optionally send it upstream.                               |
 
-_Table 4: BeatCue CLI commands._
+_Table 5: BeatCue CLI commands._
 
 The `analyse` command:
 
@@ -677,6 +787,36 @@ Agent-native requirements:
 - `agent-context` includes `schema_version`, commands, flags, enum values,
   output formats, available profiles, supported delivery schemes, and exit
   codes.
+
+`agent-context` is a stable machine contract. Additive fields are allowed while
+`schema_version` remains `1`; removing fields, changing field types, or
+renaming commands requires incrementing `schema_version`.
+
+```json
+{
+  "schema_version": 1,
+  "commands": {
+    "analyse": {
+      "summary": "Analyse a video and write requested outputs.",
+      "arguments": [{"name": "video", "type": "path", "required": true}],
+      "flags": {
+        "--json": {"type": "bool", "default": false},
+        "--out": {"type": "path", "required": false},
+        "--sample-fps": {"type": "float", "default": 4.0}
+      },
+      "outputs": ["beatcue-json", "webvtt"],
+      "capabilities": ["media-analysis"]
+    }
+  },
+  "profiles": [{"name": "default", "source": "built-in"}],
+  "capabilities": {
+    "media-analysis": {"available": true},
+    "semantic-annotation": {"available": false, "reason": "post-v1"}
+  },
+  "delivery_schemes": ["stdout", "file"],
+  "exit_codes": {"0": "success", "2": "usage", "4": "dependency"}
+}
+```
 
 ## 15. Configuration
 
@@ -719,8 +859,12 @@ otio = false
 ```
 
 Profiles live under the platform-specific user configuration directory unless
-`BEATCUE_HOME` is set. Job ledgers are JSON Lines files with one event per line
-so interrupted writes do not corrupt the full ledger.
+`BEATCUE_HOME` is set. Job state lives in a ledger directory, not one shared
+append-only file. Each job owns one JSON Lines event file, and updates acquire
+a per-job advisory lock before appending. `jobs list` scans the directory and
+sorts by recorded timestamps. This avoids interleaving writes when multiple
+BeatCue processes run at the same time while preserving JSON Lines recovery for
+interrupted writes.
 
 ## 16. Subprocess boundary
 
@@ -748,6 +892,10 @@ The command runner records:
 
 The adapter refuses shell strings. Every command is an argument list. Timeouts
 are explicit, and cancellation sends a termination request before escalation.
+Cuprum is the v1 command-runner implementation, not a domain dependency. The
+`CommandRunner` port is the replacement boundary if Cuprum ever becomes
+unsuitable or unavailable. Direct `subprocess` calls remain prohibited outside
+the command adapter.
 
 ## 17. Testing and verification
 
@@ -762,7 +910,7 @@ The architecture makes testing a design constraint, not an afterthought.
 | External commands         | Use CmdMox to mock `ffprobe` and `ffmpeg` invocations without running real binaries.                                                                  |
 | Adapter smoke tests       | Use small generated media fixtures to verify OpenCV, librosa, PySceneDetect, and writer adapters when dependencies are installed.                     |
 
-_Table 5: Verification responsibilities._
+_Table 6: Verification responsibilities._
 
 CmdMox is the subprocess test boundary because it intercepts external commands
 with Python shims and integrates with pytest.[^13] Tests must not assert
@@ -798,10 +946,11 @@ reviewers see intentional changes.
 | Frame sampling fails mid-stream      | `analyse` fails unless `--partial` is set. Partial mode writes diagnostics and marks outputs incomplete. |
 | VLM response is invalid              | BeatCue drops the annotation, records the model failure, and keeps deterministic cues.                   |
 | Optional model is unavailable        | BeatCue fails only if the user explicitly requested that model.                                          |
+| Local model weights are unavailable  | Post-v1 semantic adapters fail before inference and never trigger an implicit remote download.           |
 | Output path exists                   | Writer refuses to overwrite unless `--force` is set.                                                     |
 | `--wait` is interrupted              | The job ledger records the last known state so `jobs get` can recover or report incompleteness.          |
 
-_Table 6: Required failure behaviour._
+_Table 7: Required failure behaviour._
 
 ## 19. Security and privacy
 
@@ -819,6 +968,10 @@ Security rules:
 - Profiles may store model names and default output settings, but not API keys.
 - External commands run through the approved Cuprum catalogue.
 - Delivery adapters write files atomically and reject unsupported URI schemes.
+  File delivery writes to a temporary file in the destination directory,
+  flushes the file, and then replaces the target path with an atomic rename.
+  Failed writes remove the temporary file and leave any existing target
+  unchanged.
 
 ## 20. Implementation phases
 
