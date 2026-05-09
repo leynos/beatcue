@@ -204,3 +204,11 @@ target/
 **/mutants.out*/
 
 .crush/
+target/
+**/*.rs.bk
+.grepai/
+*:Zone.Identifier
+.agents/mcp/context_pack/packs/
+.*.sw?
+*~
+.*.un~
