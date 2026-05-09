@@ -348,8 +348,7 @@ class AnalyseVideo:
     semantic_annotator: SemanticAnnotator
     cue_writers: tuple[CueWriter, ...]
 
-    def run(self, request: AnalyseRequest) -> AnalysisResult:
-        ...
+    def run(self, request: AnalyseRequest) -> AnalysisResult: ...
 ```
 
 This shape lets tests inject in-memory fakes for domain and application tests.
