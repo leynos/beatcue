@@ -42,6 +42,9 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
 - Keep v1 deterministic and credible. Semantic annotation, object tracking,
   remote model execution, GPU scheduling, and advanced tracking should be
   framed as post-v1 unless the user explicitly widens v1 scope.
+- Define the v1 input target as single-scene or single-shot videos. The design
+  must not optimize for feature-length continuous takes, including edge cases
+  like _Russian Ark_, unless a later plan explicitly widens the target.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code language
   identifiers, and Markdown table captions.
@@ -63,8 +66,8 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
 - V1 boundary: if a credible v1 cannot be described without including semantic
   annotation or object tracking, stop and ask whether the product boundary
   should be widened.
-- Resource bounds: if no defensible default input bound can be stated from the
-  current design and review evidence, stop and propose two bounded options.
+- Resource bounds: if no defensible default input bound can be stated for
+  single-scene or single-shot videos, stop and propose two bounded options.
 - Validation: if `make markdownlint` or `make nixie` fails after two fix
   attempts, stop and report the failure with log paths.
 
@@ -170,6 +173,14 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   and §8 recommended step 2.
   Date/Author: 2026-05-09 / Codex.
 
+- Decision: Define the v1 media target as single-scene or single-shot videos,
+  not feature-length or pathological long-take inputs.
+  Rationale: the user clarified that BeatCue's current target is single-scene
+  or single-shot videos, with no "Russian Ark" style cheating. This makes the
+  input-size bound a product boundary rather than a general-purpose film
+  analysis promise.
+  Date/Author: 2026-05-09 / User and Codex.
+
 ## Outcomes & retrospective
 
 This section is blank while the plan is in draft. After execution, record
@@ -243,12 +254,15 @@ finding 2 and the 80/20 finding in §7 finding 13.
 
 Still in the technical design, add input-size and memory-budget guidance.
 Place it near §10 feature extraction or §18 failure modes. Define v1 default
-support as videos up to 30 minutes at 1080p using the default `sample_fps =
-4.0`, with feature computation performed incrementally and full feature-series
-retention disabled unless `--include-series` is set. State that longer or
-higher-resolution inputs must either lower sample rate, process in windows, or
-fail early with an actionable error. Add a cap on selected semantic keyframes
-for post-v1 semantic runs so model inference cannot grow without bound. Cite
+support as single-scene or single-shot videos, not full films or pathological
+long-take inputs. State concrete default bounds for that target, for example a
+maximum duration, resolution tier, and sample-frame budget under the default
+`sample_fps = 4.0`. State that longer, higher-resolution, or multi-scene inputs
+must either lower sample rate, process in windows, or fail early with an
+actionable error. Feature computation must be incremental, and full
+feature-series retention must stay disabled unless `--include-series` is set.
+Add a cap on selected semantic keyframes for post-v1 semantic runs so model
+inference cannot grow without bound. Cite
 `docs/beatcue-logisphere-design-stage-review.md` §4 scenario B and §7 findings
 5, 6, and 16.
 
@@ -361,9 +375,10 @@ The documentation update is accepted when:
   post-v1 scope.
 - `docs/beatcue-technical-design.md` selects `msgspec` as the BeatCue JSON
   schema technology and no longer lists schema technology as deferred.
-- `docs/beatcue-technical-design.md` states v1 input-size/resource bounds,
-  memory behaviour for feature series, and a semantic keyframe cap for
-  semantic runs.
+- `docs/beatcue-technical-design.md` states that v1 targets single-scene or
+  single-shot videos, excludes feature-length long-take cases from default
+  support, defines input-size/resource bounds, describes memory behaviour for
+  feature series, and sets a semantic keyframe cap for semantic runs.
 - `docs/roadmap.md` contains a phase 1 walking-skeleton task that proves
   `ffprobe` -> one sampled frame -> one-cue WebVTT through the intended
   architecture.
@@ -435,3 +450,9 @@ The plan selects these interfaces and dependencies for the design update:
 Initial draft created 2026-05-09. It scopes the Logisphere review response to
 the five user-prioritized concerns, selects `msgspec` as the planned schema
 technology, and requires approval before implementation.
+
+Revision 2026-05-09: updated the v1 resource-bound guidance to reflect the
+user clarification that BeatCue currently targets single-scene or single-shot
+videos, not feature-length or pathological long-take inputs. The remaining
+implementation work should use that target when defining input-size and memory
+limits.
