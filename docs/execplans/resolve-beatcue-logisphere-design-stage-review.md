@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -131,7 +131,8 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   boundary and schema wording needed patching.
 - [x] (2026-05-09 11:17Z) Validated Markdown and Mermaid diagrams with
   `make markdownlint` and `make nixie`.
-- [ ] Commit and push the documentation updates after approval and validation.
+- [x] (2026-05-09 11:20Z) Commit and push the documentation updates after
+  approval and validation.
 
 ## Surprises & discoveries
 
@@ -204,9 +205,24 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
 
 ## Outcomes & retrospective
 
-This section is blank while the plan is in draft. After execution, record
-which review concerns were resolved, which were intentionally deferred, and
-whether the resulting design is clearer for implementation.
+Execution resolved the five user-prioritized Logisphere design-stage concerns:
+
+- `docs/beatcue-technical-design.md` now defines `AnalysisResult` as the
+  canonical application return value and writer input.
+- The design states a deterministic v1 boundary for single-scene or
+  single-shot videos and labels semantic, object, OTIO, remote model, GPU, and
+  advanced tracking work as post-v1.
+- BeatCue JSON now selects `msgspec.Struct` as the v1 schema technology.
+- The design states default v1 input bounds, sampled-frame limits, incremental
+  feature extraction, feature-series retention rules, and a post-v1 semantic
+  keyframe cap.
+- `docs/roadmap.md` now includes a phase 1 walking skeleton that proves
+  `ffprobe` -> one sampled frame -> one-cue WebVTT through the intended
+  boundaries.
+
+The supporting user and developer guides were patched only where they
+conflicted with the narrowed v1 boundary. Validation passed with
+`make markdownlint` and `make nixie`.
 
 ## Context and orientation
 
