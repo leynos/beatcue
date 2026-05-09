@@ -18,22 +18,23 @@ converge on one coherent package instead of reworking interfaces around every
 adapter.
 
 This phase establishes the promises that later phases depend on: the hexagonal
-boundary, public package shape, schema direction, command catalogue, and test
-fixture strategy. It should leave a small but enforceable skeleton that can
-reject architectural drift early.
+boundary, public package shape, selected schema technology, command catalogue,
+real-I/O walking skeleton, and test fixture strategy. It should leave a small
+but enforceable skeleton that can reject architectural drift early.
 
 ### 1.1. Ratify the v1 architecture and deferred decisions
 
 This step answers which decisions belong in v1 and which remain explicitly
 deferred. Its outcome informs package layout, dependency selection, and the
-first public API boundary. See beatcue-technical-design.md §§2-8 and §21.
+first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
+§21.
 
 - [ ] 1.1.1. Record the v1 schema decision for BeatCue JSON.
-  - Compare JSON Schema, msgspec structs, and Pydantic models against the
-    design requirements for round-trip validation and stable snapshots.
-  - See beatcue-technical-design.md §§7, 13.1, 17, and 21.
-  - Success: one ADR names the canonical schema mechanism and the reason it is
-    suitable for both library callers and CLI output.
+  - Ratify `msgspec.Struct` as the selected v1 schema technology in an ADR if
+    the project still wants a separate decision record.
+  - See beatcue-technical-design.md §§7, 13.1, and 17.
+  - Success: the ADR or design signpost explains why `msgspec` is suitable for
+    library callers, CLI output, round-trip validation, and stable snapshots.
 - [ ] 1.1.2. Record the v1 object-tracking boundary.
   - Requires 1.1.1.
   - Decide whether v1 uses a centroid tracker, Florence-2-only detections, or a
@@ -79,27 +80,46 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - Success: `make all` installs the package and can discover the empty unit
     and behavioural test suites.
 
-### 1.3. Build the shared fixture and contract-test spine
+### 1.3. Prove real I/O through a walking skeleton
+
+This step answers whether the intended architecture can touch a real video
+file and write a real cue sheet before deeper feature extraction work begins.
+It is a narrow proof, not the final analysis pipeline. See
+beatcue-technical-design.md §§5, 8, 9, 13.2, and 16, and
+beatcue-logisphere-design-stage-review.md §4 scenario A and §8 recommended
+step 5.
+
+- [ ] 1.3.1. Implement the real-I/O walking skeleton.
+  - Requires 1.2.3.
+  - Probe a tiny media fixture through the Cuprum-backed `ffprobe` port, sample
+    one frame through the frame-sampler port, create one synthetic cue in the
+    application layer, and write one WebVTT file through the writer port.
+  - See beatcue-technical-design.md §§5, 8, 9, 13.2, and 16.
+  - Success: one command or test proves
+    `ffprobe` -> one sampled frame -> one-cue WebVTT through the
+    domain/application/adapter boundaries.
+
+### 1.4. Build the shared fixture and contract-test spine
 
 This step answers how BeatCue will keep outputs stable while the extraction
 pipeline changes. Its outcome informs writer, CLI, and adapter work. See
 beatcue-technical-design.md §§7, 13, 16, and 17.
 
-- [ ] 1.3.1. Add canonical in-memory analysis fixtures.
+- [ ] 1.4.1. Add canonical in-memory analysis fixtures.
   - Requires 1.2.3.
   - Cover cuts, beats, ease cues, action arcs, object observations, semantic
     annotations, diagnostics, and provenance.
   - See beatcue-technical-design.md §§7, 10-13, and 17.
   - Success: fixtures can serialize through the selected schema without
     non-deterministic cue IDs.
-- [ ] 1.3.2. Add property generators for timing and confidence invariants.
-  - Requires 1.3.1.
+- [ ] 1.4.2. Add property generators for timing and confidence invariants.
+  - Requires 1.4.1.
   - Generate time ranges, cue windows, merge tolerances, confidence values, and
     configuration precedence inputs.
   - See beatcue-technical-design.md §17.
   - Success: Hypothesis can falsify an intentionally invalid time range or
     confidence normalization rule.
-- [ ] 1.3.3. Add CmdMox fixtures for `ffprobe` and `ffmpeg`.
+- [ ] 1.4.3. Add CmdMox fixtures for `ffprobe` and `ffmpeg`.
   - Requires 1.2.3.
   - Cover success, missing binary, malformed JSON, no-audio media, and non-zero
     exit status.
@@ -126,7 +146,7 @@ services. See beatcue-technical-design.md §§4, 7, 8, and 17.
 
 - [ ] 2.1.1. Implement immutable domain value objects for media, feature
   summaries, cues, objects, diagnostics, and provenance.
-  - Requires steps 1.1-1.3.
+  - Requires steps 1.1-1.4.
   - See beatcue-technical-design.md §§4, 7, and 8.
   - Success: domain tests verify range, confidence, cue ID, and provenance
     invariants without importing adapter packages.
@@ -172,7 +192,9 @@ from colour, motion, audio, and scene signals, the package will solve the core
 timing problem before semantic models or async operations add complexity.
 
 This phase introduces the media adapters and deterministic detectors. It
-delivers a CLI path that can analyse real files with no VLM dependency.
+delivers a CLI path that can analyse real single-scene or single-shot files
+with no VLM dependency. This deterministic-only product is the v1 boundary and
+is useful on its own before semantic or object enrichment lands.
 
 ### 3.1. Probe media and extract aligned inputs
 
@@ -181,7 +203,7 @@ real media. Its outcome informs every detector that relies on timestamps. See
 beatcue-technical-design.md §§9, 10, 16, and 18.
 
 - [ ] 3.1.1. Implement the Cuprum-backed `ffprobe` media probe adapter.
-  - Requires 1.3.3 and 2.1.1.
+  - Requires 1.4.3 and 2.1.1.
   - Parse JSON output into domain media metadata and structured diagnostics.
   - See beatcue-technical-design.md §§8, 9, 16, and 18.
   - Success: CmdMox tests cover success, missing binary, malformed JSON, and
@@ -193,7 +215,7 @@ beatcue-technical-design.md §§9, 10, 16, and 18.
   - Success: generated media fixtures produce monotonic timestamps tied to the
     probed duration.
 - [ ] 3.1.3. Implement `ffmpeg` audio extraction and librosa feature loading.
-  - Requires 3.1.1 and 1.3.3.
+  - Requires 3.1.1 and 1.4.3.
   - Return RMS, onset strength, tempo, beat times, or a no-audio diagnostic.
   - See beatcue-technical-design.md §§9, 10, 16, and 18.
   - Success: no-audio inputs keep visual analysis available and redistribute

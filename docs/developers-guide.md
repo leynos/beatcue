@@ -21,6 +21,11 @@ The repository currently contains:
 The planned video-analysis API and CLI are not implemented yet. Do not document
 planned commands as available until the implementation lands.
 
+The v1 implementation boundary is deterministic cue extraction for
+single-scene or single-shot videos. Semantic annotation, object tracking, OTIO
+enrichment, remote model execution, GPU scheduling, and advanced segmentation
+are post-v1 unless a later design update changes the boundary.
+
 ## Architectural rules
 
 BeatCue uses hexagonal architecture. Dependencies point inward:
@@ -185,10 +190,10 @@ the source of truth for another writer.
 Writer expectations:
 
 - BeatCue JSON is the lossless output and should round-trip through the
-  selected schema.
+  selected `msgspec.Struct` schema.
 - WebVTT contains compact metadata cues with ASCII JSON payloads by default.
-- OTIO output should use the OpenTimelineIO library rather than hand-written
-  OTIO JSON.
+- Post-v1 OTIO output should use the OpenTimelineIO library rather than
+  hand-written OTIO JSON.
 - Human summaries use Rich and do not affect JSON, WebVTT, or OTIO output.
 
 Syrupy snapshots should cover externally visible output contracts. When a

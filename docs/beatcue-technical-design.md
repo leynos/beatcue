@@ -61,6 +61,32 @@ execution.
 - BeatCue does not let CLI formatting pollute machine output. Human rendering
   and data serialization are separate adapters.
 
+### 3.1. V1 boundary
+
+BeatCue v1 is a deterministic cue-extraction package for single-scene or
+single-shot videos. It is useful when a user needs explainable timing cues from
+colour, motion, audio, and scene-change signals without depending on model
+captioning or object tracking. This boundary addresses the Logisphere
+scope-to-team finding in
+`docs/beatcue-logisphere-design-stage-review.md` §7 finding 2 and keeps the
+80/20 product from §7 finding 13 useful before enrichment work begins.
+
+V1 includes:
+
+- immutable domain values and a canonical `AnalysisResult`;
+- BeatCue JSON and WebVTT output;
+- deterministic cue extraction for cuts, fades, beats, ease curves, rising and
+  falling audiovisual intensity, and action peaks;
+- `inspect`, deterministic `analyse`, `agent-context`, profiles, structured
+  diagnostics, and bounded agent-native CLI output;
+- local subprocess execution through the Cuprum command catalogue.
+
+Post-v1 work includes semantic annotation, object tracking, object entry and
+exit cues, OTIO enrichment, remote model execution, GPU scheduling, advanced
+video segmentation, and trainable genre profiles. These features remain behind
+ports in the design, but they are not required for the first credible release
+unless a later architectural decision record (ADR) changes the boundary.
+
 ## 4. Terminology
 
 | Term                | Definition                                                                                                   |
@@ -226,11 +252,63 @@ class Cue:
     features: dict[str, float]
     objects: tuple[ObjectObservation, ...]
     provenance: dict[str, typ.Any]
+
+
+@dc.dataclass(frozen=True, slots=True)
+class MediaMetadata:
+    source_path: str
+    duration_seconds: float
+    fps: float
+    width: int
+    height: int
+    has_audio: bool
+
+
+@dc.dataclass(frozen=True, slots=True)
+class Diagnostic:
+    code: str
+    message: str
+    severity: typ.Literal["info", "warning", "error"]
+    details: dict[str, typ.Any]
+
+
+@dc.dataclass(frozen=True, slots=True)
+class AnalysisResult:
+    media: MediaMetadata
+    cues: tuple[Cue, ...]
+    diagnostics: tuple[Diagnostic, ...]
+    configuration: dict[str, typ.Any]
+    provenance: dict[str, typ.Any]
+    feature_summaries: dict[str, dict[str, float]]
+    feature_series: dict[str, typ.Any] | None
+    is_complete: bool
 ```
 
 `TimeRange` enforces `0 <= start_seconds <= end_seconds`. Cue confidence is a
 closed interval from `0.0` to `1.0`. A cue ID is stable for a given input,
 configuration, and cue ordering so snapshot tests can compare complete outputs.
+
+`AnalysisResult` is the canonical application return value and the object that
+all writers consume. It enforces these invariants:
+
+- `media.duration_seconds` is finite and positive;
+- every cue range satisfies
+  `0 <= cue.time.start_seconds <= cue.time.end_seconds <= media.duration_seconds`;
+- cues are sorted by `(start_seconds, end_seconds, kind, id)`;
+- diagnostics are append-only records with stable codes;
+- `configuration` is the resolved, secret-free configuration snapshot used for
+  the run;
+- `provenance` records BeatCue version, adapter names, model names where used,
+  source command identities, and prompt/schema versions;
+- `feature_summaries` stores bounded aggregate values used to justify cues;
+- `feature_series` is absent by default and appears only when
+  `include_series` is enabled and the configured series cap is not exceeded;
+- `is_complete` is false only when the user opted into partial output after a
+  recoverable failure.
+
+BeatCue JSON is the lossless serialization of `AnalysisResult`. WebVTT and
+OTIO are projections from it and may omit diagnostic detail that is not native
+to those interchange formats.
 
 ## 8. Ports and dependency injection
 
@@ -352,6 +430,35 @@ The application executes these steps:
 
 ## 10. Feature extraction
 
+### 10.1. V1 input bounds and memory budget
+
+V1 default support is scoped to single-scene or single-shot videos, not full
+films, compilations, or pathological feature-length long takes. The default
+profile accepts inputs that satisfy all of these bounds. These bounds address
+the memory-exhaustion scenario in
+`docs/beatcue-logisphere-design-stage-review.md` §4 scenario B and the input
+size findings in §7 findings 5, 6, and 16.
+
+- duration is no more than 600 seconds;
+- decoded frame dimensions are no larger than 1920 by 1080;
+- `sample_fps` is no more than `4.0`;
+- the sampled-frame budget is no more than 2400 frames;
+- semantic keyframe selection, for post-v1 semantic runs, is capped at 48
+  keyframes unless the user sets a higher explicit limit.
+
+`inspect` reports which bound an input exceeds before `analyse` creates output
+files. `analyse` fails early with an actionable error when a default-bound run
+would exceed these limits. A user can process larger material only by choosing
+an explicit lower sample rate, a future windowed-processing mode, or a profile
+that documents its own memory budget.
+
+Feature extraction is incremental. The frame sampler streams one sampled frame
+at a time, optical-flow extraction keeps only the previous frame and current
+aggregates, and audio features are summarized before cue classification.
+Full frame-level feature arrays are not retained unless `--include-series` is
+set. Even then, writers must enforce the configured series cap so BeatCue JSON
+does not grow without bound.
+
 The colourgram vector for each sampled frame contains:
 
 - HSV histogram bins;
@@ -464,6 +571,16 @@ BeatCue JSON is the lossless internal interchange format. It contains media
 metadata, feature summaries, cues, diagnostics, configuration, and provenance.
 Large frame-level arrays are optional and gated behind `--include-series` to
 keep default output bounded.
+
+BeatCue JSON uses `msgspec.Struct` definitions as the v1 schema technology.
+The domain model remains expressed as immutable value objects, while the
+serialization layer maps those values to typed `msgspec` structures for fast
+JSON encoding, decoding, and validation. This choice keeps the schema close to
+the Python data model, gives tests a concrete round-trip contract, and avoids
+deferring a decision that blocks writer and snapshot work. Replacing `msgspec`
+requires an ADR or design update before implementation continues. This resolves
+the schema deferral called out in
+`docs/beatcue-logisphere-design-stage-review.md` §7 finding 7.
 
 ### 13.2. WebVTT
 
@@ -706,6 +823,10 @@ Security rules:
 
 ## 20. Implementation phases
 
+V1 is complete after phases 1 through 4 produce deterministic BeatCue JSON and
+WebVTT from real single-scene or single-shot inputs through the library and CLI.
+Phase 5 and phase 6 are post-v1 enrichment and extension work.
+
 1. Domain and writers: implement domain value objects, cue fusion, timestamp
    conversion, BeatCue JSON, WebVTT, and writer snapshots.
 2. CLI and configuration: implement Cyclopts commands, profile precedence,
@@ -722,10 +843,6 @@ Security rules:
 
 ## 21. Deferred decisions
 
-- The canonical schema technology for BeatCue JSON is deferred until the first
-  implementation pass. The design requires a schema, stable snapshots, and
-  round-trip validation, but does not choose JSON Schema, msgspec structs, or
-  Pydantic models yet.
 - The first object tracker is deferred. Florence-2 detection is useful for
   labels and boxes, but persistent tracking may use a simpler centroid tracker
   before SAM 2 or another video segmentation model is introduced.

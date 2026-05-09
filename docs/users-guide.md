@@ -8,6 +8,9 @@ editorial and automation workflows.
 The current repository contains the package skeleton, technical design, and
 roadmap. The video-analysis CLI described below is the intended user contract
 for implementation work, not a claim that every command is already available.
+The v1 target is deterministic analysis of single-scene or single-shot videos.
+Semantic annotation, object tracking, and OTIO marker enrichment are planned
+post-v1 extensions unless a later design update changes that boundary.
 
 ## Current package smoke check
 
@@ -72,11 +75,7 @@ The primary command will be `beatcue analyse`:
 beatcue analyse input.mp4 \
   --out cues.vtt \
   --json-out cues.json \
-  --otio timeline.otio \
-  --sample-fps 4 \
-  --caption-model Qwen/Qwen2.5-VL-7B-Instruct \
-  --detector florence2 \
-  --track-objects
+  --sample-fps 4
 ```
 
 For automation, use `--json` to keep standard output machine-readable:
@@ -114,7 +113,9 @@ formats, delivery schemes, and exit codes.
 
 ## Output formats
 
-BeatCue writes each output from the same canonical analysis result.
+BeatCue writes each output from the same canonical analysis result. BeatCue
+JSON and WebVTT are v1 outputs. OTIO is planned as post-v1 editorial
+enrichment.
 
 | Format       | Purpose                                                                                                            |
 | ------------ | ------------------------------------------------------------------------------------------------------------------ |

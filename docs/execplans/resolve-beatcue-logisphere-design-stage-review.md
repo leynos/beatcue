@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
 ## Purpose / big picture
 
@@ -118,12 +118,19 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   review, roadmap, technical design, and ExecPlan instructions.
 - [x] (2026-05-09 10:58Z) Draft this ExecPlan at
   `docs/execplans/resolve-beatcue-logisphere-design-stage-review.md`.
-- [ ] Await explicit approval before implementing the documentation changes.
-- [ ] Update `docs/beatcue-technical-design.md` with `AnalysisResult`, v1
-  boundary, schema decision, and input-size/resource bounds.
-- [ ] Update `docs/roadmap.md` with a phase 1 walking-skeleton task and any
-  dependency adjustments required by the new v1 boundary.
-- [ ] Validate Markdown and Mermaid diagrams.
+- [x] (2026-05-09 11:06Z) Received explicit approval to implement the
+  planned documentation revisions.
+- [x] (2026-05-09 11:14Z) Updated `docs/beatcue-technical-design.md` with
+  `AnalysisResult`, v1 boundary, schema decision, and input-size/resource
+  bounds.
+- [x] (2026-05-09 11:14Z) Updated `docs/roadmap.md` with a phase 1
+  walking-skeleton task and dependency adjustments required by the new v1
+  boundary.
+- [x] (2026-05-09 11:14Z) Checked `README.md`, `docs/users-guide.md`, and
+  `docs/developers-guide.md` for consistency; only user/developer guide
+  boundary and schema wording needed patching.
+- [x] (2026-05-09 11:17Z) Validated Markdown and Mermaid diagrams with
+  `make markdownlint` and `make nixie`.
 - [ ] Commit and push the documentation updates after approval and validation.
 
 ## Surprises & discoveries
@@ -145,6 +152,13 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   Impact: implementation should remove that contradiction by selecting schema
   technology in the design and turning roadmap task 1.1.1 into an ADR or
   ratification task for the chosen decision.
+
+- Observation: The supporting user and developer guides described planned
+  semantic, object, and OTIO capabilities without the new v1 boundary.
+  Evidence: `docs/users-guide.md` included `--caption-model`, `--detector`,
+  `--track-objects`, and `--otio` in the primary planned command example.
+  Impact: the consistency pass narrowed the main example to deterministic v1
+  analysis and labelled enrichment as post-v1.
 
 ## Decision log
 
@@ -180,6 +194,13 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   input-size bound a product boundary rather than a general-purpose film
   analysis promise.
   Date/Author: 2026-05-09 / User and Codex.
+
+- Decision: Proceed from the approved plan without widening into production
+  implementation.
+  Rationale: the user explicitly asked to implement the planned revisions, and
+  the plan's constraints limit this change to design and roadmap
+  documentation.
+  Date/Author: 2026-05-09 / Codex.
 
 ## Outcomes & retrospective
 
