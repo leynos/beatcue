@@ -1,3 +1,5 @@
+"""Pure Python implementation of BeatCue smoke-check helpers."""
+
 from __future__ import annotations
 
 
