@@ -878,7 +878,7 @@ BeatCue defines a catalogue containing:
 - `ffprobe`
 - `ffmpeg`
 - optional `nixie` for documentation validation
-- optional model helper commands only when a plugin requires them.
+- optional model helper commands only when a plugin requires them
 
 The command runner records:
 

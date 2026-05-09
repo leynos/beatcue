@@ -324,10 +324,10 @@ Stage C checks supporting docs for consistency. Read `README.md`,
 with the new v1 boundary or schema decision. Patch only conflicting text. Do
 not expand scope into broad documentation rewrites.
 
-Stage D validates and commits. Run Markdown formatting only if necessary, then
-run `make markdownlint` and `make nixie` through `tee` logs in `/tmp`. Commit
-with a file-based commit message after gates pass. Push the branch after the
-commit.
+Stage D validates and commits. Run `make fmt` on all Markdown files immediately
+after documentation changes, then run `make markdownlint` and `make nixie`
+through `tee` logs in `/tmp`. Commit with a file-based commit message after
+gates pass. Push the branch after the commit.
 
 ## Concrete steps
 
