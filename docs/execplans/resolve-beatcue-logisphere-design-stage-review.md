@@ -331,17 +331,18 @@ commit.
 
 ## Concrete steps
 
-From `/data/leynos/Projects/beatcue`, confirm the branch and clean state:
+From the repository root, confirm the active branch and working-tree state:
 
 ```bash
 git branch --show
 git status --short
 ```
 
-Expected output starts with:
+Expected output starts with the active branch name and then no unexpected
+working-tree changes:
 
 ```plaintext
-initial-design
+<active-branch-name>
 ```
 
 Then edit the documentation files using `apply_patch`. Do not use scripts for
