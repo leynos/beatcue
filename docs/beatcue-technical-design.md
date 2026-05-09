@@ -67,9 +67,9 @@ BeatCue v1 is a deterministic cue-extraction package for single-scene or
 single-shot videos. It is useful when a user needs explainable timing cues from
 colour, motion, audio, and scene-change signals without depending on model
 captioning or object tracking. This boundary addresses the Logisphere
-scope-to-team finding in
-`docs/beatcue-logisphere-design-stage-review.md` §7 finding 2 and keeps the
-80/20 product from §7 finding 13 useful before enrichment work begins.
+scope-to-team finding in `docs/beatcue-logisphere-design-stage-review.md` §7
+finding 2 and keeps the 80/20 product from §7 finding 13 useful before
+enrichment work begins.
 
 V1 includes:
 
@@ -306,9 +306,9 @@ all writers consume. It enforces these invariants:
 - `is_complete` is false only when the user opted into partial output after a
   recoverable failure.
 
-BeatCue JSON is the lossless serialization of `AnalysisResult`. WebVTT and
-OTIO are projections from it and may omit diagnostic detail that is not native
-to those interchange formats.
+BeatCue JSON is the lossless serialization of `AnalysisResult`. WebVTT and OTIO
+are projections from it and may omit diagnostic detail that is not native to
+those interchange formats.
 
 ## 8. Ports and dependency injection
 
@@ -454,10 +454,10 @@ that documents its own memory budget.
 
 Feature extraction is incremental. The frame sampler streams one sampled frame
 at a time, optical-flow extraction keeps only the previous frame and current
-aggregates, and audio features are summarized before cue classification.
-Full frame-level feature arrays are not retained unless `--include-series` is
-set. Even then, writers must enforce the configured series cap so BeatCue JSON
-does not grow without bound.
+aggregates, and audio features are summarized before cue classification. Full
+frame-level feature arrays are not retained unless `--include-series` is set.
+Even then, writers must enforce the configured series cap so BeatCue JSON does
+not grow without bound.
 
 The colourgram vector for each sampled frame contains:
 
@@ -572,8 +572,8 @@ metadata, feature summaries, cues, diagnostics, configuration, and provenance.
 Large frame-level arrays are optional and gated behind `--include-series` to
 keep default output bounded.
 
-BeatCue JSON uses `msgspec.Struct` definitions as the v1 schema technology.
-The domain model remains expressed as immutable value objects, while the
+BeatCue JSON uses `msgspec.Struct` definitions as the v1 schema technology. The
+domain model remains expressed as immutable value objects, while the
 serialization layer maps those values to typed `msgspec` structures for fast
 JSON encoding, decoding, and validation. This choice keeps the schema close to
 the Python data model, gives tests a concrete round-trip contract, and avoids
@@ -807,9 +807,9 @@ _Table 6: Required failure behaviour._
 ## 19. Security and privacy
 
 Video frames, audio, captions, and model prompts may contain sensitive content.
-The default implementation runs local analysis only. Remote model adapters are
-out of scope for the initial implementation unless the user configures one
-explicitly.
+This version runs local analysis only. Remote model execution and remote model
+adapters are fully out of scope until a future privacy and credentials design
+explicitly introduces them.
 
 Security rules:
 
@@ -824,8 +824,8 @@ Security rules:
 ## 20. Implementation phases
 
 V1 is complete after phases 1 through 4 produce deterministic BeatCue JSON and
-WebVTT from real single-scene or single-shot inputs through the library and CLI.
-Phase 5 and phase 6 are post-v1 enrichment and extension work.
+WebVTT from real single-scene or single-shot inputs through the library and
+CLI. Phase 5 and phase 6 are post-v1 enrichment and extension work.
 
 1. Domain and writers: implement domain value objects, cue fusion, timestamp
    conversion, BeatCue JSON, WebVTT, and writer snapshots.
@@ -846,8 +846,8 @@ Phase 5 and phase 6 are post-v1 enrichment and extension work.
 - The first object tracker is deferred. Florence-2 detection is useful for
   labels and boxes, but persistent tracking may use a simpler centroid tracker
   before SAM 2 or another video segmentation model is introduced.
-- Remote model execution is deferred because it changes the privacy and
-  credentials model.
+- Remote model execution and remote adapters are deferred because they require
+  a future privacy and credentials design before any implementation can opt in.
 - GPU scheduling is deferred. The initial composition root may select CPU-only
   adapters and fail clearly when a requested model requires unavailable
   hardware.
@@ -875,7 +875,7 @@ Phase 5 and phase 6 are post-v1 enrichment and extension work.
     <https://huggingface.co/docs/transformers/model_doc/florence2>.
 [^9]: OpenTimelineIO documentation, "File Format Specification", accessed
     2026-05-09,
-    <https://opentimelineiox.readthedocs.io/en/stable/tutorials/otio-file-format-specification.html>.
+    <https://opentimelineio.readthedocs.io/en/stable/tutorials/otio-file-format-specification.html>.
 [^10]: Rich documentation, "Introduction", accessed 2026-05-09,
     <https://rich.readthedocs.io/en/stable/introduction.html>.
 [^11]: Cyclopts README, accessed 2026-05-09,
