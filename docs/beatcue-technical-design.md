@@ -398,7 +398,7 @@ weights over signals that exist for the current run. If `--track-objects` is
 disabled, `w_object_entry` is redistributed across deterministic visual,
 motion, audio, and cut signals. If no caption model is configured, `w_semantic`
 is redistributed the same way. The default profile must set `w_semantic` below
-the deterministic signal weights so captions cannot create a cue without
+the deterministic signal weights, so captions cannot create a cue without
 supporting timing evidence.
 
 ## 11. Cue classification
@@ -615,9 +615,9 @@ cancellation, and structured command results.[^12]
 
 BeatCue defines a catalogue containing:
 
-- `ffprobe`;
-- `ffmpeg`;
-- optional `nixie` for documentation validation;
+- `ffprobe`
+- `ffmpeg`
+- optional `nixie` for documentation validation
 - optional model helper commands only when a plugin requires them.
 
 The command runner records:
@@ -669,7 +669,7 @@ Named invariants:
 
 Hypothesis covers the combinatorial space for configuration precedence, cue
 fusion, timestamp conversion, and confidence normalization. Pytest-bdd covers
-end-to-end user workflows. Syrupy freezes externally visible outputs so
+end-to-end user workflows. Syrupy freezes externally visible outputs, so
 reviewers see intentional changes.
 
 ## 18. Failure modes
