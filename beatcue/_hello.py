@@ -2,12 +2,30 @@
 
 from __future__ import annotations
 
-PACKAGE_NAME = "beatcue"
+import typing as typ
+from importlib import import_module
+
+if typ.TYPE_CHECKING:
+    import collections.abc as cabc
+
+PACKAGE_NAME: str = "beatcue"
+MODULE_NAME: str = f"_{PACKAGE_NAME}_rs"
+
+
+def _pure_hello() -> cabc.Callable[[], str]:
+    from .pure import hello as pure_hello
+
+    return pure_hello
+
+
+hello: cabc.Callable[[], str]
 
 try:  # pragma: no cover - Rust optional
-    rust = __import__(f"_{PACKAGE_NAME}_rs")
-    hello = rust.hello  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover - Python fallback
-    from .pure import hello
+    rust = import_module(MODULE_NAME)
+except ModuleNotFoundError, ImportError, OSError:  # pragma: no cover - Python fallback
+    hello = _pure_hello()
+else:  # pragma: no cover - Rust optional
+    rust_hello = getattr(rust, "hello", None)
+    hello = rust_hello if callable(rust_hello) else _pure_hello()
 
 __all__ = ["hello"]

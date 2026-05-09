@@ -79,6 +79,7 @@ V1 includes:
   falling audiovisual intensity, and action peaks;
 - `inspect`, deterministic `analyse`, `agent-context`, profiles, structured
   diagnostics, and bounded agent-native CLI output;
+- job ledger recovery, `jobs`, `--wait`, `--deliver`, and feedback commands;
 - local subprocess execution through the Cuprum command catalogue.
 
 Post-v1 work includes semantic annotation, object tracking, object entry and
@@ -979,23 +980,25 @@ Security rules:
 
 ## 20. Implementation phases
 
-V1 is complete after phases 1 through 4 produce deterministic BeatCue JSON and
+V1 is complete after Phases 1 through 4 produce deterministic BeatCue JSON and
 WebVTT from real single-scene or single-shot inputs through the library and
-CLI. Phase 5 and phase 6 are post-v1 enrichment and extension work.
+CLI, including the job ledger, `jobs`, `--wait`, `--deliver`, and feedback
+commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 
 1. Domain and writers: implement domain value objects, cue fusion, timestamp
    conversion, BeatCue JSON, WebVTT, and writer snapshots.
 2. CLI and configuration: implement Cyclopts commands, profile precedence,
-   `agent-context`, Rich human output, JSON output, and exit codes.
+   `agent-context`, Rich human output, JSON output, exit codes, and `jobs`.
 3. Subprocess and probing: implement Cuprum catalogue, `ffprobe` probing,
    `ffmpeg` audio extraction, and CmdMox tests.
-4. Deterministic analysis: implement colourgram, optical flow, librosa audio
-   features, PySceneDetect integration, action intensity, ease detection, and
-   cue classification.
+4. Deterministic analysis and agent operations: implement colourgram, optical
+   flow, librosa audio features, PySceneDetect integration, action intensity,
+   ease detection, cue classification, `--wait`, job ledger recovery,
+   `--deliver`, and feedback commands.
 5. Semantic adapters: implement optional Florence-2 and Qwen2.5-VL adapters
    behind ports, with strict response validation.
-6. Job and delivery layer: implement `--wait`, job ledger recovery,
-   `--deliver`, and feedback commands.
+6. Deferred enrichment extensions: evaluate remote model credentials, GPU
+   scheduling, advanced tracking, and trainable genre profiles.
 
 ## 21. Deferred decisions
 

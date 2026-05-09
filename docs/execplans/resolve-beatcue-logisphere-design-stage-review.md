@@ -358,6 +358,7 @@ git --no-pager diff --no-ext-diff -- docs/beatcue-technical-design.md docs/roadm
 Run gates with durable logs:
 
 ```bash
+make fmt 2>&1 | tee /tmp/fmt-logisphere-plan-beatcue-initial-design.out
 make markdownlint 2>&1 | tee /tmp/markdownlint-logisphere-plan-beatcue-initial-design.out
 make nixie 2>&1 | tee /tmp/nixie-logisphere-plan-beatcue-initial-design.out
 ```
@@ -372,12 +373,6 @@ and:
 
 ```plaintext
 All diagrams validated successfully!
-```
-
-If formatting is needed, run:
-
-```bash
-make fmt 2>&1 | tee /tmp/fmt-logisphere-plan-beatcue-initial-design.out
 ```
 
 Then revert any unrelated formatting drift before committing.

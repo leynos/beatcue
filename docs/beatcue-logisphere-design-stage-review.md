@@ -215,11 +215,13 @@ correctly requires failing before side effects for dependency errors.
   targeting the same ledger file. File locking or per-process ledger files
   would prevent interleaving.
 
-- 🟢 **Model download failures are not addressed.** If `--caption-model
-  Qwen/Qwen2.5-VL-7B-Instruct` is specified and the model is not cached
-  locally, Transformers will attempt to download it. The design should state
-  whether BeatCue catches download failures, whether it requires pre-downloaded
-  models, or whether it delegates entirely to Transformers' error handling.
+- 🟢 **Model download failures are not addressed.**
+
+  If a caption model such as `Qwen/Qwen2.5-VL-7B-Instruct` is specified and is
+  not cached locally, Transformers will attempt to download it. The design
+  should state whether BeatCue catches download failures, whether it requires
+  pre-downloaded models, or whether it delegates entirely to Transformers'
+  error handling.
 
 - 🟢 **Disk space exhaustion during writing.** The design requires atomic
   writes for delivery adapters but does not address partial writes when disk

@@ -181,10 +181,15 @@ beatcue analyse input.mp4 --out cues.vtt --json-out cues.json
 
 This workflow uses colour, motion, audio, and scene features.
 
-### Add semantic annotations
+## Planned post-v1 workflows
 
-Use semantic annotations when a workflow needs captions attached to existing
-timing cues:
+The workflows below are illustrative post-v1 examples. They are not available
+in the deterministic v1 command set.
+
+### Planned post-v1: Add semantic annotations
+
+Semantic annotations will attach captions to existing timing cues when a
+workflow needs model-backed descriptions:
 
 ```bash
 beatcue analyse input.mp4 \
@@ -193,35 +198,35 @@ beatcue analyse input.mp4 \
   --caption-model Qwen/Qwen2.5-VL-7B-Instruct
 ```
 
-Captions annotate deterministic timing cues. They do not create timing cues by
-themselves.
+Captions will annotate deterministic timing cues. They will not create timing
+cues by themselves.
 
-### Recover long-running analysis
+### Planned post-v1: Recover long-running analysis
 
-Use `--wait` when a script should block until analysis completes:
+The `--wait` flag will let a script block until analysis completes:
 
 ```bash
 beatcue analyse input.mp4 --json-out cues.json --wait
 ```
 
-If the process is interrupted, the job ledger will let users inspect recent
-work:
+If the process is interrupted, the job ledger will let users inspect recent work
+once the planned job commands are implemented:
 
 ```bash
 beatcue jobs list --json
 beatcue jobs get job_123 --json
 ```
 
-### Deliver outputs to a file
+### Planned post-v1: Deliver outputs to a file
 
-Use `--deliver=file:<path>` when a workflow needs an explicit delivery target:
+The `--deliver=file:<path>` option will support explicit delivery targets:
 
 ```bash
 beatcue analyse input.mp4 --json --deliver=file:analysis-result.json
 ```
 
-Unsupported delivery schemes will fail with an error that lists accepted
-schemes.
+Unsupported delivery schemes will fail with an error that lists accepted schemes
+once delivery adapters are implemented.
 
 ## Failure behaviour
 
