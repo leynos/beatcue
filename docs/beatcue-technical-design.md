@@ -281,7 +281,8 @@ files for writer contracts.
 ## 9. Analysis pipeline
 
 For screen readers: The sequence diagram shows `analyse` probing media,
-sampling features, detecting cues, annotating selected keyframes, fusing
+sampling features, tracking objects, building a deterministic intensity pass,
+annotating selected keyframes, building the final intensity pass, fusing
 candidates, and writing outputs.
 
 ```mermaid
@@ -296,10 +297,12 @@ sequenceDiagram
     App->>Adapters: probe media
     App->>Adapters: sample frames and extract audio
     App->>Adapters: extract visual, motion, and audio features
-    App->>Domain: detect cuts, beats, ramps, and action arcs
+    App->>Adapters: track objects when enabled
+    App->>Domain: build deterministic intensity and seed cues
     App->>Domain: select semantic keyframes
-    App->>Adapters: annotate keyframes and track objects
-    App->>Domain: fuse cue candidates
+    App->>Adapters: annotate keyframes when enabled
+    App->>Domain: build final intensity and classify cues
+    App->>Domain: fuse seed and final cue candidates
     App->>Writers: write WebVTT, OTIO, and JSON
     App-->>Caller: AnalysisResult
 ```
@@ -321,19 +324,31 @@ The application executes these steps:
 6. Detect scene candidates with PySceneDetect when enabled. Its
    `AdaptiveDetector` uses a rolling average of frame differences in HSV
    colourspace to reduce false detections during fast motion.[^6]
-7. Build the action-intensity curve from normalized visual, motion, audio, cut,
-   object, and optional semantic signals.
-8. Fit candidate intervals to ease curves and classify rising/falling action by
-   slope over minimum-duration windows.
-9. Select keyframes at scene starts, cuts, action peaks, object entries/exits,
-   and high colour-delta points.
-10. Annotate keyframes with the configured caption adapter. Qwen2.5-VL is a
-    supported video-aware option because its documentation describes temporal
-    modelling and dynamic frames-per-second sampling for video understanding.[^7]
-    Florence-2 is a supported image-level option because Transformers documents
-    captioning, detection, and segmentation tasks for it.[^8]
-11. Fuse candidates within a configurable tolerance.
-12. Serialize one canonical analysis result to each requested output.
+7. Track objects when `--track-objects` or an object-dependent profile is
+   enabled. Object-derived signals are unavailable when tracking is disabled;
+   their configured weights are redistributed across available deterministic
+   signals instead of being read as zero-valued evidence.
+8. Build the first-pass deterministic action-intensity curve from visual,
+   motion, audio, cut, and available object signals. This pass excludes
+   semantic signals because captions do not exist yet.
+9. Fit candidate intervals to ease curves, classify first-pass
+   rising/falling-action candidates, and select semantic keyframes at scene
+   starts, cuts, first-pass action peaks, object entries/exits, and high
+   colour-delta points.
+10. Annotate selected keyframes with the configured caption adapter. Qwen2.5-VL
+    is a supported video-aware option because its documentation describes
+    temporal modelling and dynamic frames-per-second sampling for video
+    understanding.[^7] Florence-2 is a supported image-level option because
+    Transformers documents captioning, detection, and segmentation tasks for
+    it.[^8]
+11. Build the final action-intensity curve from visual, motion, audio, cut,
+    available object, and validated semantic signals. When no caption model is
+    configured, semantic weights are redistributed across available
+    deterministic signals.
+12. Refit ease curves, classify final rising/falling-action cues and action
+    peaks, and fuse first-pass seed candidates with final cue candidates within
+    a configurable tolerance.
+13. Serialize one canonical analysis result to each requested output.
 
 ## 10. Feature extraction
 
@@ -378,9 +393,13 @@ A(t) =
 + w_semantic * semantic_action_score
 ```
 
-Profiles define weights and thresholds. The default profile must set
-`w_semantic` below the deterministic signal weights so captions cannot create a
-cue without supporting timing evidence.
+Profiles define weights and thresholds. The action-intensity builder normalizes
+weights over signals that exist for the current run. If `--track-objects` is
+disabled, `w_object_entry` is redistributed across deterministic visual,
+motion, audio, and cut signals. If no caption model is configured, `w_semantic`
+is redistributed the same way. The default profile must set `w_semantic` below
+the deterministic signal weights so captions cannot create a cue without
+supporting timing evidence.
 
 ## 11. Cue classification
 
