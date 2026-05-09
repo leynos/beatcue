@@ -69,7 +69,7 @@ domain objects immutable.
   could be one port until a second audio backend exists. `JobLedger` and
   `ProfileStore` are persistence ports that will each have exactly one
   implementation for the foreseeable future. The design should acknowledge which
-  ports exist because they have real substitutability requirements and which
+  ports exist because they have real substitutability requirements, and which
   exist for testing convenience alone.
 
 - 🟢 **The `AnalyseVideo` service dataclass is load-bearing.** Its constructor
@@ -333,7 +333,7 @@ editing agent.
 
 **Root cause:** The weight redistribution logic (§10) is described in prose
 but not formally specified. The invariant "semantic annotations cannot create
-timing cues without deterministic evidence" is stated but the enforcement
+timing cues without deterministic evidence" is stated, but the enforcement
 mechanism is not defined.
 
 **Signal missed:** No property test covering weight redistribution under all
@@ -351,7 +351,7 @@ action-peak threshold.
 Instead of a procedural two-pass pipeline orchestrated by `AnalyseVideo.run()`,
 define the analysis as a directed acyclic graph of typed stages. Each stage
 declares its inputs (other stages or source media) and its output type.
-Execution proceeds by topological sort with optional caching of intermediate
+Execution proceeds by topological sort, with optional caching of intermediate
 results.
 
 **What it gains:**

@@ -22,7 +22,11 @@ hello: cabc.Callable[[], str]
 
 try:  # pragma: no cover - Rust optional
     rust = import_module(MODULE_NAME)
-except ModuleNotFoundError, ImportError, OSError:  # pragma: no cover - Python fallback
+except (  # pragma: no cover - Python fallback
+    ModuleNotFoundError,
+    ImportError,
+    OSError,
+):
     hello = _pure_hello()
 else:  # pragma: no cover - Rust optional
     rust_hello = getattr(rust, "hello", None)

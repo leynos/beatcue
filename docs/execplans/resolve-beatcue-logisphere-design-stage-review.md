@@ -37,7 +37,7 @@ Implementation must not begin until this draft ExecPlan is explicitly approved.
   they must not crowd out the five requested priorities.
 - Preserve the existing hexagonal architecture decision unless the user asks to
   reopen it. The design-stage review says the current procedural pipeline is
-  the right v1 choice even though a pipeline-as-DAG alternative may become
+  the right v1 choice, even though a pipeline-as-DAG alternative may become
   useful later; see `docs/beatcue-logisphere-design-stage-review.md` §5.
 - Keep v1 deterministic and credible. Semantic annotation, object tracking,
   remote model execution, GPU scheduling, and advanced tracking should be
@@ -298,7 +298,7 @@ maximum duration, resolution tier, and sample-frame budget under the default
 must either lower sample rate, process in windows, or fail early with an
 actionable error. Feature computation must be incremental, and full
 feature-series retention must stay disabled unless `--include-series` is set.
-Add a cap on selected semantic keyframes for post-v1 semantic runs so model
+Add a cap on selected semantic keyframes for post-v1 semantic runs, so model
 inference cannot grow without bound. Cite
 `docs/beatcue-logisphere-design-stage-review.md` §4 scenario B and §7 findings
 5, 6, and 16.

@@ -224,7 +224,7 @@ beatcue/
 
 ### 6.1. Dependency groups and optional capabilities
 
-The package should expose dependency groups so a minimal installation stays
+The package should expose dependency groups, so a minimal installation stays
 small and deterministic:
 
 | Group       | Purpose                                                          |
@@ -389,7 +389,7 @@ _Table 3: Domain-owned driven ports._
 
 The twelve-port surface is intentional as the long-term boundary, but v1
 implementation work should prioritize the ports marked required. Object and
-semantic ports exist so post-v1 enrichment cannot leak model packages into the
+semantic ports exist, so post-v1 enrichment cannot leak model packages into the
 domain. ADR 002 records this decision. Group injected dependencies only after
 constructor arity becomes a demonstrated maintenance problem; premature
 grouping would hide the pipeline dependencies that the first implementation
