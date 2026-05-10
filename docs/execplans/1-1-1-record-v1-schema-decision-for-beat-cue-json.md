@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Implementation began after explicit approval in the user request dated
 2026-05-10.
@@ -147,11 +147,13 @@ serializer and validation layer from this decision.
   gates sequentially with tee logs under `/tmp`. `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
   `make test` passed.
-- [ ] Commit the approved documentation changes.
-- [ ] Push the branch tracking
+- [x] (2026-05-10 00:00Z) Committed the approved documentation changes as
+  `42364399e96249c24b9b9bb1f4ba452a4cdbf182`.
+- [x] (2026-05-10 00:00Z) Pushed the branch tracking
   `origin/1-1-1-record-v1-schema-decision-for-beat-cue-json`.
-- [ ] Open a draft pull request whose title includes `(1.1.1)` and whose
-  summary mentions this ExecPlan.
+- [x] (2026-05-10 00:00Z) Updated draft pull request
+  <https://github.com/leynos/beatcue/pull/7> with a `(1.1.1)` title and a
+  summary that mentions this ExecPlan.
 
 ## Surprises & discoveries
 
@@ -244,9 +246,39 @@ serializer and validation layer from this decision.
 
 ## Outcomes & retrospective
 
-This section is intentionally empty while the plan is in `DRAFT`. After
-implementation, update it with the exact files changed, gates run, commit hash,
-pull request link, and any follow-up work.
+Implemented the schema ratification as documentation-only work. The change
+adds `docs/adr-003-v1-beatcue-json-schema.md`, signposts ADR 003 from
+`docs/beatcue-technical-design.md`, `docs/users-guide.md`, and
+`docs/developers-guide.md`, and marks roadmap item 1.1.1 done in
+`docs/roadmap.md`.
+
+The implementation commit is
+`42364399e96249c24b9b9bb1f4ba452a4cdbf182`. The draft pull request is
+<https://github.com/leynos/beatcue/pull/7>.
+
+Validation evidence:
+
+- `make fmt 2>&1 | tee /tmp/fmt-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  was attempted and failed in the repository's broad Markdown formatter path
+  on existing long table and line-length issues outside this task. Formatter
+  churn in unrelated files was restored.
+- `make markdownlint 2>&1 | tee /tmp/markdownlint-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+- `make nixie 2>&1 | tee /tmp/nixie-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+- `make check-fmt 2>&1 | tee /tmp/check-fmt-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+- `make typecheck 2>&1 | tee /tmp/typecheck-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+- `make lint 2>&1 | tee /tmp/lint-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+- `make test 2>&1 | tee /tmp/test-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
+  passed.
+
+No production serializer, package dependency, CLI command, inference-service
+behaviour, or test suite was added. ADR 003 records the required pytest,
+pytest-bdd, syrupy, Hypothesis, and Vidai Mock expectations for the later
+writer and inference-service implementation tasks.
 
 ## Context and orientation
 
