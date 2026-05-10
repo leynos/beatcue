@@ -5,9 +5,10 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
-Implementation must not begin until this ExecPlan is explicitly approved.
+Implementation began after explicit approval in the user request dated
+2026-05-10.
 
 ## Purpose / big picture
 
@@ -128,15 +129,24 @@ serializer and validation layer from this decision.
 - [x] (2026-05-10 00:00Z) Validated the draft plan with `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
   `make test`.
-- [ ] Await explicit approval before implementing the planned documentation
-  changes.
-- [ ] Create the accepted ADR for the BeatCue JSON v1 schema decision.
-- [ ] Add or adjust design, user-guide, and developer-guide signposts so the
-  public and internal contracts agree.
-- [ ] Mark roadmap item 1.1.1 done after the decision record and signposts are
-  complete.
-- [ ] Run Markdown gates and the user-requested Python gates sequentially with
-  tee logs under `/tmp`.
+- [x] (2026-05-10 00:00Z) Received explicit approval to implement this
+  ExecPlan.
+- [x] (2026-05-10 00:00Z) Used Firecrawl to check current `msgspec` prior art
+  and confirmed that its public documentation still describes typed schemas,
+  JSON encoding and decoding, validation during decoding, performance, and no
+  required dependencies.
+- [x] (2026-05-10 00:00Z) Created
+  `docs/adr-003-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for the
+  BeatCue JSON v1 serialization boundary.
+- [x] (2026-05-10 00:00Z) Added design, user-guide, and developer-guide
+  signposts so public and internal documentation point at ADR 003 without
+  claiming the serializer exists.
+- [x] (2026-05-10 00:00Z) Marked roadmap item 1.1.1 done and linked the item
+  to ADR 003.
+- [x] (2026-05-10 00:00Z) Ran Markdown gates and the user-requested Python
+  gates sequentially with tee logs under `/tmp`. `make markdownlint`,
+  `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
+  `make test` passed.
 - [ ] Commit the approved documentation changes.
 - [ ] Push the branch tracking
   `origin/1-1-1-record-v1-schema-decision-for-beat-cue-json`.
@@ -172,6 +182,28 @@ serializer and validation layer from this decision.
   request adds the Python gates. Impact: the implementation should run both the
   Markdown gates and the user-requested Python gates.
 
+- Observation: Firecrawl found the current `msgspec` public documentation and
+  scraped <https://jcristharif.com/msgspec/>. Evidence: that documentation
+  describes `msgspec` as a fast serialization and validation library with JSON
+  support, type-annotation-based schema validation, a `Struct` type for
+  structured data, JSON encode/decode examples, and no required dependencies.
+  Impact: the ADR can cite external prior art for the existing design choice,
+  while keeping BeatCue's decision grounded in local architecture boundaries
+  and writer-contract needs.
+
+- Observation: `make fmt` still fails in its broad Markdown formatter path
+  after reporting line-length and table-alignment issues in existing
+  repository documents outside this task. Evidence: the log is
+  `/tmp/fmt-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`. Impact:
+  unrelated formatter churn was restored, and the narrower required gates were
+  run successfully. This matches the same known behaviour observed during the
+  plan-only change.
+
+- Observation: `make typecheck` generated an untracked `uv.lock` while syncing
+  the development environment. Evidence: `git status --short` showed
+  `?? uv.lock` after the gate. Impact: the generated lock file was removed
+  because this documentation-only task does not change dependencies.
+
 ## Decision log
 
 - Decision: Draft this plan as approval-gated and do not implement the
@@ -199,6 +231,16 @@ serializer and validation layer from this decision.
   services, but this task does not implement inference-service behaviour.
   Starting or depending on Vidai Mock here would widen the task beyond schema
   ratification. Date/Author: 2026-05-10 / Codex.
+
+- Decision: Use `docs/adr-003-v1-beatcue-json-schema.md` as the ADR file.
+  Rationale: no newer ADR number appeared before implementation, and the
+  existing repository sequence ends at ADR 002. Date/Author: 2026-05-10 / Codex.
+
+- Decision: Do not add pytest, pytest-bdd, syrupy, or Hypothesis tests in this
+  task. Rationale: the implementation is an ADR and documentation signpost
+  change only; there is no executable serializer, CLI workflow, or public
+  output contract to test yet. ADR 003 records those test obligations for the
+  later BeatCue JSON writer implementation. Date/Author: 2026-05-10 / Codex.
 
 ## Outcomes & retrospective
 

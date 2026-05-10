@@ -190,7 +190,9 @@ the source of truth for another writer.
 Writer expectations:
 
 - BeatCue JSON is the lossless output and should round-trip through the
-  selected `msgspec.Struct` schema.
+  selected `msgspec.Struct` schema. ADR 003 records this decision; implement
+  schema structs at the serialization boundary and map from immutable domain
+  values rather than importing writer types into the domain.
 - WebVTT contains compact metadata cues with ASCII JSON payloads by default.
 - Post-v1 OTIO output should use the OpenTimelineIO library rather than
   hand-written OTIO JSON.

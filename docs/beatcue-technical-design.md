@@ -674,9 +674,10 @@ serialization layer maps those values to typed `msgspec` structures for fast
 JSON encoding, decoding, and validation. This choice keeps the schema close to
 the Python data model, gives tests a concrete round-trip contract, and avoids
 deferring a decision that blocks writer and snapshot work. Replacing `msgspec`
-requires an ADR or design update before implementation continues. This resolves
-the schema deferral called out in
-`docs/beatcue-logisphere-design-stage-review.md` §7 finding 7.
+requires an ADR or design update before implementation continues. ADR 003 is
+the durable decision record for this schema choice. This resolves the schema
+deferral called out in `docs/beatcue-logisphere-design-stage-review.md` §7
+finding 7.
 
 ### 13.2. WebVTT
 
