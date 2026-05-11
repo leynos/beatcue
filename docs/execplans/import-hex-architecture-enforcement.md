@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
 ## Purpose / big picture
 
@@ -136,10 +136,35 @@ the conflict in `Decision Log`, and ask for direction.
 - [x] (2026-05-10T20:31:41Z) Performed a prior-art check for Import Linter,
   Semgrep, and Astroid using Firecrawl.
 - [x] (2026-05-10T20:31:41Z) Drafted this ExecPlan.
-- [ ] Obtain explicit user approval for implementation.
-- [ ] Rename the branch and set upstream tracking.
-- [ ] Add red architecture tests and fixtures.
-- [ ] Adapt the checker and BeatCue-specific policy.
+- [x] (2026-05-10T21:08:54Z) Renamed the branch to
+  `import-hex-architecture-enforcement`, pushed it, set upstream tracking to
+  `origin/import-hex-architecture-enforcement`, and opened draft PR #8 for the
+  pre-implementation plan.
+- [x] (2026-05-10T23:24:32Z) Received explicit user approval to implement the
+  planned functionality and keep this ExecPlan current during execution.
+- [x] (2026-05-10T23:24:32Z) Added fixture-based architecture tests for
+  domain-to-adapter, application-to-adapter, composition-root wiring,
+  package-barrel re-export, star re-export, and the current `beatcue` package.
+- [x] (2026-05-10T23:24:32Z) Ran the focused red test slice with
+  `uv run pytest -q tests/test_architecture_enforcement.py`; it failed during
+  collection with `ModuleNotFoundError: No module named 'beatcue.architecture'`
+  as expected.
+- [x] (2026-05-10T23:24:32Z) Adapted the checker into
+  `beatcue.architecture` with BeatCue-specific groups, an explicit
+  `beatcue.config` composition-root group, infrastructure-module classification,
+  relative import resolution, and package re-export expansion.
+- [x] (2026-05-10T23:24:32Z) Ran
+  `uv run pytest -q tests/test_architecture_enforcement.py`; all 7 focused
+  architecture tests passed.
+- [x] (2026-05-10T23:24:32Z) Cleared CodeRabbit concerns on the checker
+  milestone, including shared import helpers, public fixture-policy exports,
+  docstring detail, explicit fixture bodies, relative-import edge coverage, and
+  grouped star re-export lookup.
+- [x] (2026-05-10T23:24:32Z) Ran targeted milestone validation:
+  `ruff check beatcue/architecture tests/test_architecture_enforcement.py`
+  `tests/fixtures/architecture`, `ruff format --check beatcue/architecture`
+  `tests/test_architecture_enforcement.py tests/fixtures/architecture`,
+  and `uv run pytest -q tests/test_architecture_enforcement.py`; all passed.
 - [ ] Add Makefile architecture gate and wire it into `make lint`.
 - [ ] Update documentation.
 - [ ] Run all required gates with `tee` logs.
@@ -173,6 +198,49 @@ the conflict in `Decision Log`, and ask for direction.
   Impact: BeatCue should keep the mechanism but replace the group surface with
   BeatCue names and fixtures.
 
+- Observation: The red architecture test failed before implementation exactly
+  at import time because no `beatcue.architecture` package exists yet.
+  Evidence: `/tmp/test-red-beatcue-import-hex-architecture-enforcement.out`
+  contains `ModuleNotFoundError: No module named 'beatcue.architecture'`.
+  Impact: The planned implementation can proceed against a clear TDD failure.
+
+- Observation: BeatCue needs the policy to classify selected external
+  infrastructure modules as a group, not only package-local modules.
+  Evidence: `beatcue.domain` is documented as forbidden from importing Rich,
+  Cyclopts, OpenCV, librosa, Transformers, Cuprum, and CmdMox, while adapters
+  and CLI code may need those packages.
+  Impact: The checker now scans all syntactic imports and ignores unclassified
+  standard-library or unrelated modules, while the BeatCue policy classifies
+  the named infrastructure packages.
+
+- Observation: CodeRabbit review became temporarily rate-limited after all
+  reported checker milestone concerns were fixed.
+  Evidence: The final attempted `coderabbit review --agent` returned
+  `rate_limit` with a 2 minute 37 second wait after prior passes had reported
+  only two simplifications that were then applied and locally retested.
+  Impact: The milestone can be committed after local gates pass; the next
+  major milestone will run CodeRabbit again before proceeding.
+
+- Observation: The global `make check-fmt` gate currently fails on an unrelated
+  existing Markdown code block in
+  `docs/complexity-antipatterns-and-refactoring-strategies.md`.
+  Evidence: `/tmp/check-fmt-beatcue-import-hex-architecture-enforcement-m1.out`
+  shows Ruff would reformat that Markdown file in addition to one new checker
+  file; the checker file was then formatted with targeted `ruff format`.
+  Impact: Milestone validation used targeted format checking for touched
+  Python and fixture files. The unrelated Markdown formatting issue remains
+  for the full final gate decision unless later `make fmt` is allowed to change
+  that document.
+
+- Observation: The first checker implementation exceeded the ExecPlan's
+  production-line tolerance before commit.
+  Evidence: `wc -l beatcue/architecture/*.py` reports 844 total production
+  lines under `beatcue/architecture`, while the tolerance requires escalation
+  above 700 net new production lines.
+  Impact: Implementation is paused until the user approves either raising the
+  tolerance or shrinking the checker implementation, with the trade-off that
+  shrinking may conflict with some CodeRabbit requests for expanded docstrings.
+
 ## Decision log
 
 - Decision: Use this ExecPlan as the implementation and postmortem artefact.
@@ -201,6 +269,29 @@ the conflict in `Decision Log`, and ask for direction.
   Rationale: this proves intended boundaries without implementing unrelated
   domain or adapter code.
   Date/Author: 2026-05-10T20:31:41Z / Codex.
+
+- Decision: Treat PR #8 as the existing draft pull request for the whole
+  branch and update it after implementation, instead of opening a second PR.
+  Rationale: the requested branch already tracks
+  `origin/import-hex-architecture-enforcement` and PR #8 exists for this head
+  branch. Continuing that PR preserves review history.
+  Date/Author: 2026-05-10T23:24:32Z / Codex.
+
+- Decision: Add an `infrastructure` group to the policy rather than a separate
+  special-case deny list in the checker.
+  Rationale: this keeps all dependency direction decisions in policy data and
+  lets adapters allow infrastructure while domain and application groups reject
+  it through the same violation path as package-local adapter imports.
+  Date/Author: 2026-05-10T23:24:32Z / Codex.
+
+- Decision: Stop before committing the checker milestone because the staged
+  production checker is 844 lines, exceeding the 700-line tolerance.
+  Rationale: the ExecPlan defines this threshold as an exception trigger. The
+  available options are to approve a higher production-line tolerance for this
+  import trial, or to shrink the implementation below 700 lines before
+  continuing, likely by reducing documentation detail and consolidating helper
+  code.
+  Date/Author: 2026-05-10T23:24:32Z / Codex.
 
 ## Outcomes & retrospective
 
@@ -626,5 +717,6 @@ exception.
 
 Initial draft created on 2026-05-10 after reading repository instructions,
 BeatCue design documents, the Episodic implementation, and prior-art
-documentation. The plan is in `DRAFT` status and blocks implementation until
-the user explicitly approves it.
+documentation. The plan was approved for implementation on 2026-05-10 at
+23:24:32Z. Status changed to `IN PROGRESS`, branch publication progress was
+recorded, and implementation may now proceed within the stated tolerances.
