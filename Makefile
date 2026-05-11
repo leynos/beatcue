@@ -6,7 +6,8 @@ VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        markdownlint nixie test typecheck $(TOOLS) $(VENV_TOOLS)
+        check-architecture markdownlint nixie test typecheck $(TOOLS) \
+        $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
 
@@ -64,6 +65,10 @@ check-fmt: ruff ## Verify formatting
 
 lint: ruff ## Run linters
 	ruff check
+	$(MAKE) check-architecture
+
+check-architecture: build uv ## Verify hexagonal import boundaries
+	$(UV_ENV) uv run python -m beatcue.architecture
 
 typecheck: build ty ## Run typechecking
 	ty --version

@@ -165,10 +165,16 @@ the conflict in `Decision Log`, and ask for direction.
   `tests/fixtures/architecture`, `ruff format --check beatcue/architecture`
   `tests/test_architecture_enforcement.py tests/fixtures/architecture`,
   and `uv run pytest -q tests/test_architecture_enforcement.py`; all passed.
-- [ ] Add Makefile architecture gate and wire it into `make lint`.
-- [ ] Update documentation.
-- [ ] Run all required gates with `tee` logs.
-- [ ] Complete the postmortem in `Outcomes & Retrospective`.
+- [x] (2026-05-11T00:00:00Z) Added `make check-architecture` and wired
+  `make lint` to run the architecture checker after Ruff.
+- [x] (2026-05-11T00:00:00Z) Added ADR 003 and updated the developers' guide
+  with the enforced rules, Makefile targets, re-export handling, and fixture
+  strategy.
+- [x] (2026-05-11T00:00:00Z) Ran all required gates with `tee` logs:
+  `make check-fmt`, `make lint`, `make typecheck`, `make test`,
+  `make markdownlint`, and `make nixie` all passed.
+- [x] (2026-05-11T00:00:00Z) Completed the postmortem in
+  `Outcomes & Retrospective`.
 - [ ] Commit, push, and create a draft PR.
 
 ## Surprises & discoveries
@@ -241,6 +247,42 @@ the conflict in `Decision Log`, and ask for direction.
   tolerance or shrinking the checker implementation, with the trade-off that
   shrinking may conflict with some CodeRabbit requests for expanded docstrings.
 
+- Observation: The Makefile already builds a virtual environment before test
+  and typecheck targets, so `check-architecture` should also depend on
+  `build uv`.
+  Evidence: `Makefile` defines `test: build uv $(VENV_TOOLS)` and
+  `typecheck: build ty`.
+  Impact: `make lint` now pays the same environment-readiness cost before
+  running `python -m beatcue.architecture`, which keeps the target reliable in
+  a fresh checkout.
+
+- Observation: A Make prerequisite would run `check-architecture` before the
+  `lint` recipe's `ruff check` command, even if the target is listed after
+  `ruff` in the dependency list.
+  Evidence: the first `make lint` tee log showed `uv run python -m
+  beatcue.architecture` before `ruff check`.
+  Impact: `lint` now invokes `$(MAKE) check-architecture` as the second recipe
+  line, so Ruff runs first and the architecture gate follows it explicitly.
+
+- Observation: The final CodeRabbit pass reported a minor spelling concern in
+  ADR 003, but the current file already uses `behavioural tests` and a search
+  of the touched documentation found no `behavior` spelling.
+  Evidence: `nl -ba docs/adr-003-hexagonal-architecture-enforcement.md`
+  shows `behavioural tests` on line 81, and `grep -R "behavior" ...` returned
+  no matches.
+  Impact: the finding was treated as stale after verification rather than
+  edited as a no-op.
+
+- Observation: A repeat CodeRabbit pass reported three Markdown blank-line
+  concerns that were already satisfied and one valid Oxford-comma concern in
+  ADR 003.
+  Evidence: `nl -ba docs/adr-003-hexagonal-architecture-enforcement.md`
+  showed blank lines around the code fence, table, and `## Goals and
+  non-goals` heading. The table row for `adapter` did omit the Oxford comma
+  before `and infrastructure`.
+  Impact: the stale blank-line findings were skipped after verification, and
+  the table wording was changed to `adapter groups, and infrastructure`.
+
 ## Decision log
 
 - Decision: Use this ExecPlan as the implementation and postmortem artefact.
@@ -293,25 +335,111 @@ the conflict in `Decision Log`, and ask for direction.
   code.
   Date/Author: 2026-05-10T23:24:32Z / Codex.
 
+- Decision: Keep `check-architecture` as a Makefile target that runs
+  `python -m beatcue.architecture` through `uv run`, and make `lint` call
+  that target after `ruff check`.
+  Rationale: this follows the repository's Makefile style, keeps Ruff as the
+  first lint action, and makes architecture enforcement part of the ordinary
+  local quality gate without adding another external tool.
+  Date/Author: 2026-05-11T00:00:00Z / Codex.
+
+- Decision: Document architecture enforcement in both ADR 003 and the
+  developers' guide.
+  Rationale: the ADR records the accepted architecture fitness function, while
+  the developers' guide gives contributors the operational commands and
+  fixture guidance they need during implementation.
+  Date/Author: 2026-05-11T00:00:00Z / Codex.
+
 ## Outcomes & retrospective
 
-This section is intentionally incomplete while the plan is in `DRAFT` status.
-At completion, update it with the implemented outcome and the required
-postmortem answers:
+The implemented outcome matches the planned behaviour. BeatCue now has a
+repository-local architecture checker under `beatcue.architecture`, fixture
+coverage for the intended future package graph, a production check for the
+current `beatcue/` package, an explicit `make check-architecture` target, and
+`make lint` runs Ruff before invoking the architecture gate. ADR 003 records
+the accepted fitness function, and the developers' guide explains the command,
+scope, and fixture strategy.
 
-- Which parts were reusable without change?
-- Which parts were Episodic-specific?
-- What policy surface did BeatCue need?
-- Were hard-coded Python policy functions sufficient, or is TOML or JSON
-  configuration needed next?
-- Did standard-library `ast` remain adequate?
-- Would `astroid`, Semgrep, or Import Linter reduce maintenance burden?
-- How well did the checker handle a design-first skeleton repo with future
-  package boundaries?
-- What should be extracted into a shared df12 or internal tool before trying
-  Prosidy Darn?
+Reusable without change: the core mechanism transferred well. The useful
+pieces were the standard-library `ast` import walk, the split between import
+collection and policy classification, the result and violation reporting
+shape, the recursive package `__init__.py` re-export expansion, star
+re-export handling, and the command-line diagnostic pattern. Those parts
+needed adaptation for local names, but not a different technical model.
 
-The postmortem must cite the prior-art sources named in `Artifacts and notes`.
+Episodic-specific parts: the policy was not reusable. Episodic's group names,
+module prefixes, and allowed directions describe Episodic packages and worker
+runtime choices, not BeatCue. BeatCue also needed explicit handling for
+external infrastructure packages such as Rich, Cyclopts, OpenCV, librosa,
+Transformers, Cuprum, and CmdMox. Copying Episodic's module groups would have
+weakened or misdescribed BeatCue's boundary.
+
+BeatCue's policy surface needed named groups, ordered prefix matching,
+external infrastructure classification, a narrow `beatcue.config`
+composition-root exception, and a fixture policy for design-first tests. The
+policy also needed to distinguish `beatcue.cli` and
+`beatcue.adapters.inbound` from outbound adapters while still treating
+`beatcue.adapters` as a fallback adapter group.
+
+Hard-coded Python policy functions were sufficient for this trial. They are
+clear, testable, and cheap while there is one repository and one policy. TOML
+or JSON configuration is not needed immediately, but it should be designed
+before extracting this into a shared df12/internal tool. A shared tool should
+let projects declare package groups, allowed group edges, external module
+groups, composition roots, ignored imports, and fixture policies without
+editing Python source.
+
+The standard-library `ast` module remained adequate. BeatCue's rule is about
+visible source imports, so syntactic analysis is the right level: it finds
+`import` and `from ... import ...` statements, relative imports, and package
+barrels without executing project code. Dynamic imports, plugin discovery, and
+runtime monkeypatching remain out of scope.
+
+Import Linter would reduce maintenance burden for common forbidden-import and
+layering rules because it already documents forbidden contracts, layer
+contracts, indirect import checks, ignores, and external package support.[^1]
+[^2] The trade-off is that BeatCue's trial also needed custom package-barrel
+re-export expansion and a local postmortem of the Episodic mechanism. Import
+Linter should be evaluated for the shared tool, especially if maintaining
+graph traversal and indirect import semantics locally becomes expensive.
+
+Semgrep is useful for precise local import patterns, including Python import
+metavariables and import equivalences, but its documented rule model is
+pattern-oriented and file-scoped rather than a dependency-graph engine.[^3]
+It would probably complement this checker for point rules, not replace the
+graph-level policy.
+
+Astroid would help if the checker needed richer inference or import
+resolution. It builds on Python abstract syntax trees and provides inference,
+but its documentation also exposes the expected trade-off: inference can
+return `Uninferable` when static analysis cannot determine a value.[^4] [^5]
+For BeatCue's current visible-import rule, that extra dependency and
+complexity would not buy enough.
+
+The checker handled the design-first skeleton well once fixtures were used.
+The real `beatcue/` package passes today, while the fixture packages prove the
+future domain, application, adapter, and composition-root shapes without
+creating placeholder production modules. The residual risk is that fixture
+coverage must evolve when real packages appear; otherwise the tests may prove
+the planned boundary but not every production edge case.
+
+Before trying Prosidy Darn, extract a shared df12/internal tool with these
+pieces:
+
+- a stable `ArchitecturePolicy` schema that can load from TOML or JSON;
+- reusable AST import collection and relative import resolution;
+- reusable package-barrel and star re-export expansion;
+- first-class external module groups;
+- composition-root exceptions expressed as normal policy groups;
+- fixture helpers for synthetic package trees;
+- a CLI that emits stable rule IDs and machine-readable diagnostics;
+- clear guidance for when to switch to Import Linter rather than extending the
+  local mechanism.
+
+The recommended next step is not to add more BeatCue-specific features. It is
+to move the mechanism into a small shared package or internal tool, then trial
+that extracted interface in Prosidy Darn with BeatCue's policy used as one
+configuration example.
 
 ## Context and orientation
 
@@ -642,6 +770,21 @@ Prior-art notes from Firecrawl:
   `Uninferable` when static interpretation cannot follow the code. Sources:
   <https://pylint.pycqa.org/projects/astroid/en/latest/index.html> and
   <https://pylint.pycqa.org/projects/astroid/en/latest/inference.html>.
+
+[^1]: Import Linter forbidden contracts:
+    <https://import-linter.readthedocs.io/en/stable/contract_types/forbidden/>.
+
+[^2]: Import Linter layers contracts:
+    <https://import-linter.readthedocs.io/en/stable/contract_types/layers/>.
+
+[^3]: Semgrep pattern syntax:
+    <https://semgrep.dev/docs/writing-rules/pattern-syntax>.
+
+[^4]: Astroid overview:
+    <https://pylint.pycqa.org/projects/astroid/en/latest/index.html>.
+
+[^5]: Astroid inference:
+    <https://pylint.pycqa.org/projects/astroid/en/latest/inference.html>.
 
 ## Interfaces and dependencies
 
