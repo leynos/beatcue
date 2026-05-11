@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -175,7 +175,8 @@ the conflict in `Decision Log`, and ask for direction.
   `make markdownlint`, and `make nixie` all passed.
 - [x] (2026-05-11T00:00:00Z) Completed the postmortem in
   `Outcomes & Retrospective`.
-- [ ] Commit, push, and create a draft PR.
+- [x] (2026-05-11T00:00:00Z) Committed and pushed the completed branch, and
+  updated draft PR #8 for review.
 
 ## Surprises & discoveries
 
