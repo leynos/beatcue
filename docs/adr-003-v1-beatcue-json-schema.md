@@ -39,7 +39,7 @@ types, JSON encode/decode workflows, and no required dependencies.[^1]
   separated from Rich human output and diagnostics.
 - Writer implementation needs round-trip validation through the same schema
   used for encoding.
-- Snapshot tests need stable, predictable output shapes so schema changes are
+- Snapshot tests need stable, predictable output shapes, so schema changes are
   intentional and reviewable.
 - The schema boundary must preserve BeatCue's hexagonal architecture: domain
   values stay inward-facing, and adapter or framework types stay out of the
@@ -65,7 +65,7 @@ generation pipeline.
 
 ### Option B: Dataclasses plus ad hoc JSON dictionaries
 
-This option uses standard dataclasses or domain values and hand-written
+This option uses standard dataclasses or domain values and handwritten
 dictionary conversion before calling a JSON encoder.
 
 It has a low dependency footprint, but it weakens validation because output
@@ -148,7 +148,7 @@ Non-goals:
 
 1. Record this ADR and signpost it from the technical design, users' guide,
    developers' guide, and roadmap.
-2. In the later package-skeleton task, keep domain values independent from
+2. In the later package-skeleton task, keep domain values independent of
    serialization-specific schema structures.
 3. In the later BeatCue JSON writer task, implement `msgspec.Struct` schema
    classes at the writer boundary and map from `AnalysisResult`.
