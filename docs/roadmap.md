@@ -29,10 +29,12 @@ deferred. Its outcome informs package layout, dependency selection, and the
 first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
 §21.
 
-- [ ] 1.1.1. Record the v1 schema decision for BeatCue JSON.
+- [x] 1.1.1. Record the v1 schema decision for BeatCue JSON.
   - Ratify `msgspec.Struct` as the selected v1 schema technology in an ADR if
     the project still wants a separate decision record.
   - See beatcue-technical-design.md §§7, 13.1, and 17.
+  - Decision: ADR 003 ratifies `msgspec.Struct` as the BeatCue JSON v1 schema
+    technology.
   - Success: the ADR or design signpost explains why `msgspec` is suitable for
     library callers, CLI output, round-trip validation, and stable snapshots.
 - [ ] 1.1.2. Record the v1 object-tracking boundary.
