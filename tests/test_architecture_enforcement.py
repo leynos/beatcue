@@ -109,6 +109,25 @@ ExpectedViolation = tuple[str, str, str, str, str]
                 ),
             ),
         ),
+        (
+            "inbound_cli_imports_outbound_adapter",
+            (
+                "ARCH001",
+                "inbound_cli_imports_outbound_adapter.cli",
+                "inbound_cli_imports_outbound_adapter.adapters.outbound",
+                "inbound_adapter",
+                "outbound_adapter",
+            ),
+            (
+                (
+                    "ARCH001",
+                    "tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.cli",
+                    "tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.adapters.outbound",
+                    "inbound_adapter",
+                    "outbound_adapter",
+                ),
+            ),
+        ),
     ],
 )
 def test_checker_reports_fixture_boundary_violations(
@@ -154,6 +173,7 @@ def test_checker_reports_fixture_boundary_violations(
     [
         "application_imports_domain_port",
         "composition_root_wires_adapters",
+        "inbound_cli_imports_config",
     ],
 )
 def test_checker_accepts_allowed_fixture_graphs(package_name: str) -> None:

@@ -186,6 +186,13 @@ the conflict in `Decision Log`, and ask for direction.
   for the review follow-up; CodeRabbit reported zero findings and
   `make check-fmt`, `make lint`, `make typecheck`, `make test`,
   `make markdownlint`, and `make nixie` all passed.
+- [x] (2026-05-14T00:00:00Z) Split inbound adapter permissions from the
+  broader adapter policy so future CLI code may import `beatcue.config`
+  without being allowed to import outbound adapters directly.
+- [x] (2026-05-14T00:00:00Z) Added fixture coverage for inbound CLI imports of
+  the composition root and forbidden direct outbound-adapter imports. CodeRabbit
+  reported zero findings, and `make check-fmt`, `make lint`, `make typecheck`,
+  and `make test` all passed.
 
 ## Surprises & discoveries
 
@@ -301,6 +308,15 @@ the conflict in `Decision Log`, and ask for direction.
   narrower `_ModuleContext` while keeping helper signatures within local lint
   limits.
 
+- Observation: The original policy reused the same broad adapter permission
+  set for inbound adapters, outbound adapters, and the fallback adapter group.
+  Evidence: `inbound_adapter` used `adapter_allowed`, which omitted
+  `composition_root` but included `outbound_adapter`.
+  Impact: future `beatcue.cli` code importing `beatcue.config` would fail even
+  though the design routes CLI wiring through the composition root, while
+  direct CLI imports of outbound adapters would be accepted. The inbound group
+  now has its own allowed set.
+
 ## Decision log
 
 - Decision: Use this ExecPlan as the implementation and postmortem artefact.
@@ -374,6 +390,13 @@ the conflict in `Decision Log`, and ask for direction.
   module avoids duplicate symbol-qualified violations while still proving that
   explicit and star package-barrel re-exports cannot hide forbidden adapter
   dependencies.
+  Date/Author: 2026-05-14T00:00:00Z / Codex.
+
+- Decision: Give inbound adapters a dedicated allowed-import set.
+  Rationale: inbound CLI adapters are allowed to invoke the composition root
+  but must not wire outbound adapters directly. Sharing the broader adapter
+  policy hid that distinction and conflicted with the documented future CLI
+  design.
   Date/Author: 2026-05-14T00:00:00Z / Codex.
 
 ## Outcomes & retrospective
