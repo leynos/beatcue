@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import ast
+import keyword
 from pathlib import Path
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from beatcue.architecture import check_architecture, fixture_policy
-from beatcue.architecture._imports import relative_import_base
+from beatcue.architecture._imports import compute_module_name, relative_import_base
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 type ExpectedViolation = tuple[str, str, str, str, str]
+_IDENTIFIER = st.from_regex(r"[a-z][a-z0-9_]{0,12}", fullmatch=True).filter(
+    lambda value: not keyword.iskeyword(value)
+)
 
 
 @pytest.mark.parametrize(
@@ -300,3 +306,66 @@ def test_relative_import_base_handles_valid_module_and_package_levels(
     result = relative_import_base(node, source_path, importing_module)
 
     assert result == expected
+
+
+@given(
+    parts=st.lists(_IDENTIFIER, min_size=1, max_size=5), source_kind=st.integers(0, 1)
+)
+def test_compute_module_name_round_trips_source_paths(
+    parts: list[str],
+    source_kind: int,
+) -> None:
+    """Module-name computation preserves dotted package-relative paths."""
+    root = Path("pkg")
+    source_path = (
+        root.joinpath(*parts, "__init__.py")
+        if source_kind
+        else root.joinpath(*parts).with_suffix(".py")
+    )
+
+    result = compute_module_name(root, "pkg", source_path)
+
+    assert result == ".".join(("pkg", *parts))
+
+
+@given(
+    depth=st.integers(min_value=1, max_value=6),
+    level=st.integers(min_value=1, max_value=8),
+    source_kind=st.integers(0, 1),
+)
+def test_relative_import_base_matches_package_depth(
+    depth: int,
+    level: int,
+    source_kind: int,
+) -> None:
+    """Relative import bases collapse according to module package depth."""
+    parts = tuple(f"p{index}" for index in range(depth))
+    importing_module = ".".join(parts)
+    source_path = Path("__init__.py") if source_kind else Path(f"{parts[-1]}.py")
+    module_parts = parts if source_kind else parts[:-1]
+    drop_count = level - 1
+    expected_parts = module_parts[:-drop_count] if drop_count else module_parts
+    node = ast.ImportFrom(module=None, names=[], level=level)
+
+    result = relative_import_base(node, source_path, importing_module)
+
+    assert result == ".".join(expected_parts)
+
+
+@given(suffix=st.lists(_IDENTIFIER, min_size=0, max_size=3))
+def test_fixture_policy_classifies_group_prefix_descendants(
+    suffix: list[str],
+) -> None:
+    """Architecture group membership follows the first matching prefix."""
+    policy = fixture_policy("tests.fixtures.architecture.package")
+
+    for group in policy.groups:
+        for prefix in group.module_prefixes:
+            module = ".".join((prefix, *suffix)) if suffix else prefix
+
+            result = policy.group_for(module)
+            matching_groups = tuple(
+                candidate for candidate in policy.groups if candidate.contains(module)
+            )
+
+            assert result == matching_groups[0]

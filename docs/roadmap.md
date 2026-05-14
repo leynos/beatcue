@@ -65,7 +65,7 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - See beatcue-technical-design.md §§5-8.
   - Success: imports reflect the design's inward dependency rule before any
     infrastructure adapters land.
-- [ ] 1.2.2. Add a CI fitness function for forbidden imports.
+- [x] 1.2.2. Add a CI fitness function for forbidden imports.
   - Requires 1.2.1.
   - Reject domain imports from adapters, Cyclopts, Rich, OpenCV, librosa,
     Transformers, Cuprum, and CmdMox.

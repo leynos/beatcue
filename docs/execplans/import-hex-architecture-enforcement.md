@@ -193,6 +193,11 @@ the conflict in `Decision Log`, and ask for direction.
   the composition root and forbidden direct outbound-adapter imports. CodeRabbit
   reported zero findings, and `make check-fmt`, `make lint`, `make typecheck`,
   and `make test` all passed.
+- [x] (2026-05-14T00:00:00Z) Addressed final failed-check warnings by marking
+  roadmap item 1.2.2 complete, adding public CLI entrypoint and error-path
+  coverage, replacing private re-export helper assertions with public
+  `build_reexport_index` checks, and adding Hypothesis property tests for
+  import-resolution and policy-classification invariants.
 
 ## Surprises & discoveries
 

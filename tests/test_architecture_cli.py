@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+import runpy
 import sys
-import typing as typ
 from pathlib import Path
 
-from beatcue.architecture.cli import main as architecture_main
+import pytest
 
-if typ.TYPE_CHECKING:
-    import pytest
+from beatcue.architecture.cli import main as architecture_main
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 
@@ -59,9 +58,12 @@ def test_cli_fixture_policy_reports_fixture_violations(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert captured.out == ""
-    assert "ARCH001" in captured.err
-    assert "domain_imports_adapter.domain" in captured.err
-    assert "domain_imports_adapter.adapters.outbound" in captured.err
+    assert captured.err == (
+        "ARCH001: tests.fixtures.architecture.domain_imports_adapter.domain "
+        "imports forbidden module "
+        "tests.fixtures.architecture.domain_imports_adapter.adapters.outbound "
+        "(domain -> outbound_adapter)\n"
+    )
 
 
 def test_cli_fixture_policy_switches_from_default_policy(
@@ -80,5 +82,51 @@ def test_cli_fixture_policy_switches_from_default_policy(
 
     captured = capsys.readouterr()
     assert exit_code == 0
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_cli_reports_missing_root_as_usage_error(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    """Missing package roots return a CLI usage error."""
+    missing_root = tmp_path / "missing"
+
+    exit_code = architecture_main(["--root", str(missing_root)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.out == ""
+    assert captured.err == (
+        f"error: architecture package root does not exist: {missing_root}\n"
+    )
+
+
+def test_cli_rejects_unknown_arguments(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Argparse reports unsupported architecture-checker options."""
+    with pytest.raises(SystemExit) as exc_info:
+        architecture_main(["--unknown-option"])
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == 2
+    assert captured.out == ""
+    assert "unrecognized arguments: --unknown-option" in captured.err
+
+
+def test_module_entrypoint_accepts_current_package(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The ``python -m beatcue.architecture`` entrypoint checks BeatCue."""
+    monkeypatch.setattr(sys, "argv", ["beatcue.architecture"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_module("beatcue.architecture", run_name="__main__", alter_sys=True)
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == 0
     assert captured.out == ""
     assert captured.err == ""
