@@ -67,7 +67,7 @@ lint: ruff ## Run linters
 	ruff check
 	$(MAKE) check-architecture
 
-check-architecture: build uv ## Verify hexagonal import boundaries
+check-architecture: uv .venv ## Verify hexagonal import boundaries
 	$(UV_ENV) uv run python -m beatcue.architecture
 
 typecheck: build ty ## Run typechecking

@@ -150,8 +150,11 @@ def _exported_symbols_from_module(
 def _source_path_for_module(root: Path, package: str, module_name: str) -> Path | None:
     """Return the source path for a package-local module."""
     if module_name == package:
-        relative_parts: tuple[str, ...] = ()
-    elif module_name.startswith(f"{package}."):
+        package_path = root / "__init__.py"
+        if package_path.is_file():
+            return package_path
+        return None
+    if module_name.startswith(f"{package}."):
         relative_parts = tuple(module_name.removeprefix(f"{package}.").split("."))
     else:
         return None
@@ -172,13 +175,8 @@ def _explicit_all_exports(tree: ast.AST) -> tuple[str, ...] | None:
     for node in tree.body if isinstance(tree, ast.Module) else ():
         if _is_all_assign(node) or _is_all_ann_assign(node):
             if node.value is None:
-                return None
-            values = _string_sequence_values(node.value)
-            if values is None:
-                # A dynamic __all__ from _is_all_assign/_is_all_ann_assign
-                # means _string_sequence_values cannot safely name exports.
-                return None
-            last_exports = values
+                continue
+            last_exports = _string_sequence_values(node.value)
     return last_exports
 
 
