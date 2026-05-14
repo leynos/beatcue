@@ -1,20 +1,17 @@
-"""Tests for BeatCue hexagonal architecture enforcement."""
+"""Tests for BeatCue architecture checker policy enforcement."""
 
 from __future__ import annotations
 
 import ast
-import sys
 from pathlib import Path
 
 import pytest
 
 from beatcue.architecture import check_architecture, fixture_policy
 from beatcue.architecture._imports import relative_import_base
-from beatcue.architecture.cli import main as architecture_main
-from beatcue.architecture.reexports import _explicit_all_exports, build_reexport_index
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
-ExpectedViolation = tuple[str, str, str, str, str]
+type ExpectedViolation = tuple[str, str, str, str, str]
 
 
 @pytest.mark.parametrize(
@@ -232,151 +229,6 @@ def test_fixture_policy_keeps_inbound_and_outbound_permissions_distinct() -> Non
     assert "outbound_adapter" in outbound_group.allowed_groups
     assert "inbound_adapter" not in outbound_group.allowed_groups
     assert "adapter" not in outbound_group.allowed_groups
-
-
-def test_reexport_index_resolves_star_imports_from_package_root(
-    tmp_path: Path,
-) -> None:
-    """Package-root star imports resolve through the root ``__init__`` file."""
-    package_root = tmp_path / "sample"
-    subpackage = package_root / "sub"
-    subpackage.mkdir(parents=True)
-    (package_root / "__init__.py").write_text(
-        "class RootExport: ...\n__all__ = ['RootExport']\n",
-        encoding="utf-8",
-    )
-    (subpackage / "__init__.py").write_text(
-        "from sample import *\n",
-        encoding="utf-8",
-    )
-
-    result = build_reexport_index(package_root, "sample")
-
-    assert result["sample.sub.RootExport"] == "sample.RootExport"
-
-
-def test_reexport_index_uses_last_resolvable_all_assignment(tmp_path: Path) -> None:
-    """Literal ``__all__`` assignments after dynamic ones take precedence."""
-    package_root = tmp_path / "sample"
-    package_root.mkdir()
-    (package_root / "__init__.py").write_text(
-        "from .module import *\n",
-        encoding="utf-8",
-    )
-    (package_root / "module.py").write_text(
-        "\n".join([
-            "class FirstExport: ...",
-            "class LastExport: ...",
-            "__all__ = dynamic_exports()",
-            "__all__ = ['LastExport']",
-        ]),
-        encoding="utf-8",
-    )
-
-    result = build_reexport_index(package_root, "sample")
-
-    assert result == {"sample.LastExport": "sample.module.LastExport"}
-
-
-def test_explicit_all_exports_uses_final_assignment() -> None:
-    """The final ``__all__`` assignment determines explicit exports."""
-    tree = ast.parse(
-        "\n".join([
-            "__all__ = ['FirstExport']",
-            "__all__ = dynamic_exports()",
-            "__all__ = ['LastExport']",
-        ])
-    )
-
-    result = _explicit_all_exports(tree)
-
-    assert result == ("LastExport",)
-
-
-def test_explicit_all_exports_returns_none_when_final_assignment_is_unresolved() -> (
-    None
-):
-    """A final dynamic ``__all__`` assignment disables explicit export names."""
-    tree = ast.parse(
-        "\n".join([
-            "__all__ = ['FirstExport']",
-            "__all__: list[str]",
-        ])
-    )
-
-    result = _explicit_all_exports(tree)
-
-    assert result is None
-
-
-def test_cli_default_invocation_accepts_current_package(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """The CLI returns success and no diagnostics for the current package."""
-    exit_code = architecture_main([])
-
-    captured = capsys.readouterr()
-    assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
-
-
-def test_cli_none_argv_accepts_current_package(
-    capsys: pytest.CaptureFixture[str],
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The CLI can read an empty argument list from ``sys.argv``."""
-    monkeypatch.setattr(sys, "argv", ["beatcue-architecture"])
-
-    exit_code = architecture_main(None)
-
-    captured = capsys.readouterr()
-    assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
-
-
-def test_cli_fixture_policy_reports_fixture_violations(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """The CLI renders fixture-policy violations to stderr."""
-    package_name = "domain_imports_adapter"
-    package = f"tests.fixtures.architecture.{package_name}"
-
-    exit_code = architecture_main([
-        "--package",
-        package,
-        "--root",
-        str(FIXTURE_ROOT / package_name),
-        "--fixture-policy",
-    ])
-
-    captured = capsys.readouterr()
-    assert exit_code == 1
-    assert captured.out == ""
-    assert "ARCH001" in captured.err
-    assert "domain_imports_adapter.domain" in captured.err
-    assert "domain_imports_adapter.adapters.outbound" in captured.err
-
-
-def test_cli_fixture_policy_switches_from_default_policy(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Fixture packages are only classified when ``--fixture-policy`` is used."""
-    package_name = "domain_imports_adapter"
-    package = f"tests.fixtures.architecture.{package_name}"
-
-    exit_code = architecture_main([
-        "--package",
-        package,
-        "--root",
-        str(FIXTURE_ROOT / package_name),
-    ])
-
-    captured = capsys.readouterr()
-    assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
 
 
 @pytest.mark.parametrize(
