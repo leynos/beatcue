@@ -232,9 +232,9 @@ def test_fixture_policy_keeps_inbound_and_outbound_permissions_distinct() -> Non
     assert outbound_group is not None
     assert "composition_root" in inbound_group.allowed_groups
     assert "outbound_adapter" not in inbound_group.allowed_groups
+    assert "adapter" in outbound_group.allowed_groups
     assert "outbound_adapter" in outbound_group.allowed_groups
     assert "inbound_adapter" not in outbound_group.allowed_groups
-    assert "adapter" not in outbound_group.allowed_groups
 
 
 @pytest.mark.parametrize(

@@ -133,10 +133,10 @@ def _beatcue_groups(package: str) -> tuple[ModuleGroup, ...]:
         "application",
         "domain",
         "infrastructure",
-        "inbound_adapter",
         "outbound_adapter",
     })
     outbound_adapter_allowed = frozenset({
+        "adapter",
         "application",
         "domain",
         "infrastructure",
