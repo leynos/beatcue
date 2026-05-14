@@ -11,7 +11,7 @@ import pytest
 from beatcue.architecture import check_architecture, fixture_policy
 from beatcue.architecture._imports import relative_import_base
 from beatcue.architecture.cli import main as architecture_main
-from beatcue.architecture.reexports import build_reexport_index
+from beatcue.architecture.reexports import _explicit_all_exports, build_reexport_index
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 ExpectedViolation = tuple[str, str, str, str, str]
@@ -199,6 +199,41 @@ def test_production_checker_accepts_current_beatcue_package() -> None:
     assert result.ok, rendered
 
 
+def test_checker_rejects_missing_package_root(tmp_path: Path) -> None:
+    """Missing package roots fail fast instead of producing a false pass."""
+    missing_root = tmp_path / "missing"
+
+    with pytest.raises(FileNotFoundError, match="architecture package root"):
+        check_architecture(package_root=missing_root)
+
+
+def test_checker_rejects_file_package_root(tmp_path: Path) -> None:
+    """File package roots fail fast before import scanning starts."""
+    file_root = tmp_path / "module.py"
+    file_root.write_text("", encoding="utf-8")
+
+    with pytest.raises(NotADirectoryError, match="architecture package root"):
+        check_architecture(package_root=file_root)
+
+
+def test_fixture_policy_keeps_inbound_and_outbound_permissions_distinct() -> None:
+    """Inbound and outbound adapters have separate dependency directions."""
+    policy = fixture_policy("tests.fixtures.architecture.package")
+
+    inbound_group = policy.group_for("tests.fixtures.architecture.package.cli")
+    outbound_group = policy.group_for(
+        "tests.fixtures.architecture.package.adapters.outbound"
+    )
+
+    assert inbound_group is not None
+    assert outbound_group is not None
+    assert "composition_root" in inbound_group.allowed_groups
+    assert "outbound_adapter" not in inbound_group.allowed_groups
+    assert "outbound_adapter" in outbound_group.allowed_groups
+    assert "inbound_adapter" not in outbound_group.allowed_groups
+    assert "adapter" not in outbound_group.allowed_groups
+
+
 def test_reexport_index_resolves_star_imports_from_package_root(
     tmp_path: Path,
 ) -> None:
@@ -241,6 +276,37 @@ def test_reexport_index_uses_last_resolvable_all_assignment(tmp_path: Path) -> N
     result = build_reexport_index(package_root, "sample")
 
     assert result == {"sample.LastExport": "sample.module.LastExport"}
+
+
+def test_explicit_all_exports_uses_final_assignment() -> None:
+    """The final ``__all__`` assignment determines explicit exports."""
+    tree = ast.parse(
+        "\n".join([
+            "__all__ = ['FirstExport']",
+            "__all__ = dynamic_exports()",
+            "__all__ = ['LastExport']",
+        ])
+    )
+
+    result = _explicit_all_exports(tree)
+
+    assert result == ("LastExport",)
+
+
+def test_explicit_all_exports_returns_none_when_final_assignment_is_unresolved() -> (
+    None
+):
+    """A final dynamic ``__all__`` assignment disables explicit export names."""
+    tree = ast.parse(
+        "\n".join([
+            "__all__ = ['FirstExport']",
+            "__all__: list[str]",
+        ])
+    )
+
+    result = _explicit_all_exports(tree)
+
+    assert result is None
 
 
 def test_cli_default_invocation_accepts_current_package(

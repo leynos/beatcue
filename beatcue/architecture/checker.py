@@ -104,6 +104,12 @@ def check_architecture(
 
     """
     root = Path(package_root)
+    if not root.exists():
+        msg = f"architecture package root does not exist: {root}"
+        raise FileNotFoundError(msg)
+    if not root.is_dir():
+        msg = f"architecture package root is not a directory: {root}"
+        raise NotADirectoryError(msg)
     active_policy = default_policy() if policy is None else policy
     reexport_index = build_reexport_index(root, package)
     indexes = _ImportIndexes(

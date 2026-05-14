@@ -136,6 +136,12 @@ def _beatcue_groups(package: str) -> tuple[ModuleGroup, ...]:
         "inbound_adapter",
         "outbound_adapter",
     })
+    outbound_adapter_allowed = frozenset({
+        "application",
+        "domain",
+        "infrastructure",
+        "outbound_adapter",
+    })
     return (
         ModuleGroup(
             name="composition_root",
@@ -160,7 +166,7 @@ def _beatcue_groups(package: str) -> tuple[ModuleGroup, ...]:
         ModuleGroup(
             name="outbound_adapter",
             module_prefixes=(f"{package}.adapters.outbound",),
-            allowed_groups=adapter_allowed,
+            allowed_groups=outbound_adapter_allowed,
         ),
         ModuleGroup(
             name="adapter",
