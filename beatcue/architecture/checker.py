@@ -46,13 +46,27 @@ class ArchitectureCheckResult:
 
 
 @dc.dataclass(frozen=True, slots=True)
+class ImportedTarget:
+    """Imported module plus optional symbol context."""
+
+    module: str
+    symbol: str | None = None
+
+
+@dc.dataclass(frozen=True, slots=True)
+class _ImportIndexes:
+    """Re-export lookup tables shared across scanned modules."""
+
+    reexports: dict[str, str]
+    star_reexports: dict[str, tuple[tuple[str, str], ...]]
+
+
+@dc.dataclass(frozen=True, slots=True)
 class _ModuleContext:
     """Bundled per-module context for violation scanning."""
 
     source_path: Path
     module_name: str
-    reexport_index: dict[str, str]
-    star_reexport_index: dict[str, tuple[tuple[str, str], ...]]
 
 
 def check_architecture(
@@ -92,7 +106,10 @@ def check_architecture(
     root = Path(package_root)
     active_policy = default_policy() if policy is None else policy
     reexport_index = build_reexport_index(root, package)
-    star_reexport_index = _group_reexports_by_module(reexport_index)
+    indexes = _ImportIndexes(
+        reexports=reexport_index,
+        star_reexports=_group_reexports_by_module(reexport_index),
+    )
     violations: list[ArchitectureViolation] = []
     for source_path in sorted(root.rglob("*.py")):
         resolved_module_name = compute_module_name(root, package, source_path)
@@ -102,10 +119,15 @@ def check_architecture(
         ctx = _ModuleContext(
             source_path=source_path,
             module_name=resolved_module_name,
-            reexport_index=reexport_index,
-            star_reexport_index=star_reexport_index,
         )
-        violations.extend(_violations_for_module(ctx, importer_group, active_policy))
+        violations.extend(
+            _violations_for_module(
+                ctx,
+                importer_group,
+                active_policy,
+                indexes,
+            )
+        )
     return ArchitectureCheckResult(violations=tuple(violations))
 
 
@@ -113,11 +135,16 @@ def _violations_for_module(
     ctx: _ModuleContext,
     importer_group: ModuleGroup,
     active_policy: ArchitecturePolicy,
+    indexes: _ImportIndexes,
 ) -> list[ArchitectureViolation]:
     """Return all boundary violations for one module's imports."""
     violations: list[ArchitectureViolation] = []
-    for imported_module in _iter_imported_modules(ctx):
-        imported_group = active_policy.group_for(imported_module)
+    seen_imported_modules: set[str] = set()
+    for target in _iter_imported_modules(ctx, indexes):
+        if target.module in seen_imported_modules:
+            continue
+        seen_imported_modules.add(target.module)
+        imported_group = active_policy.group_for(target.module)
         if imported_group is None:
             continue
         if imported_group.name in importer_group.allowed_groups:
@@ -126,7 +153,7 @@ def _violations_for_module(
             ArchitectureViolation(
                 rule_id=active_policy.rule_id,
                 importer=ctx.module_name,
-                imported=imported_module,
+                imported=target.module,
                 importer_group=importer_group.name,
                 imported_group=imported_group.name,
             )
@@ -134,7 +161,10 @@ def _violations_for_module(
     return violations
 
 
-def _iter_imported_modules(ctx: _ModuleContext) -> cabc.Iterator[str]:
+def _iter_imported_modules(
+    ctx: _ModuleContext,
+    indexes: _ImportIndexes,
+) -> cabc.Iterator[ImportedTarget]:
     """Yield every imported module name found in one source file."""
     tree = ast.parse(
         ctx.source_path.read_text(encoding="utf-8"), filename=str(ctx.source_path)
@@ -144,7 +174,11 @@ def _iter_imported_modules(ctx: _ModuleContext) -> cabc.Iterator[str]:
             case ast.Import():
                 yield from _iter_direct_imports(node)
             case ast.ImportFrom():
-                yield from _iter_from_imports(node, ctx)
+                yield from _iter_from_imports(
+                    node,
+                    ctx,
+                    indexes,
+                )
 
 
 def _group_reexports_by_module(
@@ -158,36 +192,46 @@ def _group_reexports_by_module(
     return {module: tuple(sorted(reexports)) for module, reexports in grouped.items()}
 
 
-def _iter_direct_imports(node: ast.Import) -> cabc.Iterator[str]:
+def _iter_direct_imports(node: ast.Import) -> cabc.Iterator[ImportedTarget]:
     """Yield module names from a bare ``import`` statement."""
     for alias in node.names:
-        yield alias.name
+        yield ImportedTarget(module=alias.name)
 
 
-def _iter_from_imports(node: ast.ImportFrom, ctx: _ModuleContext) -> cabc.Iterator[str]:
+def _iter_from_imports(
+    node: ast.ImportFrom,
+    ctx: _ModuleContext,
+    indexes: _ImportIndexes,
+) -> cabc.Iterator[ImportedTarget]:
     """Yield module names from a ``from ... import ...`` statement."""
     imported_module = resolve_import_from(node, ctx.source_path, ctx.module_name)
     if imported_module is None:
         return
-    yield imported_module
+    yield ImportedTarget(module=imported_module)
     for alias in node.names:
         if alias.name == "*":
-            yield from _iter_star_reexports(imported_module, ctx.star_reexport_index)
+            yield from _iter_star_reexports(imported_module, indexes.star_reexports)
             continue
         imported_symbol = f"{imported_module}.{alias.name}"
-        yield imported_symbol
-        if resolved_reexport := ctx.reexport_index.get(imported_symbol):
-            yield resolved_reexport
+        yield ImportedTarget(module=imported_module, symbol=alias.name)
+        if resolved_reexport := indexes.reexports.get(imported_symbol):
+            yield _target_from_dotted_name(resolved_reexport)
 
 
 def _iter_star_reexports(
     imported_module: str,
     star_reexport_index: dict[str, tuple[tuple[str, str], ...]],
-) -> cabc.Iterator[str]:
+) -> cabc.Iterator[ImportedTarget]:
     """Yield all re-export origins for a star import of one module."""
     for exported_symbol, resolved_reexport in star_reexport_index.get(
         imported_module,
         (),
     ):
-        yield exported_symbol
-        yield resolved_reexport
+        yield _target_from_dotted_name(exported_symbol)
+        yield _target_from_dotted_name(resolved_reexport)
+
+
+def _target_from_dotted_name(dotted_name: str) -> ImportedTarget:
+    """Split a dotted symbol path into module and optional symbol context."""
+    module, _, symbol = dotted_name.rpartition(".")
+    return ImportedTarget(module=module or dotted_name, symbol=symbol or None)

@@ -129,10 +129,11 @@ the conflict in `Decision Log`, and ask for direction.
 - [x] (2026-05-10T20:31:41Z) Confirmed the current branch is
   `feat/import-hex-enforcement`, not the main branch.
 - [x] (2026-05-10T20:31:41Z) Inspected BeatCue's current skeleton,
-  Makefile, `pyproject.toml`, technical design, developers' guide, ADRs, and
-  smoke test.
+  Makefile, `pyproject.toml`, technical design, developers' guide,
+  architectural decision records (ADRs), and smoke test.
 - [x] (2026-05-10T20:31:41Z) Located and reviewed the referenced Episodic
-  checker, policy, re-export resolver, tests, BDD feature, BDD steps, and ADR.
+  checker, policy, re-export resolver, tests, behaviour-driven development
+  (BDD) feature, BDD steps, and ADR.
 - [x] (2026-05-10T20:31:41Z) Performed a prior-art check for Import Linter,
   Semgrep, and Astroid using Firecrawl.
 - [x] (2026-05-10T20:31:41Z) Drafted this ExecPlan.
@@ -177,6 +178,14 @@ the conflict in `Decision Log`, and ask for direction.
   `Outcomes & Retrospective`.
 - [x] (2026-05-11T00:00:00Z) Committed and pushed the completed branch, and
   updated draft PR #8 for review.
+- [x] (2026-05-14T00:00:00Z) Addressed code-review comments by tightening
+  violation structure assertions, adding valid relative-import and CLI
+  coverage, separating imported modules from imported symbols in the checker,
+  and expanding uncommon acronyms in this ExecPlan.
+- [x] (2026-05-14T00:00:00Z) Ran CodeRabbit and the full required gate set
+  for the review follow-up; CodeRabbit reported zero findings and
+  `make check-fmt`, `make lint`, `make typecheck`, `make test`,
+  `make markdownlint`, and `make nixie` all passed.
 
 ## Surprises & discoveries
 
@@ -284,6 +293,14 @@ the conflict in `Decision Log`, and ask for direction.
   Impact: the stale blank-line findings were skipped after verification, and
   the table wording was changed to `adapter groups, and infrastructure`.
 
+- Observation: Tightening the checker to pass re-export indices explicitly
+  initially exceeded Ruff's argument-count limit on `_violations_for_module`.
+  Evidence: `make lint` reported `PLR0913` and `PLR0917` for five arguments
+  on that helper.
+  Impact: the indices are now bundled in `_ImportIndexes`, preserving the
+  narrower `_ModuleContext` while keeping helper signatures within local lint
+  limits.
+
 ## Decision log
 
 - Decision: Use this ExecPlan as the implementation and postmortem artefact.
@@ -350,6 +367,14 @@ the conflict in `Decision Log`, and ask for direction.
   the developers' guide gives contributors the operational commands and
   fixture guidance they need during implementation.
   Date/Author: 2026-05-11T00:00:00Z / Codex.
+
+- Decision: Keep violation diagnostics at module granularity after splitting
+  imported symbols from imported modules.
+  Rationale: the policy classifies modules, not symbols. Reporting the owning
+  module avoids duplicate symbol-qualified violations while still proving that
+  explicit and star package-barrel re-exports cannot hide forbidden adapter
+  dependencies.
+  Date/Author: 2026-05-14T00:00:00Z / Codex.
 
 ## Outcomes & retrospective
 
