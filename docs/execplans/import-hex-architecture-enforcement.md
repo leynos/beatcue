@@ -1,4 +1,4 @@
-# Import Hexagonal Architecture Enforcement
+# Import hexagonal architecture enforcement
 
 This ExecPlan (execution plan) is a living document. The sections
 `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
