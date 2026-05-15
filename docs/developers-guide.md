@@ -300,8 +300,9 @@ Run both tiers with:
 make lint
 ```
 
-The `lint` target depends on `build`, so it refreshes the `.venv` from
-`pyproject.toml` before running:
+The `lint` target depends on the `.deps` stamp. That stamp refreshes the
+`.venv` from `pyproject.toml` only when the environment or dependency
+configuration is stale, then runs:
 
 ```bash
 $(UV_ENV) $(UV) run ruff check
@@ -312,15 +313,18 @@ Use the Makefile target rather than invoking `ruff` or `pylint` directly. This
 keeps the selected interpreter, cache directories, shim revision, and target
 set consistent between local development and review.
 
-
 ### Lint Makefile variables
 
 The lint target is configured by these Makefile variables:
 
-- `UV`: discovers `uv`, falling back to `$(HOME)/.local/bin/uv`. This selects
-  the `uv` executable used for virtual-environment and tool execution.
+- `UV`: defaults to `uv`. This selects the `uv` executable used for
+  virtual-environment and tool execution, and the Makefile fails early with a
+  clear error if it is unavailable.
 - `UV_ENV`: defaults to `UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools`. This
   keeps `uv` cache and tool state local to the checkout.
+- `.deps`: records that `uv sync --group dev` has run for the current
+  `pyproject.toml` and `.venv`, avoiding an unconditional sync on every
+  formatting or lint invocation.
 - `PYLINT_PYTHON`: defaults to `pypy`. This selects the interpreter used for
   the shimmed Pylint run.
 - `PYLINT_TARGETS`: defaults to `beatcue tests`. This defines the directories
@@ -336,7 +340,6 @@ The lint target is configured by these Makefile variables:
 
 Override these variables only when diagnosing the lint toolchain itself. Pull
 requests should not depend on local overrides to pass.
-
 
 ### Episodic lint policy
 
@@ -380,7 +383,9 @@ The active lint configuration lives in `pyproject.toml`:
   `[tool.ruff.lint.pylint]` set docstring style and local complexity limits.
 - `[tool.pylint.main]`, `[tool.pylint.design]`, and
   `[tool.pylint."messages control"]` keep Pylint focused on the selected
-  second-tier checks.
+  second-tier checks. The enabled Pylint messages are grouped by purpose so
+  logging, pattern matching, simplification, resource, hygiene, mutation, and
+  complexity checks can be reviewed independently.
 
 Use `tee` logs under `/tmp` for gates so long output remains reviewable. Do not
 run tests, linters, or format checks in parallel.

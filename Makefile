@@ -1,7 +1,7 @@
 MDLINT ?= markdownlint-cli2
 NIXIE ?= nixie
 MDFORMAT_ALL ?= mdformat-all
-UV ?= $(shell command -v uv 2>/dev/null || printf '%s/.local/bin/uv' "$$HOME")
+UV ?= uv
 TOOLS = $(MDFORMAT_ALL) ty $(MDLINT)
 VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
@@ -19,11 +19,23 @@ PYLINT = $(UV_ENV) $(UV) tool run --python $(PYLINT_PYTHON) --from '$(PYLINT_PYP
 
 all: build check-fmt lint typecheck test
 
+define ensure_uv
+	@command -v "$(UV)" >/dev/null 2>&1 || { \
+	  printf "Error: 'uv' is required, but not installed or not executable at '%s'\n" "$(UV)" >&2; \
+	  exit 1; \
+	}
+endef
+
 .venv: pyproject.toml
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) venv --clear
 
-build: .venv ## Build virtual-env and install deps
+.deps: pyproject.toml .venv
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) sync --group dev
+	@touch $@
+
+build: .deps ## Build virtual-env and install deps
 
 build-release: ## Build artefacts (sdist & wheel)
 	python -m build --sdist --wheel
@@ -31,7 +43,7 @@ build-release: ## Build artefacts (sdist & wheel)
 clean: ## Remove build artifacts
 	rm -rf build dist *.egg-info \
 	  .mypy_cache .pytest_cache .coverage coverage.* \
-	  lcov.info htmlcov .venv
+	  lcov.info htmlcov .venv .deps
 	find . -type d -name '__pycache__' -print0 | xargs -0 -r rm -rf
 
 define ensure_tool
@@ -42,6 +54,7 @@ define ensure_tool
 endef
 
 define ensure_tool_venv
+	$(call ensure_uv)
 	@$(UV_ENV) $(UV) run which $(1) >/dev/null 2>&1 || { \
 	  printf "Error: '%s' is required in the virtualenv, but is not installed\n" "$(1)" >&2; \
 	  exit 1; \
@@ -60,16 +73,19 @@ $(VENV_TOOLS): ## Verify required CLI tools in venv
 	$(call ensure_tool_venv,$@)
 endif
 
-fmt: build $(MDFORMAT_ALL) ## Format sources
+fmt: .deps $(MDFORMAT_ALL) ## Format sources
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) run ruff format
 	$(UV_ENV) $(UV) run ruff check --select I --fix
 	$(MDFORMAT_ALL)
 
-check-fmt: build ## Verify formatting
+check-fmt: .deps ## Verify formatting
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) run ruff format --check
 	# mdformat-all doesn't currently do checking
 
-lint: build ## Run linters
+lint: .deps ## Run linters
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) run ruff check
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
@@ -77,7 +93,7 @@ lint: build ## Run linters
 check-architecture: .venv ## Verify hexagonal import boundaries
 	$(UV_ENV) $(UV) run python -m beatcue.architecture
 
-typecheck: build ty ## Run typechecking
+typecheck: .deps ty ## Run typechecking
 	ty --version
 	ty check
 
@@ -88,7 +104,8 @@ nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,nixie)
 	$(NIXIE) --no-sandbox
 
-test: build $(VENV_TOOLS) ## Run tests
+test: .deps $(VENV_TOOLS) ## Run tests
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) run pytest -v -n auto
 
 help: ## Show available targets

@@ -82,9 +82,11 @@ _Table 1: Lint architecture trade-offs._
 
 ## Decision outcome
 
-BeatCue chooses option C. The `lint` target builds the project environment,
-runs `ruff check`, and then runs Pylint through the pinned `pylint-pypy-shim`
-tool against `beatcue` and `tests`.
+BeatCue chooses option C. The `lint` target depends on the `.deps` stamp,
+which runs `uv sync --group dev` only when the project environment or
+`pyproject.toml` is stale. The lint command then runs `ruff check` before
+running Pylint through the pinned `pylint-pypy-shim` tool against `beatcue` and
+`tests`.
 
 The Pylint pass disables all messages by default and enables a curated message
 set imported from Episodic. Ruff remains responsible for the broad lint
@@ -96,6 +98,11 @@ The Makefile variables `PYLINT_PYTHON`, `PYLINT_TARGETS`,
 `PYLINT_PYPY_SHIM_REF`, `PYLINT_PYPY_SHIM`, and `PYLINT` document how the
 second tier is assembled. Overrides are for toolchain diagnosis, not for
 routine pull-request validation.
+
+The `UV` variable defaults to `uv`; the Makefile checks that executable before
+creating the virtual environment, syncing dependencies, or querying tools
+inside the virtual environment. Missing `uv` therefore fails with an explicit
+tooling error instead of a shell-level "file not found" message.
 
 ## Goals and non-goals
 
@@ -120,7 +127,7 @@ Non-goals:
 1. Import Episodic's Ruff policy into `pyproject.toml`.
 2. Add the focused Pylint configuration to `pyproject.toml`.
 3. Update the Makefile so `make lint` runs Ruff first and the shimmed Pylint
-   tier second.
+   tier second, with dependency installation guarded by a `.deps` stamp.
 4. Document the linting architecture, Makefile variables, and configuration
    entrypoints in the developers' guide.
 5. Revisit the policy when Episodic changes its lint baseline, and record any
