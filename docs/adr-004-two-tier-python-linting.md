@@ -137,7 +137,7 @@ Non-goals:
 
 - Managed PyPy may lag the project's target Python version. The Pylint
   configuration disables `syntax-error` so the second tier remains useful on
-  files it can parse while Ruff and the project type checker continue to cover
+  files it can parse, while Ruff and the project type checker continue to cover
   the Python target.
 - The second lint tier is slower than Ruff alone. Running Ruff first preserves
   fast failure for the common case.
