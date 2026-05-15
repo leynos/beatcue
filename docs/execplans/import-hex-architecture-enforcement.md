@@ -598,8 +598,8 @@ The allowed directions should be:
 
 - `domain` may import only `domain`;
 - `application` may import `domain` and `application`;
-- `inbound_adapter` may import `domain`, `application`, and
-  `inbound_adapter`;
+- `inbound_adapter` may import `domain`, `application`, `composition_root`,
+  and `inbound_adapter`;
 - `outbound_adapter` may import `domain`, `application`, and
   `outbound_adapter`;
 - `composition_root` may import every group.
