@@ -30,7 +30,7 @@ endef
 	$(call ensure_uv)
 	$(UV_ENV) $(UV) venv --clear
 
-.deps: pyproject.toml .venv
+.deps: pyproject.toml uv.lock .venv
 	$(call ensure_uv)
 	$(UV_ENV) $(UV) sync --group dev
 	@touch $@
