@@ -148,7 +148,7 @@ developer and user guidance, and a roadmap update. Later implementation task
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
   `make test`.
 - [x] (2026-05-16 20:30Z) Addressed review feedback by updating stale branch
-  context, normalising centroid-association terminology, expanding first-use
+  context, normalizing centroid-association terminology, expanding first-use
   acronyms, and replacing duplicated gate and test detail with references to
   the developers' guide.
 - [ ] Await explicit approval before implementing the decision-record changes.
