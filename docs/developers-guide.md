@@ -56,6 +56,30 @@ receive adapters through constructor injection or explicit composition
 functions. Avoid module-level singletons for services, command runners, model
 instances, or stores.
 
+BeatCue enforces these import-direction rules with a local architecture
+checker. Run the gate directly with:
+
+```bash
+make check-architecture
+```
+
+The ordinary lint target also runs the checker after Ruff:
+
+```bash
+make lint
+```
+
+The checker scans the current `beatcue/` package and reports `ARCH001` when a
+module imports a forbidden architecture group. It also expands package
+`__init__.py` re-exports, including star re-exports, so a barrel module cannot
+hide an adapter dependency from domain or application code.
+
+Because the repository is still design-first and most future packages are not
+implemented, the architecture tests use small fixture packages under
+`tests/fixtures/architecture/` to prove planned boundaries. Do not add empty
+production domain, application, or adapter modules only to satisfy the
+checker; add real modules when the corresponding roadmap work lands.
+
 ## Domain and application APIs
 
 The domain owns the canonical value objects:
