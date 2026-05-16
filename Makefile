@@ -91,6 +91,7 @@ lint: .deps ## Run linters
 	$(MAKE) check-architecture
 
 check-architecture: .venv ## Verify hexagonal import boundaries
+	$(call ensure_uv)
 	$(UV_ENV) $(UV) run python -m beatcue.architecture
 
 typecheck: .deps ty ## Run typechecking
