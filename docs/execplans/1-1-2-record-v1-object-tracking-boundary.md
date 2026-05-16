@@ -13,11 +13,11 @@ here; it does not approve object-tracking production code.
 
 ## Purpose / big picture
 
-Roadmap item 1.1.2 closes the remaining object-tracking deferral in the phase
-1 architecture ratification work. BeatCue v1 currently excludes object
-tracking from the first deterministic product, but later object-entry and
-object-exit tasks still need one selected boundary so they do not reopen the
-model-adapter decision.
+Roadmap item 1.1.2 closes the remaining object-tracking deferral in the phase 1
+architecture ratification work. BeatCue v1 currently excludes object tracking
+from the first deterministic product, but later object-entry and object-exit
+tasks still need one selected boundary so they do not reopen the model-adapter
+decision.
 
 After this plan is approved and implemented, a reviewer should be able to open
 the documentation and see which v1/post-v1 boundary BeatCue has selected:
@@ -30,7 +30,7 @@ developer and user guidance, and a roadmap update. Later implementation task
 ## Constraints
 
 - Do not implement production object tracking, object-entry cue extraction,
-  Florence-2 inference, centroid association code, CLI commands, adapters, or
+  Florence-2 inference, centroid-association code, CLI commands, adapters, or
   writer changes in this task. This task records the boundary decision.
 - Do not overwrite
   `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md`. That
@@ -59,8 +59,8 @@ developer and user guidance, and a roadmap update. Later implementation task
   `commit-message`. Use `vidai-mock` only if implementation unexpectedly
   introduces behavioural tests for an inference service.
 - Use Makefile targets for quality gates. Run gates sequentially and write
-  logs under `/tmp`; do not run tests, linters, formatting, or format checks
-  in parallel.
+  logs under `/tmp`; do not run tests, linters, formatting, or format checks in
+  parallel.
 - Use `coderabbit review --agent` after each major implementation milestone,
   record concerns in this plan, and clear all concerns before moving on.
 - Commit each approved implementation milestone only after its required gates
@@ -129,7 +129,7 @@ developer and user guidance, and a roadmap update. Later implementation task
   `hexagonal-architecture`, `firecrawl-mcp`, and `commit-message` skills
   relevant to this planning task.
 - [x] (2026-05-13 22:49Z) Checked the current branch and confirmed it is
-  `feat/plan-v1-schema-decision`, not the main branch.
+  `1-1-2-record-v1-object-tracking-boundary`, not the main branch.
 - [x] (2026-05-13 22:49Z) Added this repository to the Leta workspace and
   confirmed that the codebase currently contains only the small package smoke
   skeleton.
@@ -137,16 +137,20 @@ developer and user guidance, and a roadmap update. Later implementation task
   schema decision plan, and technical-design sections relevant to 1.1.1 and
   1.1.2.
 - [x] (2026-05-13 22:49Z) Used Firecrawl to review current Florence-2,
-  Hugging Face object-detection, and OpenCV tracking documentation as prior
-  art for the boundary decision.
+  Hugging Face object-detection, and OpenCV tracking documentation as prior art
+  for the boundary decision.
 - [x] (2026-05-13 22:49Z) Drafted this corrected ExecPlan at
   `docs/execplans/1-1-2-record-v1-object-tracking-boundary.md`.
 - [x] (2026-05-13 22:49Z) Ran `coderabbit review --agent` on the draft. The
-  first run reported four minor documentation-style findings; the findings
-  were fixed, and the rerun completed with zero findings.
+  first run reported four minor documentation-style findings; the findings were
+  fixed, and the rerun completed with zero findings.
 - [x] (2026-05-13 22:49Z) Validated the draft plan with `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
   `make test`.
+- [x] (2026-05-16 20:30Z) Addressed review feedback by updating stale branch
+  context, normalising centroid-association terminology, expanding first-use
+  acronyms, and replacing duplicated gate and test detail with references to
+  the developers' guide.
 - [ ] Await explicit approval before implementing the decision-record changes.
 - [ ] After approval, update this plan to `IN PROGRESS` before editing design
   documents.
@@ -158,13 +162,13 @@ developer and user guidance, and a roadmap update. Later implementation task
 ## Surprises & discoveries
 
 - Observation: `docs/roadmap.md` already marks roadmap item 1.1.1 complete and
-  links the decision to ADR 003. Impact: this work must not reopen the
-  BeatCue JSON schema decision.
+  links the decision to ADR 003. Impact: this work must not reopen the BeatCue
+  JSON schema decision.
 
 - Observation:
-  `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md`
-  already exists and has `Status: COMPLETE`. Impact: overwriting that file
-  would destroy completed plan history and contradict the roadmap.
+  `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md` already
+  exists and has `Status: COMPLETE`. Impact: overwriting that file would
+  destroy completed plan history and contradict the roadmap.
 
 - Observation: The pasted roadmap text in the request is exactly item 1.1.2,
   "Record the v1 object-tracking boundary". Impact: this plan uses a corrected
@@ -200,8 +204,8 @@ developer and user guidance, and a roadmap update. Later implementation task
 ## Decision log
 
 - Decision: Draft a new plan for roadmap item 1.1.2 instead of overwriting the
-  requested 1.1.1 path. Rationale: `docs/roadmap.md` marks 1.1.1 complete,
-  the requested path already contains a completed ExecPlan, and the pasted task
+  requested 1.1.1 path. Rationale: `docs/roadmap.md` marks 1.1.1 complete, the
+  requested path already contains a completed ExecPlan, and the pasted task
   text describes 1.1.2. Date/Author: 2026-05-13 / Codex.
 
 - Decision: Recommend an ADR for the object-tracking boundary rather than only
@@ -211,9 +215,9 @@ developer and user guidance, and a roadmap update. Later implementation task
   Date/Author: 2026-05-13 / Codex.
 
 - Decision: Treat production tracking tests as out of scope for item 1.1.2.
-  Rationale: the roadmap separates boundary ratification from task 5.2.1,
-  which implements the object tracker adapter. This plan still records the
-  later unit, property, behavioural, snapshot, and Vidai Mock obligations for
+  Rationale: the roadmap separates boundary ratification from task 5.2.1, which
+  implements the object tracker adapter. This plan still records the later
+  unit, property, behavioural, snapshot, and Vidai Mock obligations for
   implementation tasks that introduce executable tracking or inference
   behaviour. Date/Author: 2026-05-13 / Codex.
 
@@ -245,8 +249,8 @@ options:
 
 - Florence-2-only detections with no persistence boundary.
 - A centroid tracker as the selected object-tracking implementation.
-- A pluggable domain-owned `ObjectTracker` port with a simple centroid
-  association default and detector adapters feeding plain observations.
+- A pluggable domain-owned `ObjectTracker` port with a simple
+  centroid-association default and detector adapters feeding plain observations.
 
 The ADR should accept the pluggable port with a simple centroid-association
 default unless new evidence changes the trade-off. It should state that
@@ -264,15 +268,14 @@ roadmap:
   implementation work, while noting that ADR 004 records the selected boundary
   for later tasks.
 - Section 8 should describe `ObjectTracker` as a domain-owned port whose
-  default implementation may be centroid association over detector
-  observations.
+  default implementation may be centroid-association over detector observations.
 - Section 11 should keep the persistence requirement for object-entry and
   object-exit cues and point to the ADR for the selected boundary.
 - Section 12 should preserve the rule that semantic annotation describes
   visible evidence only and does not replace tracking persistence.
 - Section 21 should replace the open deferral with a concise signpost to ADR
-  004, while leaving remote models, GPU scheduling, and advanced segmentation
-  deferred.
+  004, while leaving remote models, graphics processing unit (GPU) scheduling,
+  and advanced segmentation deferred.
 
 Update `docs/developers-guide.md` with internal guidance for later
 implementers: keep tracker protocols in the domain, keep detector and tracker
@@ -281,69 +284,26 @@ association, use property tests for track lifecycle invariants, and use Vidai
 Mock only for behavioural tests that exercise inference-service adapters.
 
 Update `docs/users-guide.md` only if needed to avoid stale public wording. The
-user guide should not promise object tracking in the current usable product.
-If it mentions planned object tracking, it should say that tracking is deferred
+user guide should not promise object tracking in the current usable product. If
+it mentions planned object tracking, it should say that tracking is deferred
 post-v1 and that the architecture now has a selected boundary for later work.
 
 Update `docs/roadmap.md` only after the ADR and signposts are in place. Mark
 roadmap item 1.1.2 done and add a decision line pointing to the ADR. Do not
 mark task 5.2.1 done.
 
-After the first documentation pass, run:
+After the first documentation pass, run CodeRabbit and the repository quality
+gates sequentially, using the `tee` log workflow described in
+`docs/developers-guide.md` and the root `AGENTS.md`. If CodeRabbit reports
+concerns, record them in `Surprises & discoveries` or `Decision log`, fix them
+within the tolerances, and rerun the review. If the command is unavailable or
+cannot determine a pull request for this branch, record the exact failure and
+continue only if the failure is environmental rather than a review concern.
 
-```bash
-BRANCH=$(git branch --show-current)
-LOG=/tmp/coderabbit-$(basename "$(pwd)")-${BRANCH##*/}.out
-coderabbit review --agent 2>&1 | tee "$LOG"
-```
-
-If CodeRabbit reports concerns, record them in `Surprises & discoveries` or
-`Decision log`, fix them within the tolerances, and rerun the review. If the
-command is unavailable or cannot determine a pull request for this branch,
-record the exact failure and continue only if the failure is environmental
-rather than a review concern.
-
-Run the documentation gates sequentially:
-
-```bash
-BRANCH=$(git branch --show-current)
-LOG=/tmp/markdownlint-$(basename "$(pwd)")-${BRANCH##*/}.out
-make markdownlint 2>&1 | tee "$LOG"
-LOG=/tmp/nixie-$(basename "$(pwd)")-${BRANCH##*/}.out
-make nixie 2>&1 | tee "$LOG"
-```
-
-Then run the user-requested gates sequentially:
-
-```bash
-BRANCH=$(git branch --show-current)
-LOG=/tmp/check-fmt-$(basename "$(pwd)")-${BRANCH##*/}.out
-make check-fmt 2>&1 | tee "$LOG"
-LOG=/tmp/typecheck-$(basename "$(pwd)")-${BRANCH##*/}.out
-make typecheck 2>&1 | tee "$LOG"
-LOG=/tmp/lint-$(basename "$(pwd)")-${BRANCH##*/}.out
-make lint 2>&1 | tee "$LOG"
-LOG=/tmp/test-$(basename "$(pwd)")-${BRANCH##*/}.out
-make test 2>&1 | tee "$LOG"
-```
-
-If documentation-only work does not add pytest, pytest-bdd, syrupy, or
-Hypothesis tests, record that decision in this plan. The later executable
-object-tracker implementation must include:
-
-- pytest unit tests for detection-to-track association and lifecycle rules;
-- Hypothesis tests for generated detection streams, timestamp ordering,
-  confidence bounds, empty inputs, disappearing tracks, and edge-entry
-  invariants;
-- pytest-bdd behavioural scenarios when object tracking becomes observable
-  through the library API or CLI;
-- syrupy snapshots when object-track output affects BeatCue JSON, WebVTT, OTIO
-  metadata, diagnostics, or `agent-context`;
-- end-to-end tests when tracking changes externally observable workflows,
-  persistence, command-line behaviour, network boundaries, or inference
-  service interactions;
-- Vidai Mock scenarios for behavioural tests that simulate Florence-2 or other
-  inference-service adapters.
+If documentation-only work does not add executable tests, record that decision
+in this plan. Later object-tracker implementation work must follow the testing
+strategy in `docs/developers-guide.md`, including property-based, behavioural,
+snapshot, and inference-adapter coverage where those boundaries are touched.
 
 Commit the approved implementation with the file-based commit-message workflow
 from the `commit-message` skill:
