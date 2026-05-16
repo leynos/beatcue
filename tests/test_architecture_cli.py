@@ -21,8 +21,8 @@ def test_cli_default_invocation_accepts_current_package(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
+    assert not captured.out
+    assert not captured.err
 
 
 def test_cli_none_argv_accepts_current_package(
@@ -36,8 +36,8 @@ def test_cli_none_argv_accepts_current_package(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
+    assert not captured.out
+    assert not captured.err
 
 
 def test_cli_fixture_policy_reports_fixture_violations(
@@ -57,7 +57,7 @@ def test_cli_fixture_policy_reports_fixture_violations(
 
     captured = capsys.readouterr()
     assert exit_code == 1
-    assert captured.out == ""
+    assert not captured.out
     assert captured.err == (
         "ARCH001: tests.fixtures.architecture.domain_imports_adapter.domain "
         "imports forbidden module "
@@ -82,8 +82,8 @@ def test_cli_fixture_policy_switches_from_default_policy(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == ""
-    assert captured.err == ""
+    assert not captured.out
+    assert not captured.err
 
 
 def test_cli_reports_missing_root_as_usage_error(
@@ -97,7 +97,7 @@ def test_cli_reports_missing_root_as_usage_error(
 
     captured = capsys.readouterr()
     assert exit_code == 2
-    assert captured.out == ""
+    assert not captured.out
     assert captured.err == (
         f"error: architecture package root does not exist: {missing_root}\n"
     )
@@ -112,7 +112,7 @@ def test_cli_rejects_unknown_arguments(
 
     captured = capsys.readouterr()
     assert exc_info.value.code == 2
-    assert captured.out == ""
+    assert not captured.out
     assert "unrecognized arguments: --unknown-option" in captured.err
 
 
@@ -128,5 +128,5 @@ def test_module_entrypoint_accepts_current_package(
 
     captured = capsys.readouterr()
     assert exc_info.value.code == 0
-    assert captured.out == ""
-    assert captured.err == ""
+    assert not captured.out
+    assert not captured.err

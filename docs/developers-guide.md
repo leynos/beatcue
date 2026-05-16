@@ -21,10 +21,10 @@ The repository currently contains:
 The planned video-analysis API and CLI are not implemented yet. Do not document
 planned commands as available until the implementation lands.
 
-The v1 implementation boundary is deterministic cue extraction for
-single-scene or single-shot videos. Semantic annotation, object tracking, OTIO
-enrichment, remote model execution, GPU scheduling, and advanced segmentation
-are post-v1 unless a later design update changes the boundary.
+The v1 implementation boundary is deterministic cue extraction for single-scene
+or single-shot videos. Semantic annotation, object tracking, OTIO enrichment,
+remote model execution, GPU scheduling, and advanced segmentation are post-v1
+unless a later design update changes the boundary.
 
 ## Architectural rules
 
@@ -41,15 +41,17 @@ Cuprum, CmdMox, filesystem adapters, or CLI modules.
 
 Planned package boundaries:
 
-| Package                     | Responsibility                                                                                                                     |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `beatcue.domain`            | Pure domain values, cue types, feature summaries, invariants, and port protocols.                                                  |
-| `beatcue.application`       | Use cases that orchestrate domain services through injected ports.                                                                 |
-| `beatcue.adapters.inbound`  | Driving adapters such as the Cyclopts CLI and library facade.                                                                      |
-| `beatcue.adapters.outbound` | Driven adapters for media probing, frame sampling, audio, vision, model inference, writers, jobs, profiles, and command execution. |
-| `beatcue.config`            | Composition root that binds configuration to concrete adapters.                                                                    |
-
-_Table 1: Planned package responsibilities._
+- `beatcue.domain`: Pure domain values, cue types, feature summaries,
+  invariants, and port protocols.
+- `beatcue.application`: Use cases that orchestrate domain services through
+  injected ports.
+- `beatcue.adapters.inbound`: Driving adapters such as the Cyclopts CLI and
+  library facade.
+- `beatcue.adapters.outbound`: Driven adapters for media probing, frame
+  sampling, audio, vision, model inference, writers, jobs, profiles, and
+  command execution.
+- `beatcue.config`: Composition root that binds configuration to concrete
+  adapters.
 
 Every external dependency enters through an adapter. Application services
 receive adapters through constructor injection or explicit composition
@@ -272,6 +274,118 @@ make lint
 make typecheck
 make test
 ```
+
+
+### Linting architecture
+
+BeatCue uses the linting architecture recorded in
+[ADR 004](adr-004-two-tier-python-linting.md). The lint gate is deliberately
+two-tier:
+
+1. Ruff runs first from the project virtual environment.
+2. Pylint runs second through the pinned
+   [`pylint-pypy-shim`](https://github.com/leynos/pylint-pypy-shim) tool under
+   PyPy.
+
+Ruff is the fast, broad gate for style, import hygiene, annotation discipline,
+bug patterns, performance hints, docstring policy, and Ruff's own Pylint-style
+rules. Pylint is the slower second tier for selected checks that Ruff does not
+cover with the same semantics, especially logging format issues, pattern
+matching hazards, simplification opportunities, mutation during iteration,
+resource handling, and structural complexity limits.
+
+Run both tiers with:
+
+```bash
+make lint
+```
+
+The `lint` target depends on the `.deps` stamp. That stamp refreshes the
+`.venv` from `pyproject.toml` only when the environment or dependency
+configuration is stale, then runs:
+
+```bash
+$(UV_ENV) $(UV) run ruff check
+$(PYLINT) $(PYLINT_TARGETS)
+```
+
+Use the Makefile target rather than invoking `ruff` or `pylint` directly. This
+keeps the selected interpreter, cache directories, shim revision, and target
+set consistent between local development and review.
+
+### Lint Makefile variables
+
+The lint target is configured by these Makefile variables:
+
+- `UV`: defaults to `uv`. This selects the `uv` executable used for
+  virtual-environment and tool execution, and the Makefile fails early with a
+  clear error if it is unavailable.
+- `UV_ENV`: defaults to `UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools`. This
+  keeps `uv` cache and tool state local to the checkout.
+- `.deps`: records that `uv sync --group dev` has run for the current
+  `pyproject.toml` and `.venv`, avoiding an unconditional sync on every
+  formatting or lint invocation.
+- `PYLINT_PYTHON`: defaults to `pypy`. This selects the interpreter used for
+  the shimmed Pylint run.
+- `PYLINT_TARGETS`: defaults to `beatcue tests`. This defines the directories
+  linted by the Pylint tier.
+- `PYLINT_PYPY_SHIM_REF`: defaults to
+  `726d09f968b4d729ee4b29c71fc732e744854f3b`. This pins the shim repository
+  revision for reproducible Pylint behaviour.
+- `PYLINT_PYPY_SHIM`: defaults to the pinned
+  `git+https://github.com/leynos/pylint-pypy-shim.git` source assembled from
+  `PYLINT_PYPY_SHIM_REF`. This defines the install source used by `uv tool run`.
+- `PYLINT`: assembles the complete `uv tool run --python ... pylint-pypy`
+  command used by `make lint`.
+
+Override these variables only when diagnosing the lint toolchain itself. Pull
+requests should not depend on local overrides to pass.
+
+### Episodic lint policy
+
+BeatCue imports the Python lint policy from
+[Episodic](https://github.com/leynos/episodic) so related df12 Python projects
+share one linting posture. The imported policy includes:
+
+- Ruff preview mode and `target-version = "py314"`;
+- a broad Ruff `select` list covering Pyflakes, pycodestyle, import sorting,
+  pyupgrade, comprehensions, future annotations, tidy imports, type-checking
+  imports, pathlib use, TODO hygiene, security checks, datetime handling,
+  boolean traps, naming, logging, pytest, returns, performance, docstrings,
+  annotations, McCabe complexity, and selected Ruff rules;
+- Ruff banned `typing.*` APIs that steer code towards built-in generics,
+  `collections.abc`, `contextlib`, `collections`, and `re` runtime types;
+- NumPy-style docstrings through Ruff's pydocstyle integration;
+- focused Pylint design thresholds and message selection.
+
+When the Episodic policy changes, update BeatCue intentionally rather than
+copying blindly. The pull request should explain whether the change tightens
+the shared policy, adapts BeatCue to a local constraint, or deliberately
+diverges from Episodic.
+
+
+### `pyproject.toml` lint configuration
+
+The active lint configuration lives in `pyproject.toml`:
+
+- `[tool.ruff]` sets line length, preview mode, and Python target version.
+- `[tool.ruff.lint]` defines the selected Ruff rule families and shared
+  ignores.
+- `[tool.ruff.lint.per-file-ignores]` relaxes assertion, parameter-count,
+  magic-value, and method-shape rules for test modules where fixtures and
+  behavioural tests need different trade-offs.
+- `[tool.ruff.lint.flake8-import-conventions]` and
+  `[tool.ruff.lint.flake8-import-conventions.aliases]` require canonical module
+  imports and aliases.
+- `[tool.ruff.lint.flake8-tidy-imports.banned-api]` rejects deprecated
+  `typing.*` spellings in favour of runtime-safe alternatives.
+- `[tool.ruff.lint.pydocstyle]`, `[tool.ruff.lint.mccabe]`, and
+  `[tool.ruff.lint.pylint]` set docstring style and local complexity limits.
+- `[tool.pylint.main]`, `[tool.pylint.design]`, and
+  `[tool.pylint."messages control"]` keep Pylint focused on the selected
+  second-tier checks. The enabled Pylint messages are grouped by purpose so
+  logging, pattern matching, simplification, resource, hygiene, mutation, and
+  complexity checks can be reviewed independently.
 
 Use `tee` logs under `/tmp` for gates so long output remains reviewable. Do not
 run tests, linters, or format checks in parallel.
