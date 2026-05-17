@@ -30,8 +30,9 @@ developer and user guidance, and a roadmap update. Later implementation task
 ## Constraints
 
 - Do not implement production object tracking, object-entry cue extraction,
-  Florence-2 inference, centroid-association code, CLI commands, adapters, or
-  writer changes in this task. This task records the boundary decision.
+  Florence-2 inference, centroid-association code, command-line interface
+  (CLI) commands, adapters, or writer changes in this task. This task records
+  the boundary decision.
 - Do not overwrite
   `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md`. That
   file is the completed plan for roadmap item 1.1.1 and is part of project
