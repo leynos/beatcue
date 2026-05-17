@@ -5,7 +5,7 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 This plan was explicitly approved for implementation on 2026-05-17. Approval
 means implementing the documentation and decision-record changes described
@@ -171,7 +171,9 @@ developer and user guidance, and a roadmap update. Later implementation task
   `make check-fmt`, `make lint`, `make typecheck`, and `make test`
   sequentially with `/tmp` logs. All gates passed.
 - [x] Run documentation gates and the user-requested Python gates.
-- [ ] Commit the approved implementation changes.
+- [x] (2026-05-17 11:54Z) Committed the approved implementation changes as
+  `a294382` (`Record object-tracking boundary`).
+- [x] Commit the approved implementation changes.
 
 ## Surprises & discoveries
 
@@ -389,5 +391,5 @@ implementation.
 
 Validation completed with `coderabbit review --agent` returning zero findings
 on the final run, and `make markdownlint`, `make nixie`, `make check-fmt`,
-`make lint`, `make typecheck`, and `make test` all passing. The commit hash
-will be added after the commit is created.
+`make lint`, `make typecheck`, and `make test` all passing. The implementation
+commit is `a294382` (`Record object-tracking boundary`).
