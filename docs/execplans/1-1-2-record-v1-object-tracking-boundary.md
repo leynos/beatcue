@@ -5,9 +5,9 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision log`, and `Outcomes & Retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
-This plan must be explicitly approved before implementation begins. Approval
+This plan was explicitly approved for implementation on 2026-05-17. Approval
 means implementing the documentation and decision-record changes described
 here; it does not approve object-tracking production code.
 
@@ -48,7 +48,7 @@ developer and user guidance, and a roadmap update. Later implementation task
   `hexagonal-architecture` skill: the domain owns ports and object-tracking
   concepts, while Florence-2, OpenCV, or other infrastructure-specific types
   stay in adapters.
-- Use `docs/adr-004-v1-object-tracking-boundary.md` for the decision record if
+- Use `docs/adr-005-v1-object-tracking-boundary.md` for the decision record if
   no newer ADR exists before implementation. If a different ADR number is
   needed, record the change in this plan's `Decision log`.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
@@ -152,12 +152,25 @@ developer and user guidance, and a roadmap update. Later implementation task
   context, normalizing centroid-association terminology, expanding first-use
   acronyms, and replacing duplicated gate and test detail with references to
   the developers' guide.
-- [ ] Await explicit approval before implementing the decision-record changes.
-- [ ] After approval, update this plan to `IN PROGRESS` before editing design
-  documents.
-- [ ] Create the ADR and documentation signposts.
-- [ ] Run `coderabbit review --agent` and clear concerns.
-- [ ] Run documentation gates and the user-requested Python gates.
+- [x] (2026-05-17 11:35Z) Received explicit approval to implement the
+  decision-record changes from this ExecPlan.
+- [x] (2026-05-17 11:35Z) Confirmed ADR 005 is available and the working tree
+  starts clean against
+  `origin/1-1-2-record-v1-object-tracking-boundary`.
+- [x] (2026-05-17 11:35Z) Updated this plan to `IN PROGRESS` before editing
+  design documents.
+- [x] (2026-05-17 11:35Z) Created ADR 005 and added documentation signposts in
+  the technical design, developers' guide, users' guide, and roadmap.
+- [x] Create the ADR and documentation signposts.
+- [x] (2026-05-17 11:48Z) Ran `coderabbit review --agent`. The first
+  implementation review found two valid minor ADR issues, which were fixed.
+  The second review emitted stale line-wrap findings after the file had already
+  been rechecked locally; a third review completed with zero findings.
+- [x] Run `coderabbit review --agent` and clear concerns.
+- [x] (2026-05-17 11:50Z) Ran `make markdownlint`, `make nixie`,
+  `make check-fmt`, `make lint`, `make typecheck`, and `make test`
+  sequentially with `/tmp` logs. All gates passed.
+- [x] Run documentation gates and the user-requested Python gates.
 - [ ] Commit the approved implementation changes.
 
 ## Surprises & discoveries
@@ -202,6 +215,11 @@ developer and user guidance, and a roadmap update. Later implementation task
   80-column wrapping. Impact: the draft was rewrapped, the heading was changed
   to `Decision log`, and the rerun completed with zero findings.
 
+- Observation: The first implementation `coderabbit review --agent` run found
+  two minor ADR 005 documentation issues: the title used `V1` instead of `v1`,
+  and the first `SAM 2` mention was not expanded. Impact: both findings were
+  valid and fixed before validation gates.
+
 ## Decision log
 
 - Decision: Draft a new plan for roadmap item 1.1.2 instead of overwriting the
@@ -243,7 +261,7 @@ find docs -maxdepth 1 -type f -name 'adr-*.md' | sort
 ```
 
 If `docs/adr-004-*.md` does not exist, create
-`docs/adr-004-v1-object-tracking-boundary.md`. If ADR 004 exists, use the next
+`docs/adr-005-v1-object-tracking-boundary.md`. If ADR 005 exists, use the next
 available number and update this plan. The ADR should include the sections
 required by `docs/documentation-style-guide.md` and should compare these
 options:
@@ -266,7 +284,7 @@ Update `docs/beatcue-technical-design.md` in the sections already cited by the
 roadmap:
 
 - Section 3.1 should continue to say object tracking is post-v1
-  implementation work, while noting that ADR 004 records the selected boundary
+  implementation work, while noting that ADR 005 records the selected boundary
   for later tasks.
 - Section 8 should describe `ObjectTracker` as a domain-owned port whose
   default implementation may be centroid-association over detector observations.
@@ -312,14 +330,14 @@ from the `commit-message` skill:
 ```bash
 git status --short
 git diff -- \
-  docs/adr-004-v1-object-tracking-boundary.md \
+  docs/adr-005-v1-object-tracking-boundary.md \
   docs/beatcue-technical-design.md \
   docs/developers-guide.md \
   docs/users-guide.md \
   docs/roadmap.md \
   docs/execplans/1-1-2-record-v1-object-tracking-boundary.md
 git add \
-  docs/adr-004-v1-object-tracking-boundary.md \
+  docs/adr-005-v1-object-tracking-boundary.md \
   docs/beatcue-technical-design.md \
   docs/developers-guide.md \
   docs/users-guide.md \
@@ -359,7 +377,17 @@ the exact log paths in `Progress` when running the commands.
 
 ## Outcomes & retrospective
 
-This section is intentionally empty while the plan is in `DRAFT`. After the
-approved implementation lands, summarize the selected boundary, changed files,
-validation evidence, CodeRabbit result, commit hash, and any lessons for later
-object-tracking implementation work.
+The implementation records ADR 005 as the durable object-tracking boundary:
+post-v1 tracking should use a domain-owned `ObjectTracker` port with a simple
+centroid-association default fed by detector observations. Florence-2 remains a
+detection and labelling adapter, not the persistence boundary.
+
+The documentation now signposts the decision from the technical design,
+developers' guide, users' guide, roadmap, and this ExecPlan. `docs/roadmap.md`
+marks item 1.1.2 complete while leaving task 5.2.1 open for later
+implementation.
+
+Validation completed with `coderabbit review --agent` returning zero findings
+on the final run, and `make markdownlint`, `make nixie`, `make check-fmt`,
+`make lint`, `make typecheck`, and `make test` all passing. The commit hash
+will be added after the commit is created.
