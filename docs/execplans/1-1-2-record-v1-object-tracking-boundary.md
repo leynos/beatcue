@@ -48,9 +48,10 @@ developer and user guidance, and a roadmap update. Later implementation task
   `hexagonal-architecture` skill: the domain owns ports and object-tracking
   concepts, while Florence-2, OpenCV, or other infrastructure-specific types
   stay in adapters.
-- Use `docs/adr-005-v1-object-tracking-boundary.md` for the decision record if
-  no newer ADR exists before implementation. If a different ADR number is
-  needed, record the change in this plan's `Decision log`.
+- Use `docs/adr-005-v1-object-tracking-boundary.md` for the decision record.
+  ADR 004 now belongs to the two-tier Python linting decision on `origin/main`;
+  the object-tracking decision was renumbered during rebase to preserve both
+  branches' ADRs.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code blocks with
   language identifiers, ADR naming conventions, captions for tables, and
@@ -172,8 +173,14 @@ developer and user guidance, and a roadmap update. Later implementation task
   sequentially with `/tmp` logs. All gates passed.
 - [x] Run documentation gates and the user-requested Python gates.
 - [x] (2026-05-17 11:54Z) Committed the approved implementation changes as
-  `a294382` (`Record object-tracking boundary`).
+  `fe0ba04` (`Record object-tracking boundary`) after rebasing onto
+  `origin/main`.
 - [x] Commit the approved implementation changes.
+- [x] (2026-05-17 12:05Z) Rebasing onto `origin/main` found that main had
+  introduced `docs/adr-004-two-tier-python-linting.md` and architecture checker
+  guidance. Resolved the conflict by keeping main's architecture guidance,
+  preserving this branch's object-tracking boundary text, and renumbering the
+  object-tracking decision to ADR 005.
 
 ## Surprises & discoveries
 
@@ -222,6 +229,10 @@ developer and user guidance, and a roadmap update. Later implementation task
   and the first `SAM 2` mention was not expanded. Impact: both findings were
   valid and fixed before validation gates.
 
+- Observation: Rebasing onto `origin/main` showed that main had already added
+  `docs/adr-004-two-tier-python-linting.md`. Impact: the object-tracking ADR
+  was renamed to ADR 005 so both decisions remain addressable.
+
 ## Decision log
 
 - Decision: Draft a new plan for roadmap item 1.1.2 instead of overwriting the
@@ -262,11 +273,11 @@ git status --short
 find docs -maxdepth 1 -type f -name 'adr-*.md' | sort
 ```
 
-If `docs/adr-004-*.md` does not exist, create
-`docs/adr-005-v1-object-tracking-boundary.md`. If ADR 005 exists, use the next
-available number and update this plan. The ADR should include the sections
-required by `docs/documentation-style-guide.md` and should compare these
-options:
+Because `origin/main` now owns ADR 004, the implementation uses
+`docs/adr-005-v1-object-tracking-boundary.md`. If ADR 005 already exists in a
+future replay, use the next available number and update this plan. The ADR
+should include the sections required by `docs/documentation-style-guide.md` and
+should compare these options:
 
 - Florence-2-only detections with no persistence boundary.
 - A centroid tracker as the selected object-tracking implementation.
@@ -392,4 +403,5 @@ implementation.
 Validation completed with `coderabbit review --agent` returning zero findings
 on the final run, and `make markdownlint`, `make nixie`, `make check-fmt`,
 `make lint`, `make typecheck`, and `make test` all passing. The implementation
-commit is `a294382` (`Record object-tracking boundary`).
+commit is `fe0ba04` (`Record object-tracking boundary`) after rebasing onto
+`origin/main`.

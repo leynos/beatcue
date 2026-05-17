@@ -291,7 +291,6 @@ make typecheck
 make test
 ```
 
-
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
@@ -378,7 +377,6 @@ When the Episodic policy changes, update BeatCue intentionally rather than
 copying blindly. The pull request should explain whether the change tightens
 the shared policy, adapts BeatCue to a local constraint, or deliberately
 diverges from Episodic.
-
 
 ### `pyproject.toml` lint configuration
 
