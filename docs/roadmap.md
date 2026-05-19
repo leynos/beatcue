@@ -37,11 +37,14 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
     technology.
   - Success: the ADR or design signpost explains why `msgspec` is suitable for
     library callers, CLI output, round-trip validation, and stable snapshots.
-- [ ] 1.1.2. Record the v1 object-tracking boundary.
+- [x] 1.1.2. Record the v1 object-tracking boundary.
   - Requires 1.1.1.
   - Decide whether v1 uses a centroid tracker, Florence-2-only detections, or a
     pluggable tracker port with a simple default.
   - See beatcue-technical-design.md §§8, 11, 12, and 21.
+  - Decision: ADR 005 ratifies a domain-owned `ObjectTracker` port with a
+    simple centroid-association default fed by detector observations. Florence-2
+    remains a detection and labelling adapter, not the persistence boundary.
   - Success: later object-entry tasks can implement one selected boundary
     without reopening the model-adapter decision.
 - [ ] 1.1.3. Record the local-only model and privacy policy for v1.

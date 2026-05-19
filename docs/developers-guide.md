@@ -21,10 +21,12 @@ The repository currently contains:
 The planned video-analysis API and CLI are not implemented yet. Do not document
 planned commands as available until the implementation lands.
 
-The v1 implementation boundary is deterministic cue extraction for single-scene
-or single-shot videos. Semantic annotation, object tracking, OTIO enrichment,
-remote model execution, GPU scheduling, and advanced segmentation are post-v1
-unless a later design update changes the boundary.
+The v1 implementation boundary is deterministic cue extraction for
+single-scene or single-shot videos. Semantic annotation, object tracking, OTIO
+enrichment, remote model execution, graphics processing unit (GPU) scheduling,
+and advanced segmentation are post-v1 unless a later design update changes the
+boundary. ADR 005 records the selected object-tracking boundary for that later
+work.
 
 ## Architectural rules
 
@@ -133,6 +135,14 @@ Adapters implement these protocols and convert infrastructure types into domain
 types before returning. Do not leak NumPy arrays, OpenCV frames, Pydantic
 models, Cuprum result types, or Transformers objects into domain APIs unless a
 design update explicitly changes that contract.
+
+`ObjectTracker` is a domain-owned post-v1 port. Keep tracker protocols and
+track lifecycle values in the domain. Keep detector adapters, tracker adapters,
+model clients, OpenCV objects, Transformers objects, Torch tensors, Pillow
+images, and remote service clients outside the domain. The first tracker should
+use deterministic centroid association over plain detector observations, so
+fixtures can prove stable track IDs, entry and exit edges, missing detections,
+and confidence handling without model inference.
 
 ## Subprocess tooling
 
@@ -253,9 +263,15 @@ High-value property-based checks include:
 - timestamp normalization;
 - cue fusion over sorted, unsorted, overlapping, and empty lists;
 - confidence normalization;
+- object-track lifecycle invariants, including persistence thresholds, empty
+  observation lists, missing detections, and non-finite confidence rejection;
 - WebVTT millisecond rounding;
 - configuration precedence;
 - semantic annotation rejection when deterministic cue evidence is missing.
+
+Use Vidai Mock only for behavioural tests that exercise inference-service
+adapters. Pure centroid-association tests should use deterministic observations
+and in-memory fakes rather than model simulation.
 
 ## Quality gates
 
@@ -274,7 +290,6 @@ make lint
 make typecheck
 make test
 ```
-
 
 ### Linting architecture
 
@@ -362,7 +377,6 @@ When the Episodic policy changes, update BeatCue intentionally rather than
 copying blindly. The pull request should explain whether the change tightens
 the shared policy, adapts BeatCue to a local constraint, or deliberately
 diverges from Episodic.
-
 
 ### `pyproject.toml` lint configuration
 

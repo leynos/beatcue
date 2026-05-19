@@ -83,10 +83,12 @@ V1 includes:
 - local subprocess execution through the Cuprum command catalogue.
 
 Post-v1 work includes semantic annotation, object tracking, object entry and
-exit cues, OTIO enrichment, remote model execution, GPU scheduling, advanced
-video segmentation, and trainable genre profiles. These features remain behind
-ports in the design, but they are not required for the first credible release
-unless a later architectural decision record (ADR) changes the boundary.
+exit cues, OTIO enrichment, remote model execution, graphics processing unit
+(GPU) scheduling, advanced video segmentation, and trainable genre profiles.
+These features remain behind ports in the design, but they are not required for
+the first credible release unless a later architectural decision record (ADR)
+changes the boundary. ADR 005 records the selected object-tracking boundary for
+later implementation tasks without moving tracking into v1.
 
 ## 4. Terminology
 
@@ -390,10 +392,12 @@ _Table 3: Domain-owned driven ports._
 The twelve-port surface is intentional as the long-term boundary, but v1
 implementation work should prioritize the ports marked required. Object and
 semantic ports exist, so post-v1 enrichment cannot leak model packages into the
-domain. ADR 002 records this decision. Group injected dependencies only after
-constructor arity becomes a demonstrated maintenance problem; premature
-grouping would hide the pipeline dependencies that the first implementation
-needs to make visible.
+domain. ADR 002 records this decision. ADR 005 records `ObjectTracker` as a
+domain-owned port whose first implementation should be a simple
+centroid-association default fed by detector observations. Group injected
+dependencies only after constructor arity becomes a demonstrated maintenance
+problem; premature grouping would hide the pipeline dependencies that the first
+implementation needs to make visible.
 
 The riskiest v1 ports have these protocol contracts. The names are normative;
 supporting value objects may be split across modules during implementation.
@@ -629,7 +633,8 @@ length, and contributing signals in `features`.
 Object entry and exit classification requires persistence. A single detection
 near a boundary does not create an entry cue. The object tracker must observe a
 track for at least `min_track_persistence_s`, and the first or last centroid
-must fall inside the configured frame-edge margin.
+must fall inside the configured frame-edge margin. ADR 005 records the selected
+object-tracking boundary for that persistence requirement.
 
 ## 12. Semantic annotation
 
@@ -655,9 +660,11 @@ The prompt contract is:
 - do not describe unseen events;
 - use ASCII unless the visible text requires otherwise.
 
-The LLM output adapter validates model responses before attaching them to cues.
-Invalid JSON, missing required fields, non-finite scores, or unsupported enum
-values produce diagnostics and no annotation.
+Semantic annotation describes visible evidence only. It can enrich cues and
+selected keyframes, but it does not replace object-track persistence for entry
+or exit cues. The LLM output adapter validates model responses before attaching
+them to cues. Invalid JSON, missing required fields, non-finite scores, or
+unsupported enum values produce diagnostics and no annotation.
 
 ## 13. Output formats
 
@@ -1003,14 +1010,15 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 
 ## 21. Deferred decisions
 
-- The first object tracker is deferred. Florence-2 detection is useful for
-  labels and boxes, but persistent tracking may use a simpler centroid tracker
-  before SAM 2 or another video segmentation model is introduced.
+- ADR 005 resolves the first object-tracking boundary: later implementation
+  work should add a domain-owned `ObjectTracker` port with a simple
+  centroid-association default fed by detector observations. Florence-2
+  detection is useful for labels and boxes, but it does not own persistence.
 - Remote model execution and remote adapters are deferred because they require
   a future privacy and credentials design before any implementation can opt in.
-- GPU scheduling is deferred. The initial composition root may select CPU-only
-  adapters and fail clearly when a requested model requires unavailable
-  hardware.
+- GPU scheduling, remote models, and advanced segmentation remain deferred. The
+  initial composition root may select CPU-only adapters and fail clearly when a
+  requested model requires unavailable hardware.
 
 ## 22. References
 

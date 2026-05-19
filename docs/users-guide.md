@@ -10,7 +10,9 @@ roadmap. The video-analysis CLI described below is the intended user contract
 for implementation work, not a claim that every command is already available.
 The v1 target is deterministic analysis of single-scene or single-shot videos.
 Semantic annotation, object tracking, and OTIO marker enrichment are planned
-post-v1 extensions unless a later design update changes that boundary.
+post-v1 extensions. ADR 005 records the object-tracking boundary for later
+implementation work, but tracking is not available in the current package
+skeleton.
 
 ## Current package smoke check
 
