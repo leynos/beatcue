@@ -305,9 +305,10 @@ roadmap:
   object-exit cues and point to the ADR for the selected boundary.
 - Section 12 should preserve the rule that semantic annotation describes
   visible evidence only and does not replace tracking persistence.
-- Section 21 should replace the open deferral with a concise signpost to ADR
-  004, while leaving remote models, graphics processing unit (GPU) scheduling,
-  and advanced segmentation deferred.
+- Section 21 should replace the open deferral with a concise signpost to
+  [ADR 005](../adr-005-v1-object-tracking-boundary.md), while leaving remote
+  models, graphics processing unit (GPU) scheduling, and advanced segmentation
+  deferred.
 
 Update `docs/developers-guide.md` with internal guidance for later
 implementers: keep tracker protocols in the domain, keep detector and tracker
