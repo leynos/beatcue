@@ -4,7 +4,7 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
  `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision log`,
 and `Outcomes & retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 This plan was approved for implementation on 2026-05-20. Keep this document
 current as the migration proceeds, and do not mark roadmap work complete until
@@ -563,7 +563,15 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 5 after several recoverable
   service rate-limit responses; the completed review reported zero findings.
 - [x] 2026-05-20: Implemented the Hecate replacement after approval.
-- [ ] Mark the relevant roadmap entry done after implementation validation.
+- [x] 2026-05-20: Ran final validation. `make check-fmt`, `make lint`, `make
+  test`, `make markdownlint`, and `make nixie` all passed. `make lint` ran the
+  Hecate-backed `make check-architecture` gate and reported
+  `hecate: architecture check passed`.
+- [x] 2026-05-20: Ran final CodeRabbit review after one recoverable rate-limit
+  response; the completed review reported zero findings.
+- [x] 2026-05-20: Marked the relevant roadmap entry done after implementation
+  validation. Roadmap task 1.2.2 is checked and names Hecate as the
+  implementation.
 
 ## Surprises & discoveries
 
@@ -647,7 +655,32 @@ pass, plus `make check-architecture` visibly runs Hecate.
 
 ## Outcomes & retrospective
 
-The current outcome is a draft plan only. No implementation has been performed.
-After user approval and implementation, update this section with the final
-Hecate version evidence, gate results, CodeRabbit outcome, roadmap update, and
-any follow-up work.
+BeatCue now uses Hecate, pinned from
+`git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12`,
+as the single architecture checker behind `make check-architecture`.
+`beatcue.architecture` was removed, and BeatCue's policy now lives under
+`[tool.hecate]` in `pyproject.toml` with `default_rule_id = "ARCH001"`.
+
+The replacement preserves the contributor-facing Makefile workflow:
+`make lint` still runs Ruff, Pylint, and the architecture gate, and the
+architecture gate now reports `hecate: architecture check passed` for the
+current package. Hecate-backed fixture tests cover forbidden imports, allowed
+graphs, re-export visibility, current-package acceptance, and configuration
+errors.
+
+Final validation on 2026-05-20 passed:
+
+- `make check-fmt`
+- `make lint`
+- `make test`
+- `make markdownlint`
+- `make nixie`
+
+CodeRabbit reviews completed with zero findings for every implementation
+milestone after any recoverable rate-limit waits. Documentation now records
+Hecate as the active architecture fitness function in ADR 005, the technical
+design, the developers' guide, the users' guide, and the roadmap.
+
+Follow-up: repository-wide `make fmt` still reports pre-existing Markdown
+line-length findings outside the Hecate migration. This migration did not take
+ownership of that older documentation debt.
