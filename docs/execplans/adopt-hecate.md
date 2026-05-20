@@ -527,6 +527,16 @@ pass, plus `make check-architecture` visibly runs Hecate.
   and architecture tests, not production BeatCue functionality.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 1; it completed with zero
   findings.
+- [x] 2026-05-20: Added Hecate as a pinned development dependency from
+  `git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12`.
+- [x] 2026-05-20: Added the initial `[tool.hecate]` policy to `pyproject.toml`
+  with ordered BeatCue groups, `include_external_packages = true`, and
+  `default_rule_id = "ARCH001"`.
+- [x] 2026-05-20: Ran direct Hecate checks. Text output reported
+  `hecate: architecture check passed`; JSON output reported `{"ok": true,
+  "violations": []}`.
+- [x] 2026-05-20: Ran CodeRabbit for Milestone 2; it completed with zero
+  findings.
 - [ ] Implement the Hecate replacement after approval.
 - [ ] Mark the relevant roadmap entry done after implementation validation.
 
@@ -553,6 +563,9 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - `leta refs check_architecture` found references only in the local
   architecture package and tests, which means removing `beatcue.architecture`
   does not currently affect production BeatCue code.
+- Hecate installed successfully from the requested Git commit through `uv`.
+  The installed version reports as `hecate==0.1.0`, but the source is pinned to
+  commit `46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12`.
 
 ## Decision log
 
@@ -572,6 +585,9 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - 2026-05-20: Begin implementation after explicit approval. Rationale: the
   approval gate is now satisfied, but roadmap completion remains blocked until
   Hecate is installed, wired, documented, validated, and reviewed.
+- 2026-05-20: Keep `ARCH001` as BeatCue's Hecate rule identifier. Rationale:
+  direct Hecate checks accept `default_rule_id = "ARCH001"`, which preserves
+  the current diagnostic identifier while migrating the enforcement engine.
 
 ## Outcomes & retrospective
 

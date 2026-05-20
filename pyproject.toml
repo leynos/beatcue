@@ -9,13 +9,82 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "hecate @ git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12",
+    "hypothesis>=6.152.7",
+    "pyright",
     "pytest",
     "ruff",
-    "pyright",
     "pytest-timeout",
     "pytest-xdist",
-    "hypothesis>=6.152.7",
 ]
+
+[tool.hecate]
+root_packages = ["beatcue"]
+include_external_packages = true
+default_rule_id = "ARCH001"
+
+[[tool.hecate.groups]]
+name = "composition_root"
+prefixes = ["beatcue.config"]
+allowed = [
+    "adapter",
+    "application",
+    "composition_root",
+    "domain",
+    "inbound_adapter",
+    "infrastructure",
+    "outbound_adapter",
+]
+
+[[tool.hecate.groups]]
+name = "domain"
+prefixes = ["beatcue.domain"]
+allowed = ["domain"]
+
+[[tool.hecate.groups]]
+name = "application"
+prefixes = ["beatcue.application"]
+allowed = ["application", "domain"]
+
+[[tool.hecate.groups]]
+name = "inbound_adapter"
+prefixes = ["beatcue.cli", "beatcue.adapters.inbound"]
+allowed = ["inbound_adapter", "composition_root", "application", "domain"]
+
+[[tool.hecate.groups]]
+name = "outbound_adapter"
+prefixes = ["beatcue.adapters.outbound"]
+allowed = [
+    "outbound_adapter",
+    "adapter",
+    "application",
+    "domain",
+    "infrastructure",
+]
+
+[[tool.hecate.groups]]
+name = "adapter"
+prefixes = ["beatcue.adapters"]
+allowed = [
+    "adapter",
+    "application",
+    "domain",
+    "infrastructure",
+    "outbound_adapter",
+]
+
+[[tool.hecate.groups]]
+name = "infrastructure"
+prefixes = [
+    "cmdmox",
+    "cuprum",
+    "cv2",
+    "cyclopts",
+    "librosa",
+    "rich",
+    "transformers",
+]
+allowed = ["infrastructure"]
 
 [tool.ruff]
 line-length = 88
