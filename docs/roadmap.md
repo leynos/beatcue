@@ -47,11 +47,15 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
     remains a detection and labelling adapter, not the persistence boundary.
   - Success: later object-entry tasks can implement one selected boundary
     without reopening the model-adapter decision.
-- [ ] 1.1.3. Record the local-only model and privacy policy for v1.
+- [x] 1.1.3. Record the local-only model and privacy policy for v1.
   - Requires 1.1.1.
   - Confirm that remote model execution remains out of scope until a separate
     privacy and credentials design exists.
   - See beatcue-technical-design.md §§12, 19, and 21.
+  - Decision: ADR 006 ratifies BeatCue v1 as local-only for model execution.
+    Remote backends are unavailable until a later privacy and credentials
+    design is accepted, and requested remote backends that are not explicitly
+    configured fail before inference with a capability error.
   - Success: model adapters fail clearly when a requested remote backend is not
     part of the configured capability set.
 

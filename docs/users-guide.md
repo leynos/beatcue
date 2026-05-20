@@ -202,6 +202,11 @@ beatcue analyse input.mp4 --out cues.vtt --json-out cues.json
 
 This workflow uses colour, motion, audio, and scene features.
 
+BeatCue v1 runs local analysis only. Remote model execution is not available
+yet, and profiles are not a place to store API keys or remote-service
+credentials. The local-only policy is recorded in
+[ADR 006](adr-006-v1-local-only-model-and-privacy-policy.md).
+
 ## Planned post-v1 workflows
 
 The workflows below are illustrative post-v1 examples. They are not available
@@ -221,6 +226,11 @@ beatcue analyse input.mp4 \
 
 Captions will annotate deterministic timing cues. They will not create timing
 cues by themselves.
+
+Planned model-backed workflows still follow the v1 privacy policy until a later
+design explicitly changes it. A remote model name or backend requested before a
+matching configured capability exists should fail clearly before inference
+rather than silently calling a remote service.
 
 ### Planned post-v1: Recover long-running analysis
 
@@ -258,12 +268,16 @@ are unavailable. Planned failure behaviour includes:
 - unsupported media produces a validation error with command diagnostics;
 - no-audio media still emits visual cues and records a diagnostic;
 - existing output files are not overwritten unless `--force` is set;
-- invalid model output records diagnostics and does not create cues.
+- invalid model output records diagnostics and does not create cues;
+- requested remote model backends that are not configured fail before
+  inference with a capability error.
 
 ## Related documents
 
 - [Technical design](beatcue-technical-design.md) defines the architecture,
   ports, output contracts, and failure modes.
+- [ADR 006](adr-006-v1-local-only-model-and-privacy-policy.md) records the v1
+  local-only model and privacy policy.
 - [Roadmap](roadmap.md) breaks the design into review-sized delivery tasks.
 - [Developer guide](developers-guide.md) explains repository boundaries,
   tooling, and implementation rules.

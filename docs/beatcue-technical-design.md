@@ -88,7 +88,9 @@ exit cues, OTIO enrichment, remote model execution, graphics processing unit
 These features remain behind ports in the design, but they are not required for
 the first credible release unless a later architectural decision record (ADR)
 changes the boundary. ADR 005 records the selected object-tracking boundary for
-later implementation tasks without moving tracking into v1.
+later implementation tasks without moving tracking into v1. ADR 006 records the
+v1 local-only model and privacy policy, so remote model execution remains out
+of scope until a separate privacy and credentials design is accepted.
 
 ## 4. Terminology
 
@@ -245,7 +247,9 @@ Missing optional dependencies are capability errors, not import-time crashes.
 `core` and subprocess tools installed. `analyse` requires the `media` group and
 fails before side effects if a required deterministic dependency is missing.
 Post-v1 model commands require locally available model dependencies and model
-weights; BeatCue v1 must not trigger remote downloads.
+weights; BeatCue v1 must not trigger remote downloads. ADR 006 defines backend
+locality as an explicit configured capability rather than something inferred
+from a package name or model name.
 
 ## 7. Domain model
 
@@ -962,6 +966,7 @@ reviewers see intentional changes.
 | VLM response is invalid              | BeatCue drops the annotation, records the model failure, and keeps deterministic cues.                   |
 | Optional model is unavailable        | BeatCue fails only if the user explicitly requested that model.                                          |
 | Local model weights are unavailable  | Post-v1 semantic adapters fail before inference and never trigger an implicit remote download.           |
+| Remote backend is not configured     | Post-v1 model adapters fail before inference with a capability error that names the unsupported backend. |
 | Output path exists                   | Writer refuses to overwrite unless `--force` is set.                                                     |
 | `--wait` is interrupted              | The job ledger records the last known state so `jobs get` can recover or report incompleteness.          |
 
@@ -972,7 +977,8 @@ _Table 7: Required failure behaviour._
 Video frames, audio, captions, and model prompts may contain sensitive content.
 This version runs local analysis only. Remote model execution and remote model
 adapters are fully out of scope until a future privacy and credentials design
-explicitly introduces them.
+explicitly introduces them. ADR 006 records this local-only policy and the
+future capability-error contract for unsupported requested remote backends.
 
 Security rules:
 
@@ -980,7 +986,11 @@ Security rules:
   variable values.
 - `agent-context` reports capability and schema information, not local media
   paths from previous jobs.
-- Profiles may store model names and default output settings, but not API keys.
+- Profiles may store local model names and default output settings, but not
+  API keys, bearer tokens, session cookies, OAuth tokens, refresh tokens, or
+  remote-service credentials.
+- Model adapters must not silently fall back from local execution to remote
+  execution.
 - External commands run through the approved Cuprum catalogue.
 - Delivery adapters write files atomically and reject unsupported URI schemes.
   File delivery writes to a temporary file in the destination directory,
@@ -1018,6 +1028,8 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
   detection is useful for labels and boxes, but it does not own persistence.
 - Remote model execution and remote adapters are deferred because they require
   a future privacy and credentials design before any implementation can opt in.
+  ADR 006 records the v1 policy: requested remote backends fail before
+  inference unless they are explicitly present in the configured capability set.
 - GPU scheduling, remote models, and advanced segmentation remain deferred. The
   initial composition root may select CPU-only adapters and fail clearly when a
   requested model requires unavailable hardware.

@@ -1,15 +1,13 @@
 # Record the v1 local-only model and privacy policy
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+ `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
-This plan has not yet been approved for implementation. Do not implement the
-ADR, documentation signposts, tests, or roadmap update described here until the
-user explicitly approves this plan.
+The user approved implementation on 2026-05-20. Proceed milestone by milestone
+within the constraints and tolerances in this plan.
 
 ## Purpose / Big Picture
 
@@ -22,8 +20,8 @@ BeatCue has a privacy and credentials design.
 After this plan is approved and implemented, a reviewer should be able to open
 the documentation and see one durable policy: BeatCue v1 does not execute
 models remotely, does not persist remote API credentials, and fails clearly
-when a requested remote backend is not present in the configured capability set.
-The observable outcome is documentation alignment and a testable future
+when a requested remote backend is not present in the configured capability
+set. The observable outcome is documentation alignment and a testable future
 implementation contract, not remote model code.
 
 ## Constraints
@@ -101,51 +99,38 @@ conflict in `Decision Log`, and ask for direction.
 ## Risks
 
 - Risk: Documentation could imply that remote model execution is implemented or
-  supported in v1.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: phrase the ADR, users' guide, and design signposts as a
-  local-only v1 policy and a future failure contract, not as new runtime
-  support.
+  supported in v1. Severity: high. Likelihood: medium. Mitigation: phrase the
+  ADR, users' guide, and design signposts as a local-only v1 policy and a
+  future failure contract, not as new runtime support.
 
 - Risk: "Remote backend" could be too vague because some open-source tools use
-  both local and hosted endpoints.
-  Severity: medium.
-  Likelihood: high.
+  both local and hosted endpoints. Severity: medium. Likelihood: high.
   Mitigation: define backend locality by configured capability and endpoint,
   not by library name. Ollama is the concrete prior-art example: its API can
   target `http://localhost:11434/api` or `https://ollama.com/api`.
 
 - Risk: The phrase "configured capability set" is not yet a concrete runtime
-  type in the package.
-  Severity: medium.
-  Likelihood: high.
-  Mitigation: record the required future behaviour in the ADR and technical
-  design. Defer code until the package skeleton and model-adapter tasks own
-  the actual types.
+  type in the package. Severity: medium. Likelihood: high. Mitigation: record
+  the required future behaviour in the ADR and technical design. Defer code
+  until the package skeleton and model-adapter tasks own the actual types.
 
 - Risk: Expanding `agent-context` with backend-specific details now could
   create an externally visible compatibility contract before the package
-  skeleton exists.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: document the required future capability semantics without
-  changing the payload shape in this documentation-only task unless an approved
-  implementation decision says otherwise.
+  skeleton exists. Severity: medium. Likelihood: medium. Mitigation: document
+  the required future capability semantics without changing the payload shape
+  in this documentation-only task unless an approved implementation decision
+  says otherwise.
 
 - Risk: ADR numbering is already imperfect because two ADR 003 files exist.
-  Severity: low.
-  Likelihood: medium.
-  Mitigation: use the next available number at implementation time, expected to
-  be ADR 006, and record the numbering decision in this plan.
+  Severity: low. Likelihood: medium. Mitigation: use the next available number
+  at implementation time, expected to be ADR 006, and record the numbering
+  decision in this plan.
 
 - Risk: A local-only policy could be weakened by implicit model downloads,
-  telemetry, or credential reuse from third-party libraries.
-  Severity: high.
-  Likelihood: medium.
-  Mitigation: require the ADR to state that future local model adapters must
-  use explicit local-file or offline controls and must not silently send
-  credentials or media-derived data to remote services.
+  telemetry, or credential reuse from third-party libraries. Severity: high.
+  Likelihood: medium. Mitigation: require the ADR to state that future local
+  model adapters must use explicit local-file or offline controls and must not
+  silently send credentials or media-derived data to remote services.
 
 ## Progress
 
@@ -172,50 +157,95 @@ conflict in `Decision Log`, and ask for direction.
 - [x] (2026-05-19 11:31Z) Validated the draft plan with `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
   `make test`; all gates passed with logs under `/tmp`.
-- [ ] Commit the draft plan.
-- [ ] Push the branch and create a draft pull request for plan review.
-- [ ] Await explicit user approval before implementing this plan.
+- [x] (2026-05-19 11:34Z) Committed the draft plan.
+- [x] (2026-05-19 11:36Z) Pushed the branch and created draft pull request
+  11 for plan review.
+- [x] (2026-05-20 00:00Z) Received explicit user approval to implement this
+  plan.
+- [x] (2026-05-20 00:08Z) Implemented milestone 1 by adding
+  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`.
+- [x] (2026-05-20 00:14Z) Ran `coderabbit review --agent` after milestone 1;
+  it completed with zero findings.
+- [x] (2026-05-20 00:20Z) Implemented milestone 2 by signposting ADR 006 from
+  the technical design, developers' guide, and users' guide.
+- [x] (2026-05-20 00:26Z) Ran `coderabbit review --agent` after milestone 2;
+  it completed with zero findings.
+- [x] (2026-05-20 00:28Z) Implemented milestone 3 by marking roadmap item
+  1.1.3 done and citing ADR 006 as the durable decision record.
+- [x] (2026-05-20 00:36Z) Ran final validation gates sequentially with logs
+  under `/tmp`: `make markdownlint`, `make nixie`, `make check-fmt`,
+  `make lint`, `make typecheck`, and `make test` all passed.
+- [x] (2026-05-20 00:42Z) Ran a final `coderabbit review --agent` on the
+  complete implementation. It reported one trivial process finding to verify
+  Markdown formatting and linting for ADR 006.
+- [x] (2026-05-20 00:44Z) Verified ADR 006 table formatting and reran
+  `make markdownlint`; the gate passed with zero errors.
+- [x] (2026-05-20 00:53Z) Reran `coderabbit review --agent`; the first rerun
+  hit a recoverable rate limit, and the retry completed with zero findings.
+- [x] (2026-05-20 00:55Z) Prepared the approved implementation for commit
+  after final Markdown lint verification.
 
 ## Surprises & Discoveries
 
 - Observation: `docs/beatcue-technical-design.md` already says v1 runs local
   analysis only and that remote model execution is out of scope until a future
-  privacy and credentials design exists.
-  Impact: implementation should ratify and make the failure contract concrete
-  rather than introduce a new policy.
+  privacy and credentials design exists. Impact: implementation should ratify
+  and make the failure contract concrete rather than introduce a new policy.
 
 - Observation: `docs/roadmap.md` item 1.1.3 names the success condition as
   clear failure when a requested remote backend is not part of the configured
-  capability set.
-  Impact: the ADR must say more than "remote execution is deferred"; it must
-  specify a future capability-mismatch error contract.
+  capability set. Impact: the ADR must say more than "remote execution is
+  deferred"; it must specify a future capability-mismatch error contract.
 
 - Observation: Hugging Face tooling exposes local/offline controls such as
   `local_files_only=True` in Transformers and `HF_HUB_OFFLINE=1` in
-  `huggingface_hub`.
-  Impact: future local model adapters have established prior art for explicit
-  offline operation and should not rely on best-effort network avoidance.
+  `huggingface_hub`. Impact: future local model adapters have established prior
+  art for explicit offline operation and should not rely on best-effort network
+  avoidance.
 
 - Observation: Hugging Face Hub also documents token and implicit-token
-  environment variables.
-  Impact: the privacy policy must explicitly forbid v1 profiles from storing
-  API keys and should warn future remote-adapter work to design credential
-  handling before implementation.
+  environment variables. Impact: the privacy policy must explicitly forbid v1
+  profiles from storing API keys and should warn future remote-adapter work to
+  design credential handling before implementation.
 
 - Observation: Ollama documents a localhost API base URL and a cloud API base
-  URL for the same API family.
-  Impact: BeatCue should classify model execution by configured capability and
-  endpoint locality, not by adapter brand or protocol shape.
+  URL for the same API family. Impact: BeatCue should classify model execution
+  by configured capability and endpoint locality, not by adapter brand or
+  protocol shape.
 
 - Observation: The Wyvern team found no hard contradiction between roadmap
   item 1.1.3 and the current design, but found a gap around backend-specific
-  failure semantics.
-  Impact: the implementation should add a small ADR and focused design
-  signposts, not broad rewrites.
+  failure semantics. Impact: the implementation should add a small ADR and
+  focused design signposts, not broad rewrites.
 
 - Observation: The first CodeRabbit review reported one trivial but valid
-  wording issue: "roadmap 6.1" should be "roadmap item 6.1".
-  Impact: the wording was corrected before running the validation gates.
+  wording issue: "roadmap 6.1" should be "roadmap item 6.1". Impact: the
+  wording was corrected before running the validation gates.
+
+- Observation: The milestone 1 CodeRabbit review completed with zero findings
+  after ADR 006 was added. Impact: implementation proceeded to documentation
+  signposts.
+
+- Observation: The milestone 2 CodeRabbit review completed with zero findings
+  after the technical design, developers' guide, and users' guide signposted
+  ADR 006. Impact: implementation proceeded to the roadmap update.
+
+- Observation: `make fmt` returned non-zero after touching unrelated Markdown
+  files because the repository-wide fixer surfaced existing long-table
+  line-length reports in older documents. The unrelated formatter edits were
+  restored, and the branch changes passed `make markdownlint` and
+  `make check-fmt`. Impact: no unrelated Markdown churn is included in the
+  implementation.
+
+- Observation: The final CodeRabbit review reported a trivial process concern
+  asking for Markdown formatting and linting on ADR 006. ADR 006 rendered with
+  the expected title and table, and `make markdownlint` passed with zero
+  errors. Impact: the concern was addressed through validation evidence rather
+  than a content change.
+
+- Observation: The first final CodeRabbit rerun was rate limited with a
+  recoverable wait. A retry after the requested delay completed with zero
+  findings. Impact: all CodeRabbit concerns are cleared.
 
 ## Decision Log
 
@@ -224,23 +254,26 @@ conflict in `Decision Log`, and ask for direction.
   implemented, and the `execplans` skill requires an approval gate.
 
 - Decision: Expected ADR path is
-  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`.
-  Rationale: ADR 005 is the current highest unique ADR number. Two ADR 003
-  files already exist, so implementation should use the next available number
-  instead of renumbering history.
+  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`. Rationale: ADR 005
+  is the current highest unique ADR number. Two ADR 003 files already exist, so
+  implementation should use the next available number instead of renumbering
+  history.
 
 - Decision: Treat local-only policy as a capability contract rather than a
-  library blacklist.
-  Rationale: prior art shows the same model tooling can support local cached
-  execution, local HTTP serving, and hosted endpoints. The policy must make the
-  configured capability set explicit.
+  library blacklist. Rationale: prior art shows the same model tooling can
+  support local cached execution, local HTTP serving, and hosted endpoints. The
+  policy must make the configured capability set explicit.
 
 - Decision: Do not require property tests, snapshot tests, behavioural tests,
-  or end-to-end tests for this documentation-only implementation.
-  Rationale: roadmap item 1.1.3 records a decision and contract. The plan must
-  require those test types when later runtime code makes the policy observable,
-  but this documentation change can be validated through Markdown, architecture,
+  or end-to-end tests for this documentation-only implementation. Rationale:
+  roadmap item 1.1.3 records a decision and contract. The plan must require
+  those test types when later runtime code makes the policy observable, but
+  this documentation change can be validated through Markdown, architecture,
   type, lint, and test gates.
+
+- Decision: Use ADR 006 for the local-only model and privacy policy.
+  Rationale: no new ADR 006 existed when implementation began, so the expected
+  next available ADR number remained valid.
 
 ## Implementation Plan
 
@@ -445,5 +478,12 @@ wording issue on the first pass and zero findings on the rerun. The first
 validation pass succeeded for `make markdownlint`, `make nixie`,
 `make check-fmt`, `make typecheck`, `make lint`, and `make test`.
 
-This section must be updated again after the draft-plan pull request is
-created, and again after any approved implementation completes.
+The approved implementation added ADR 006, signposted it from the technical
+design, users' guide, developers' guide, and roadmap, and marked roadmap item
+1.1.3 done. Both implementation CodeRabbit reviews completed with zero
+findings. Final validation passed for `make markdownlint`, `make nixie`,
+`make check-fmt`, `make lint`, `make typecheck`, and `make test`. The final
+complete-branch CodeRabbit review raised one trivial Markdown-validation
+process concern that was addressed by inspecting ADR 006 and rerunning
+`make markdownlint` successfully. The clean CodeRabbit rerun completed with
+zero findings. The implementation is ready for the required commit and push.
