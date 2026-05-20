@@ -537,6 +537,14 @@ pass, plus `make check-architecture` visibly runs Hecate.
   "violations": []}`.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 2; it completed with zero
   findings.
+- [x] 2026-05-20: Replaced local checker/parser/re-export tests with
+  Hecate-backed BeatCue policy tests. The suite now covers forbidden fixture
+  imports, allowed fixture graphs, current package acceptance, missing-root
+  errors, and `ARCH001` diagnostics through `hecate.cli.main`.
+- [x] 2026-05-20: Ran `make check-fmt`, `make lint`, and `make test` for
+  Milestone 3. The test suite reported 11 passing tests.
+- [x] 2026-05-20: Ran CodeRabbit for Milestone 3; it completed with zero
+  findings.
 - [ ] Implement the Hecate replacement after approval.
 - [ ] Mark the relevant roadmap entry done after implementation validation.
 
@@ -566,6 +574,15 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - Hecate installed successfully from the requested Git commit through `uv`.
   The installed version reports as `hecate==0.1.0`, but the source is pinned to
   commit `46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12`.
+- Hecate reports missing package-root configuration errors to stderr with exit
+  code `2`.
+- For the star re-export fixture, Hecate reports the forbidden adapter barrel
+  and public symbol as an `application -> adapter` violation. This still
+  catches the hidden adapter dependency, but the text diagnostic does not name
+  the outbound origin for that specific star-export path.
+- Ruff's security rules reject `subprocess` use in the Hecate tests. Calling
+  `hecate.cli.main` directly keeps the tests inside the current interpreter and
+  still exercises the supported CLI argument surface.
 
 ## Decision log
 
@@ -588,6 +605,11 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - 2026-05-20: Keep `ARCH001` as BeatCue's Hecate rule identifier. Rationale:
   direct Hecate checks accept `default_rule_id = "ARCH001"`, which preserves
   the current diagnostic identifier while migrating the enforcement engine.
+- 2026-05-20: Accept Hecate's star re-export diagnostic shape for BeatCue
+  fixture tests. Rationale: the violation still fails the architecture gate and
+  identifies the forbidden adapter barrel; preserving the old local checker's
+  exact outbound-origin wording is less important than enforcing the boundary
+  through the shared tool.
 
 ## Outcomes & retrospective
 
