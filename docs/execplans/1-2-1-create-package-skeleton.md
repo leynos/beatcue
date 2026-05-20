@@ -5,9 +5,10 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision log`, and `Outcomes & retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
-Implementation must not begin until this plan is explicitly approved.
+Implementation began after explicit approval in the user request dated
+2026-05-20.
 
 ## Purpose / Big picture
 
@@ -442,8 +443,12 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   `make lint`, and `make test`.
 - [x] (2026-05-19T13:18:31+02:00) Ran `coderabbit review --agent`; it
   reported zero findings after minor prose fixes.
-- [ ] Await explicit approval before implementation.
-- [ ] Confirm baseline architecture gate.
+- [x] (2026-05-20T23:53:43+02:00) Received explicit approval to implement this
+  ExecPlan.
+- [x] (2026-05-20T23:53:43+02:00) Confirmed the baseline architecture gate
+  with `make check-architecture`; it passed.
+- [x] (2026-05-20T23:53:43+02:00) Checked `pytest-bdd` availability with
+  `uv run python`; it is not installed in the current dev environment.
 - [ ] Add red unit and behavioural tests for the skeleton.
 - [ ] Create the package skeleton.
 - [ ] Run CodeRabbit and clear skeleton-milestone concerns.
@@ -485,6 +490,13 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   forbidden contracts and layered architecture contracts for Python packages.
   Impact: keep 1.2.1 focused on BeatCue's local checker and avoid adding a
   redundant dependency.
+
+- Observation: `pytest-bdd` is not available in the current development
+  environment.
+  Evidence: `uv run python` reported `ModuleNotFoundError` for `pytest_bdd`.
+  Impact: behavioural coverage for this task requires either adding the
+  development dependency earlier than roadmap item 1.2.3 or deferring
+  pytest-bdd coverage until 1.2.3 wires the requested test dependencies.
 
 ## Decision log
 
