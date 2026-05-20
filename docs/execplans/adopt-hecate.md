@@ -5,11 +5,11 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision log`, and `Outcomes & retrospective` must be kept up to date as work
 proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
-This plan is not approved for implementation yet. Do not replace the checker,
-remove files, change dependencies, or mark roadmap work complete until the user
-explicitly approves this plan.
+This plan was approved for implementation on 2026-05-20. Keep this document
+current as the migration proceeds, and do not mark roadmap work complete until
+the replacement has been implemented and validated.
 
 ## Purpose / big picture
 
@@ -518,7 +518,15 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - [x] 2026-05-19: Reran CodeRabbit after the documentation-style fixes and
   cleared all remaining concerns.
 - [x] 2026-05-20: Committed the planning artefact.
-- [ ] Await explicit user approval before implementation.
+- [x] 2026-05-20: Received explicit approval to implement the plan.
+- [x] 2026-05-20: Reran the Milestone 1 baseline gates:
+  `make check-architecture`, `make check-fmt`, `make lint`, and `make test`
+  all passed. `make test` reported 34 passing tests.
+- [x] 2026-05-20: Used `leta grep` and `leta refs check_architecture` to
+  confirm that the local checker API is referenced by `beatcue.architecture`
+  and architecture tests, not production BeatCue functionality.
+- [x] 2026-05-20: Ran CodeRabbit for Milestone 1; it completed with zero
+  findings.
 - [ ] Implement the Hecate replacement after approval.
 - [ ] Mark the relevant roadmap entry done after implementation validation.
 
@@ -539,6 +547,12 @@ pass, plus `make check-architecture` visibly runs Hecate.
   issues in older documents outside this plan. The planning change was
   validated with the requested code gates and targeted Markdown lint for this
   file.
+- Baseline validation on 2026-05-20 was clean before implementation edits:
+  `make check-architecture`, `make check-fmt`, `make lint`, and `make test`
+  passed on the repository-local checker.
+- `leta refs check_architecture` found references only in the local
+  architecture package and tests, which means removing `beatcue.architecture`
+  does not currently affect production BeatCue code.
 
 ## Decision log
 
@@ -555,6 +569,9 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - 2026-05-19: Do not mark the roadmap entry done during plan drafting.
   Rationale: the requested replacement must be approved before implementation,
   so the feature is incomplete.
+- 2026-05-20: Begin implementation after explicit approval. Rationale: the
+  approval gate is now satisfied, but roadmap completion remains blocked until
+  Hecate is installed, wired, documented, validated, and reviewed.
 
 ## Outcomes & retrospective
 
