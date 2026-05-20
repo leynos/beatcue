@@ -545,6 +545,15 @@ pass, plus `make check-architecture` visibly runs Hecate.
   Milestone 3. The test suite reported 11 passing tests.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 3; it completed with zero
   findings.
+- [x] 2026-05-20: Replaced the Makefile `check-architecture` implementation
+  with `$(UV_ENV) $(UV) run hecate check` and removed the local
+  `beatcue.architecture` checker package.
+- [x] 2026-05-20: Ran `make check-architecture`, `make lint`, and `make test`
+  after removing the local checker. The architecture gate now prints
+  `hecate: architecture check passed`, lint includes that gate, and the test
+  suite still reports 11 passing tests.
+- [x] 2026-05-20: Ran CodeRabbit for Milestone 4; it completed with zero
+  findings.
 - [ ] Implement the Hecate replacement after approval.
 - [ ] Mark the relevant roadmap entry done after implementation validation.
 
@@ -583,6 +592,9 @@ pass, plus `make check-architecture` visibly runs Hecate.
 - Ruff's security rules reject `subprocess` use in the Hecate tests. Calling
   `hecate.cli.main` directly keeps the tests inside the current interpreter and
   still exercises the supported CLI argument surface.
+- Removing `beatcue.architecture` did not require a compatibility wrapper. The
+  symbol-reference check and migrated tests confirmed it was an internal
+  fitness-function implementation rather than a public BeatCue API.
 
 ## Decision log
 
@@ -610,6 +622,10 @@ pass, plus `make check-architecture` visibly runs Hecate.
   identifies the forbidden adapter barrel; preserving the old local checker's
   exact outbound-origin wording is less important than enforcing the boundary
   through the shared tool.
+- 2026-05-20: Remove `beatcue.architecture` instead of keeping a deprecation
+  wrapper. Rationale: no production code depends on it, the Makefile target is
+  the documented contributor interface, and keeping a wrapper would preserve a
+  second checker surface after Hecate becomes the enforcement engine.
 
 ## Outcomes & retrospective
 
