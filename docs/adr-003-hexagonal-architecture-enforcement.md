@@ -2,8 +2,10 @@
 
 ## Status
 
-Accepted on 2026-05-11. BeatCue enforces its documented package dependency
-direction with a repository-local Python architecture checker.
+Superseded on 2026-05-20 by
+[ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md).
+ BeatCue now enforces its documented package dependency direction with Hecate
+rather than the repository-local Python checker described here.
 
 ## Date
 
@@ -13,8 +15,8 @@ direction with a repository-local Python architecture checker.
 
 BeatCue is still a skeleton package, but its design already defines strict
 hexagonal boundaries. Domain code must remain pure, application services must
-orchestrate through domain-owned ports, adapters may contain infrastructure,
-and `beatcue.config` is the narrow composition root that wires concrete
+orchestrate through domain-owned ports, adapters may contain infrastructure, and
+ `beatcue.config` is the narrow composition root that wires concrete
 dependencies.
 
 Ordinary unit tests are not enough to preserve those boundaries while the
@@ -63,8 +65,8 @@ The default production policy is BeatCue-specific:
 
 _Table 1: BeatCue architecture groups enforced by the checker._
 
-The current production package has too little future-shape code to exercise
-all rules, so tests use small fixture packages under
+The current production package has too little future-shape code to exercise all
+rules, so tests use small fixture packages under
 `tests/fixtures/architecture/`. Those fixtures prove the intended future
 boundaries without introducing placeholder domain, application, or adapter
 implementations into the real package.
@@ -96,13 +98,13 @@ configuration file before it is reused across more df12 projects.
 
 The fixture strategy proves future boundaries before production modules exist,
 but it cannot prove the future production layout until those packages are
-implemented. `make check-architecture` still checks the current real
-`beatcue/` tree on every lint run.
+implemented. `make check-architecture` still checks the current real `beatcue/`
+tree on every lint run.
 
 ## Architectural rationale
 
 Hexagonal architecture protects the domain model by making infrastructure a
 replaceable implementation detail. Enforcing import direction in the local
 quality gate turns that design rule into an executable constraint. Keeping the
-composition root explicit preserves the practical place where concrete
-adapters are allowed to meet application services.
+composition root explicit preserves the practical place where concrete adapters
+are allowed to meet application services.

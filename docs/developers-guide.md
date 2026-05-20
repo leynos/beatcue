@@ -58,29 +58,35 @@ receive adapters through constructor injection or explicit composition
 functions. Avoid module-level singletons for services, command runners, model
 instances, or stores.
 
-BeatCue enforces these import-direction rules with a local architecture
-checker. Run the gate directly with:
+BeatCue enforces these import-direction rules with
+[Hecate](https://github.com/leynos/hecate), pinned in the development
+dependencies and configured by `[tool.hecate]` in `pyproject.toml`. Run the
+gate directly with:
 
 ```bash
 make check-architecture
 ```
 
-The ordinary lint target also runs the checker after Ruff:
+The ordinary lint target also runs Hecate after Ruff and Pylint:
 
 ```bash
 make lint
 ```
 
-The checker scans the current `beatcue/` package and reports `ARCH001` when a
-module imports a forbidden architecture group. It also expands package
-`__init__.py` re-exports, including star re-exports, so a barrel module cannot
-hide an adapter dependency from domain or application code.
+Hecate scans the current `beatcue/` package and reports `ARCH001` when a module
+imports a forbidden architecture group. The policy groups are ordered: specific
+prefixes such as `beatcue.adapters.outbound` must appear before broader
+prefixes such as `beatcue.adapters`. Keep documented exceptions as
+`[[tool.hecate.ignore_imports]]` entries with a non-empty reason; do not use
+ignores to mask real boundary violations.
 
 Because the repository is still design-first and most future packages are not
 implemented, the architecture tests use small fixture packages under
 `tests/fixtures/architecture/` to prove planned boundaries. Do not add empty
-production domain, application, or adapter modules only to satisfy the
-checker; add real modules when the corresponding roadmap work lands.
+production domain, application, or adapter modules only to satisfy the checker;
+add real modules when the corresponding roadmap work lands. BeatCue tests
+should cover BeatCue-specific policy examples and leave parser, configuration,
+and re-export internals to Hecate's own test suite.
 
 ## Domain and application APIs
 
@@ -275,7 +281,6 @@ make typecheck
 make test
 ```
 
-
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
@@ -362,7 +367,6 @@ When the Episodic policy changes, update BeatCue intentionally rather than
 copying blindly. The pull request should explain whether the change tightens
 the shared policy, adapts BeatCue to a local constraint, or deliberately
 diverges from Episodic.
-
 
 ### `pyproject.toml` lint configuration
 

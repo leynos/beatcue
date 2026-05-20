@@ -71,6 +71,8 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
     Transformers, Cuprum, and CmdMox.
   - See beatcue-technical-design.md §5.
   - Success: a deliberate adapter import in `beatcue.domain` fails the gate.
+  - Implementation: Hecate now enforces the architecture policy through
+    `make check-architecture`; see ADR 005.
 - [ ] 1.2.3. Wire the development dependencies required by the design.
   - Requires 1.2.1.
   - Add runtime or optional dependency groups for Cyclopts, Rich, Cuprum,
@@ -84,12 +86,12 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
 
 ### 1.3. Prove real I/O through a walking skeleton
 
-This step answers whether the intended architecture can touch a real video
-file and write a real cue sheet before deeper feature extraction work begins.
-It is a narrow proof, not the final analysis pipeline. See
+This step answers whether the intended architecture can touch a real video file
+and write a real cue sheet before deeper feature extraction work begins. It is
+a narrow proof, not the final analysis pipeline. See
 beatcue-technical-design.md §§5, 8, 9, 13.2, and 16, and
-beatcue-logisphere-design-stage-review.md §4 scenario A and §8 recommended
-step 5.
+beatcue-logisphere-design-stage-review.md §4 scenario A and §8 recommended step
+5.
 
 - [ ] 1.3.1. Implement the real-I/O walking skeleton.
   - Requires 1.2.3.

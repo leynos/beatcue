@@ -149,10 +149,11 @@ The dependency rule is strict:
   It is the only package that may import both application services and concrete
   outbound adapters.
 
-The import boundary is a CI fitness function. A future implementation must add
-an import-lint rule or equivalent static check that fails if domain code
-imports from adapters, Cyclopts, Rich, OpenCV, librosa, Transformers, Cuprum,
-or CmdMox.
+The import boundary is a CI fitness function. BeatCue enforces it with Hecate,
+configured in `pyproject.toml` and run by `make check-architecture`. The Hecate
+policy fails if domain code imports from adapters, Cyclopts, Rich, OpenCV,
+librosa, Transformers, Cuprum, or CmdMox. ADR 005 records the decision to
+replace the repository-local checker with pinned Hecate.
 
 ### 5.1. Alternatives considered
 
@@ -915,6 +916,7 @@ The architecture makes testing a design constraint, not an afterthought.
 | Writer contracts          | Use syrupy snapshots for WebVTT, OTIO metadata summaries, BeatCue JSON, `agent-context`, and CLI error payloads.                                      |
 | External commands         | Use CmdMox to mock `ffprobe` and `ffmpeg` invocations without running real binaries.                                                                  |
 | Adapter smoke tests       | Use small generated media fixtures to verify OpenCV, librosa, PySceneDetect, and writer adapters when dependencies are installed.                     |
+| Architecture boundaries   | Use Hecate through `make check-architecture` and fixture packages to reject forbidden import directions.                                              |
 
 _Table 6: Verification responsibilities._
 
