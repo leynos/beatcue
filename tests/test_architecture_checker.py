@@ -61,14 +61,14 @@ def _fixture_policy(package: str) -> str:
 def _typed_mapping(value: object) -> dict[str, typ.Any]:
     """Narrow parsed TOML group values for static analysis."""
     assert isinstance(value, dict)
-    return value
+    return typ.cast("dict[str, typ.Any]", value)
 
 
 def _typed_sequence(value: object) -> list[str]:
     """Narrow parsed TOML arrays for static analysis."""
     assert isinstance(value, list)
     assert all(isinstance(item, str) for item in value)
-    return value
+    return typ.cast("list[str]", value)
 
 
 def _toml_string_array(values: list[str]) -> str:
