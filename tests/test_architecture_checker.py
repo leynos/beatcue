@@ -1,175 +1,214 @@
-"""Tests for BeatCue architecture checker policy enforcement."""
+"""Tests for BeatCue's Hecate architecture policy."""
 
 from __future__ import annotations
 
-import ast
-import keyword
+import json
+import tomllib
+import typing as typ
 from pathlib import Path
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
+from hecate.cli import main as hecate_main
 
-from beatcue.architecture import check_architecture, fixture_policy
-from beatcue.architecture._imports import compute_module_name, relative_import_base
-
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
-type ExpectedViolation = tuple[str, str, str, str, str]
-_IDENTIFIER = st.from_regex(r"[a-z][a-z0-9_]{0,12}", fullmatch=True).filter(
-    lambda value: not keyword.iskeyword(value)
-)
+BEATCUE_PACKAGE = "beatcue"
+
+
+def _hecate_policy() -> dict[str, typ.Any]:
+    """Read the production Hecate policy from pyproject.toml."""
+    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
+    return dict(pyproject["tool"]["hecate"])
+
+
+def _fixture_prefix(prefix: str, package: str) -> str:
+    """Map production BeatCue package prefixes onto one fixture package."""
+    if prefix == BEATCUE_PACKAGE:
+        return package
+    if prefix.startswith(f"{BEATCUE_PACKAGE}."):
+        return f"{package}{prefix.removeprefix(BEATCUE_PACKAGE)}"
+    return prefix
+
+
+def _fixture_policy(package: str) -> str:
+    """Build a Hecate policy for one fixture package from production policy."""
+    policy = _hecate_policy()
+    lines = [
+        "[tool.hecate]",
+        f"root_packages = [{json.dumps(package)}]",
+        f"default_rule_id = {json.dumps(policy['default_rule_id'])}",
+        "",
+    ]
+
+    for group in policy["groups"]:
+        group_mapping = _typed_mapping(group)
+        prefixes = [
+            _fixture_prefix(prefix, package)
+            for prefix in _typed_sequence(group_mapping["prefixes"])
+        ]
+        allowed = _typed_sequence(group_mapping["allowed"])
+        lines.extend([
+            "[[tool.hecate.groups]]",
+            f"name = {json.dumps(group_mapping['name'])}",
+            f"prefixes = {_toml_string_array(prefixes)}",
+            f"allowed = {_toml_string_array(allowed)}",
+            "",
+        ])
+
+    return "\n".join(lines)
+
+
+def _typed_mapping(value: object) -> dict[str, typ.Any]:
+    """Narrow parsed TOML group values for static analysis."""
+    assert isinstance(value, dict)
+    return typ.cast("dict[str, typ.Any]", value)
+
+
+def _typed_sequence(value: object) -> list[str]:
+    """Narrow parsed TOML arrays for static analysis."""
+    assert isinstance(value, list)
+    assert all(isinstance(item, str) for item in value)
+    return typ.cast("list[str]", value)
+
+
+def _toml_string_array(values: list[str]) -> str:
+    """Render a compact TOML string array."""
+    return f"[{', '.join(json.dumps(value) for value in values)}]"
+
+
+def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
+    """Write a temporary Hecate config for one fixture package."""
+    config_path = tmp_path / "hecate.toml"
+    config_path.write_text(_fixture_policy(package), encoding="utf-8")
+    return config_path
 
 
 @pytest.mark.parametrize(
-    ("package_name", "expected_parts", "expected_violations"),
+    ("package_name", "expected_diagnostics"),
     [
         (
             "domain_imports_adapter",
             (
-                "ARCH001",
-                "domain_imports_adapter.domain",
-                "domain_imports_adapter.adapters.outbound",
-                "domain",
-                "outbound_adapter",
-            ),
-            (
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.domain_imports_adapter.domain",
-                    "tests.fixtures.architecture.domain_imports_adapter.adapters.outbound",
-                    "domain",
-                    "outbound_adapter",
+                    (
+                        "ARCH001",
+                        "domain_imports_adapter.domain",
+                        "domain_imports_adapter.adapters.outbound",
+                        "domain -> outbound_adapter",
+                    ),
+                    2,
                 ),
             ),
         ),
         (
             "application_imports_adapter",
             (
-                "ARCH001",
-                "application_imports_adapter.application",
-                "application_imports_adapter.adapters.outbound",
-                "application",
-                "outbound_adapter",
-            ),
-            (
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.application_imports_adapter.application",
-                    "tests.fixtures.architecture.application_imports_adapter.adapters.outbound",
-                    "application",
-                    "outbound_adapter",
+                    (
+                        "ARCH001",
+                        "application_imports_adapter.application",
+                        "application_imports_adapter.adapters.outbound",
+                        "application -> outbound_adapter",
+                    ),
+                    2,
                 ),
             ),
         ),
         (
             "application_imports_reexported_adapter",
             (
-                "ARCH001",
-                "application_imports_reexported_adapter.application",
-                "application_imports_reexported_adapter.adapters.outbound",
-                "application",
-                "outbound_adapter",
-            ),
-            (
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.application_imports_reexported_adapter.application",
-                    "tests.fixtures.architecture.application_imports_reexported_adapter.adapters",
-                    "application",
-                    "adapter",
+                    (
+                        "ARCH001",
+                        "application_imports_reexported_adapter.application",
+                        "application_imports_reexported_adapter.adapters",
+                        "application -> adapter",
+                    ),
+                    2,
                 ),
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.application_imports_reexported_adapter.application",
-                    "tests.fixtures.architecture.application_imports_reexported_adapter.adapters.outbound",
-                    "application",
-                    "outbound_adapter",
+                    (
+                        "ARCH001",
+                        "application_imports_reexported_adapter.application",
+                        "application_imports_reexported_adapter.adapters.outbound",
+                        "application -> outbound_adapter",
+                    ),
+                    1,
                 ),
             ),
         ),
         (
             "application_imports_star_reexported_adapter",
             (
-                "ARCH001",
-                "application_imports_star_reexported_adapter.application",
-                "application_imports_star_reexported_adapter.adapters.outbound",
-                "application",
-                "outbound_adapter",
-            ),
-            (
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.application_imports_star_reexported_adapter.application",
-                    "tests.fixtures.architecture.application_imports_star_reexported_adapter.adapters",
-                    "application",
-                    "adapter",
-                ),
-                (
-                    "ARCH001",
-                    "tests.fixtures.architecture.application_imports_star_reexported_adapter.application",
-                    "tests.fixtures.architecture.application_imports_star_reexported_adapter.adapters.outbound",
-                    "application",
-                    "outbound_adapter",
+                    (
+                        "ARCH001",
+                        "application_imports_star_reexported_adapter.application",
+                        "application_imports_star_reexported_adapter.adapters",
+                        "application -> adapter",
+                    ),
+                    2,
                 ),
             ),
         ),
         (
             "inbound_cli_imports_outbound_adapter",
             (
-                "ARCH001",
-                "inbound_cli_imports_outbound_adapter.cli",
-                "inbound_cli_imports_outbound_adapter.adapters.outbound",
-                "inbound_adapter",
-                "outbound_adapter",
-            ),
-            (
                 (
-                    "ARCH001",
-                    "tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.cli",
-                    "tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.adapters.outbound",
-                    "inbound_adapter",
-                    "outbound_adapter",
+                    (
+                        "ARCH001",
+                        "inbound_cli_imports_outbound_adapter.cli",
+                        "inbound_cli_imports_outbound_adapter.adapters.outbound",
+                        "inbound_adapter -> outbound_adapter",
+                    ),
+                    2,
                 ),
             ),
         ),
     ],
 )
-def test_checker_reports_fixture_boundary_violations(
+def test_hecate_reports_fixture_boundary_violations(
     package_name: str,
-    expected_parts: tuple[str, ...],
-    expected_violations: tuple[ExpectedViolation, ...],
+    expected_diagnostics: tuple[tuple[tuple[str, ...], int], ...],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Forbidden fixture imports produce stable architecture diagnostics."""
+    """Forbidden fixture imports produce stable Hecate diagnostics."""
     package = f"tests.fixtures.architecture.{package_name}"
+    config_path = _write_fixture_policy(tmp_path, package)
 
-    result = check_architecture(
-        package_root=FIXTURE_ROOT / package_name,
-        package=package,
-        policy=fixture_policy(package),
+    exit_code = hecate_main([
+        "check",
+        "--config",
+        str(config_path),
+        "--package",
+        package,
+        "--root",
+        str(FIXTURE_ROOT / package_name),
+    ])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert not captured.err
+    violation_lines = [
+        line for line in captured.out.splitlines() if line.startswith("ARCH001:")
+    ]
+    expected_violation_count = sum(count for _, count in expected_diagnostics)
+    assert len(violation_lines) == expected_violation_count, (
+        f"Expected {expected_violation_count} violation lines, "
+        f"found {len(violation_lines)}.\nstdout:\n{captured.out}"
     )
-
-    rendered = "\n".join(violation.render() for violation in result.violations)
-    assert not result.ok, rendered
-    for expected_part in expected_parts:
-        assert expected_part in rendered, (
-            f"expected {expected_part!r} in architecture diagnostics {rendered!r}"
+    for expected_parts, expected_count in expected_diagnostics:
+        matching_violation_lines = [
+            line
+            for line in violation_lines
+            if all(expected_part in line for expected_part in expected_parts)
+        ]
+        assert len(matching_violation_lines) == expected_count, (
+            "Expected violation lines matching "
+            f"{expected_parts!r}: {expected_count}, found "
+            f"{len(matching_violation_lines)}.\nstdout:\n{captured.out}"
         )
-    assert len(result.violations) == len(expected_violations), (
-        f"expected {len(expected_violations)} violations, "
-        f"got {len(result.violations)}: {rendered!r}"
-    )
-    for violation, expected_violation in zip(
-        result.violations,
-        expected_violations,
-        strict=True,
-    ):
-        assert (
-            violation.rule_id,
-            violation.importer,
-            violation.imported,
-            violation.importer_group,
-            violation.imported_group,
-        ) == expected_violation
 
 
 @pytest.mark.parametrize(
@@ -180,192 +219,89 @@ def test_checker_reports_fixture_boundary_violations(
         "inbound_cli_imports_config",
     ],
 )
-def test_checker_accepts_allowed_fixture_graphs(package_name: str) -> None:
-    """Allowed fixture imports do not produce architecture violations."""
+def test_hecate_accepts_allowed_fixture_graphs(
+    package_name: str,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Allowed fixture imports do not produce Hecate violations."""
     package = f"tests.fixtures.architecture.{package_name}"
+    config_path = _write_fixture_policy(tmp_path, package)
 
-    result = check_architecture(
-        package_root=FIXTURE_ROOT / package_name,
-        package=package,
-        policy=fixture_policy(package),
-    )
+    exit_code = hecate_main([
+        "check",
+        "--config",
+        str(config_path),
+        "--package",
+        package,
+        "--root",
+        str(FIXTURE_ROOT / package_name),
+    ])
 
-    rendered = "\n".join(violation.render() for violation in result.violations)
-    assert result.ok, rendered
-
-
-def test_production_checker_accepts_current_beatcue_package() -> None:
-    """The current BeatCue skeleton follows the enforced boundaries."""
-    result = check_architecture()
-
-    rendered = "\n".join(violation.render() for violation in result.violations)
-    assert result.ok, rendered
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "architecture check passed" in captured.out
+    assert not captured.err
 
 
-def test_checker_rejects_missing_package_root(tmp_path: Path) -> None:
-    """Missing package roots fail fast instead of producing a false pass."""
+def test_hecate_accepts_current_beatcue_package(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The current BeatCue skeleton follows the configured boundaries."""
+    exit_code = hecate_main(["check", "--format", "text"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "architecture check passed" in captured.out
+    assert not captured.err
+
+
+def test_hecate_reports_missing_package_root_as_configuration_error(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Missing package roots fail before import scanning starts."""
+    package = "sample"
+    config_path = _write_fixture_policy(tmp_path, package)
     missing_root = tmp_path / "missing"
 
-    with pytest.raises(FileNotFoundError, match="architecture package root"):
-        check_architecture(package_root=missing_root)
+    exit_code = hecate_main([
+        "check",
+        "--config",
+        str(config_path),
+        "--package",
+        package,
+        "--root",
+        str(missing_root),
+    ])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert not captured.out
+    assert f"package root {missing_root} is not a directory" in captured.err
 
 
-def test_checker_rejects_file_package_root(tmp_path: Path) -> None:
-    """File package roots fail fast before import scanning starts."""
-    file_root = tmp_path / "module.py"
-    file_root.write_text("", encoding="utf-8")
-
-    with pytest.raises(NotADirectoryError, match="architecture package root"):
-        check_architecture(package_root=file_root)
-
-
-def test_fixture_policy_keeps_inbound_and_outbound_permissions_distinct() -> None:
-    """Inbound and outbound adapters have separate dependency directions."""
-    policy = fixture_policy("tests.fixtures.architecture.package")
-
-    inbound_group = policy.group_for("tests.fixtures.architecture.package.cli")
-    outbound_group = policy.group_for(
-        "tests.fixtures.architecture.package.adapters.outbound"
-    )
-
-    assert inbound_group is not None
-    assert outbound_group is not None
-    assert "composition_root" in inbound_group.allowed_groups
-    assert "outbound_adapter" not in inbound_group.allowed_groups
-    assert "adapter" in outbound_group.allowed_groups
-    assert "outbound_adapter" in outbound_group.allowed_groups
-    assert "inbound_adapter" not in outbound_group.allowed_groups
-
-
-@pytest.mark.parametrize(
-    ("level", "expected"),
-    [
-        (2, "tests.fixtures"),
-        (3, "tests"),
-        (4, ""),
-    ],
-)
-def test_relative_import_base_handles_levels_beyond_module_depth(
-    level: int,
-    expected: str,
+def test_hecate_reports_file_package_root_as_configuration_error(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Relative import helpers keep returning strings for excessive levels."""
-    node = ast.ImportFrom(module=None, names=[], level=level)
+    """File package roots fail before import scanning starts."""
+    package = "sample"
+    config_path = _write_fixture_policy(tmp_path, package)
+    file_root = tmp_path / "not_a_directory.py"
+    file_root.write_text("print('not a package root')\n", encoding="utf-8")
 
-    result = relative_import_base(
-        node,
-        Path("module.py"),
-        "tests.fixtures.architecture.module",
-    )
+    exit_code = hecate_main([
+        "check",
+        "--config",
+        str(config_path),
+        "--package",
+        package,
+        "--root",
+        str(file_root),
+    ])
 
-    assert isinstance(result, str), (
-        "relative_import_base should return a string even when the import level "
-        "exceeds the importing module depth"
-    )
-    assert result == expected
-
-
-@pytest.mark.parametrize(
-    ("source_path", "importing_module", "level", "expected"),
-    [
-        (
-            Path("module.py"),
-            "tests.fixtures.architecture.package.module",
-            1,
-            "tests.fixtures.architecture.package",
-        ),
-        (
-            Path("module.py"),
-            "tests.fixtures.architecture.package.module",
-            2,
-            "tests.fixtures.architecture",
-        ),
-        (
-            Path("__init__.py"),
-            "tests.fixtures.architecture.package",
-            1,
-            "tests.fixtures.architecture.package",
-        ),
-        (
-            Path("__init__.py"),
-            "tests.fixtures.architecture.package",
-            2,
-            "tests.fixtures.architecture",
-        ),
-    ],
-)
-def test_relative_import_base_handles_valid_module_and_package_levels(
-    source_path: Path,
-    importing_module: str,
-    level: int,
-    expected: str,
-) -> None:
-    """Relative import helpers derive bases for module and package imports."""
-    node = ast.ImportFrom(module=None, names=[], level=level)
-
-    result = relative_import_base(node, source_path, importing_module)
-
-    assert result == expected
-
-
-@given(
-    parts=st.lists(_IDENTIFIER, min_size=1, max_size=5), source_kind=st.integers(0, 1)
-)
-def test_compute_module_name_round_trips_source_paths(
-    parts: list[str],
-    source_kind: int,
-) -> None:
-    """Module-name computation preserves dotted package-relative paths."""
-    root = Path("pkg")
-    source_path = (
-        root.joinpath(*parts, "__init__.py")
-        if source_kind
-        else root.joinpath(*parts).with_suffix(".py")
-    )
-
-    result = compute_module_name(root, "pkg", source_path)
-
-    assert result == ".".join(("pkg", *parts))
-
-
-@given(
-    depth=st.integers(min_value=1, max_value=6),
-    level=st.integers(min_value=1, max_value=8),
-    source_kind=st.integers(0, 1),
-)
-def test_relative_import_base_matches_package_depth(
-    depth: int,
-    level: int,
-    source_kind: int,
-) -> None:
-    """Relative import bases collapse according to module package depth."""
-    parts = tuple(f"p{index}" for index in range(depth))
-    importing_module = ".".join(parts)
-    source_path = Path("__init__.py") if source_kind else Path(f"{parts[-1]}.py")
-    module_parts = parts if source_kind else parts[:-1]
-    drop_count = level - 1
-    expected_parts = module_parts[:-drop_count] if drop_count else module_parts
-    node = ast.ImportFrom(module=None, names=[], level=level)
-
-    result = relative_import_base(node, source_path, importing_module)
-
-    assert result == ".".join(expected_parts)
-
-
-@given(suffix=st.lists(_IDENTIFIER, min_size=0, max_size=3))
-def test_fixture_policy_classifies_group_prefix_descendants(
-    suffix: list[str],
-) -> None:
-    """Architecture group membership follows the first matching prefix."""
-    policy = fixture_policy("tests.fixtures.architecture.package")
-
-    for group in policy.groups:
-        for prefix in group.module_prefixes:
-            module = ".".join((prefix, *suffix)) if suffix else prefix
-
-            result = policy.group_for(module)
-            matching_groups = tuple(
-                candidate for candidate in policy.groups if candidate.contains(module)
-            )
-
-            assert result == matching_groups[0]
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert not captured.out
+    assert f"package root {file_root} is not a directory" in captured.err

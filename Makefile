@@ -92,7 +92,7 @@ lint: .deps ## Run linters
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run python -m beatcue.architecture
+	$(UV_ENV) $(UV) run hecate check
 
 typecheck: .deps ty ## Run typechecking
 	ty --version
