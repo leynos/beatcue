@@ -14,7 +14,7 @@ from hecate.cli import main as hecate_main
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 BEATCUE_PACKAGE = "beatcue"
-_PRODUCTION_BOUNDARY_GROUPS = (
+_PRODUCTION_BOUNDARY_GROUPS: tuple[tuple[str, str], ...] = (
     ("beatcue.domain", "domain"),
     ("beatcue.application", "application"),
     ("beatcue.adapters", "adapter"),
@@ -344,8 +344,11 @@ def test_production_boundary_packages_match_architecture_groups(
     """The default architecture policy classifies real boundary packages."""
     group = _hecate_group_for(module_name)
 
-    assert group is not None
-    assert group["name"] == group_name
+    assert group is not None, f"module {module_name!r} not classified by Hecate"
+    assert group["name"] == group_name, (
+        f"module {module_name!r} classified as {group['name']!r}, "
+        f"expected {group_name!r}"
+    )
 
 
 @pytest.mark.parametrize(("module_name", "_group_name"), _PRODUCTION_BOUNDARY_GROUPS)
@@ -356,4 +359,6 @@ def test_production_boundary_packages_are_importable(
     """The production package exposes the planned hexagonal boundaries."""
     module = importlib.import_module(module_name)
 
-    assert module.__name__ == module_name
+    assert module.__name__ == module_name, (
+        f"imported {module.__name__!r}, expected {module_name!r}"
+    )

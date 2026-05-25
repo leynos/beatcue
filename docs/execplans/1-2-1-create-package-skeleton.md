@@ -561,7 +561,7 @@ cross-layer imports or behaviour modules.
 
 The architecture coverage now checks the real package skeleton in unit tests
 and in a pytest-bdd scenario. `pytest-bdd` was added to the development
-dependency group after explicit user approval so the behavioural test could
+dependency group after explicit user approval, so the behavioural test could
 land with this task.
 
 `docs/developers-guide.md` now describes the production boundary packages as
