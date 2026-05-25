@@ -21,12 +21,13 @@ The repository currently contains:
 The planned video-analysis API and CLI are not implemented yet. Do not document
 planned commands as available until the implementation lands.
 
-The v1 implementation boundary is deterministic cue extraction for
-single-scene or single-shot videos. Semantic annotation, object tracking, OTIO
-enrichment, remote model execution, graphics processing unit (GPU) scheduling,
-and advanced segmentation are post-v1 unless a later design update changes the
-boundary. ADR 005 records the selected object-tracking boundary for that later
-work.
+The v1 implementation boundary is deterministic cue extraction for single-scene
+or single-shot videos. Semantic annotation, object tracking, OTIO enrichment,
+remote model execution, graphics processing unit (GPU) scheduling, and advanced
+segmentation are post-v1 unless a later design update changes the boundary. ADR
+005 records the selected object-tracking boundary for that later work. ADR 006
+records the v1 local-only model and privacy policy: remote model execution is
+out of scope until a separate privacy and credentials design is accepted.
 
 ## Architectural rules
 
@@ -150,6 +151,15 @@ use deterministic centroid association over plain detector observations, so
 fixtures can prove stable track IDs, entry and exit edges, missing detections,
 and confidence handling without model inference.
 
+Future model adapters must follow ADR 006. Backends advertise locality and
+capabilities explicitly through the configured capability set; do not infer
+remote support from an installed package, model name, or adapter brand. A
+requested remote backend that is not configured must fail before inference with
+a capability error that names the backend and points to the local-only v1
+policy. Adapters must not silently fall back from local execution to remote
+execution, and local adapters should use explicit offline or local-file
+controls where their underlying libraries provide them.
+
 ## Subprocess tooling
 
 All external commands must run through the Cuprum-backed command adapter. Do
@@ -218,8 +228,10 @@ explicit CLI flag > environment variable > profile > config file > default
 
 The composition root is responsible for merging configuration and constructing
 immutable request objects. Profiles may store reusable analysis settings, model
-names, output preferences, and thresholds. They must not store API keys or
-other secrets.
+names, output preferences, and thresholds. They must not store API keys, bearer
+tokens, session cookies, OAuth tokens, refresh tokens, or other remote-service
+credentials. Remote backend support requires the future roadmap item 6.1
+privacy and credentials work before implementation.
 
 Use `BEATCUE_HOME` in tests when profile or job storage needs an isolated
 directory.
