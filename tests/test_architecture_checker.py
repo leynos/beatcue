@@ -2,19 +2,26 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import importlib
 import json
 import tomllib
 import typing as typ
+from pathlib import Path
 
-from hecate.cli import main as hecate_main
 import pytest
+from hecate.cli import main as hecate_main
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 BEATCUE_PACKAGE = "beatcue"
-from beatcue.architecture.policy import default_policy
-import importlib
+_PRODUCTION_BOUNDARY_GROUPS = (
+    ("beatcue.domain", "domain"),
+    ("beatcue.application", "application"),
+    ("beatcue.adapters", "adapter"),
+    ("beatcue.adapters.inbound", "inbound_adapter"),
+    ("beatcue.adapters.outbound", "outbound_adapter"),
+    ("beatcue.config", "composition_root"),
+)
 
 
 def _hecate_policy() -> dict[str, typ.Any]:
@@ -76,6 +83,26 @@ def _typed_sequence(value: object) -> list[str]:
 def _toml_string_array(values: list[str]) -> str:
     """Render a compact TOML string array."""
     return f"[{', '.join(json.dumps(value) for value in values)}]"
+
+
+def _hecate_group_for(module_name: str) -> dict[str, typ.Any] | None:
+    """Return the configured Hecate group for a production module."""
+    groups = [_typed_mapping(group) for group in _hecate_policy()["groups"]]
+    matching_groups = [
+        group
+        for group in groups
+        if any(
+            module_name == prefix or module_name.startswith(f"{prefix}.")
+            for prefix in _typed_sequence(group["prefixes"])
+        )
+    ]
+    return max(
+        matching_groups,
+        key=lambda group: max(
+            len(prefix) for prefix in _typed_sequence(group["prefixes"])
+        ),
+        default=None,
+    )
 
 
 def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
@@ -308,16 +335,18 @@ def test_hecate_reports_file_package_root_as_configuration_error(
     assert not captured.out
     assert f"package root {file_root} is not a directory" in captured.err
 
+
 @pytest.mark.parametrize(("module_name", "group_name"), _PRODUCTION_BOUNDARY_GROUPS)
 def test_production_boundary_packages_match_architecture_groups(
     module_name: str,
     group_name: str,
 ) -> None:
     """The default architecture policy classifies real boundary packages."""
-    group = default_policy().group_for(module_name)
+    group = _hecate_group_for(module_name)
 
     assert group is not None
-    assert group.name == group_name
+    assert group["name"] == group_name
+
 
 @pytest.mark.parametrize(("module_name", "_group_name"), _PRODUCTION_BOUNDARY_GROUPS)
 def test_production_boundary_packages_are_importable(
