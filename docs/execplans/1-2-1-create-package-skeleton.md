@@ -452,9 +452,23 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
 - [x] (2026-05-25T23:28:20+02:00) Received user approval to install
   `pytest-bdd`, then added it to the dev dependency group with
   `uv add --group dev pytest-bdd`.
-- [ ] Add red unit and behavioural tests for the skeleton.
-- [ ] Create the package skeleton.
-- [ ] Run CodeRabbit and clear skeleton-milestone concerns.
+- [x] (2026-05-25T23:28:20+02:00) Added red unit tests and a pytest-bdd
+  scenario for the production package skeleton. The focused red run failed
+  because `beatcue.domain`, `beatcue.application`, `beatcue.adapters`, and
+  `beatcue.config` do not exist yet.
+- [x] (2026-05-25T23:28:20+02:00) Created boundary-only
+  `__init__.py` files for `beatcue.domain`, `beatcue.application`,
+  `beatcue.adapters`, `beatcue.adapters.inbound`, `beatcue.adapters.outbound`,
+  and `beatcue.config`.
+- [x] (2026-05-25T23:28:20+02:00) Reran the focused architecture tests;
+  `tests/test_architecture_checker.py` and
+  `tests/test_architecture_package_skeleton_bdd.py` passed.
+- [x] (2026-05-25T23:43:00+02:00) Ran `make check-fmt`, `make typecheck`,
+  `make lint`, `make test`, `make markdownlint`, and `make nixie`, then ran
+  `coderabbit review --agent` for the skeleton milestone. CodeRabbit reported
+  two trivial test-cleanup findings; both were valid, fixed, and revalidated
+  with the full deterministic gate set. The follow-up CodeRabbit review
+  reported zero findings.
 - [ ] Align developer-facing documentation.
 - [ ] Run all required gates.
 - [ ] Run CodeRabbit and clear validation-milestone concerns.

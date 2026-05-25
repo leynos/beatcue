@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import json
 import tomllib
 import typing as typ
-from pathlib import Path
 
-import pytest
 from hecate.cli import main as hecate_main
+import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 BEATCUE_PACKAGE = "beatcue"
+from beatcue.architecture.policy import default_policy
+import importlib
 
 
 def _hecate_policy() -> dict[str, typ.Any]:
@@ -305,3 +307,24 @@ def test_hecate_reports_file_package_root_as_configuration_error(
     assert exit_code == 2
     assert not captured.out
     assert f"package root {file_root} is not a directory" in captured.err
+
+@pytest.mark.parametrize(("module_name", "group_name"), _PRODUCTION_BOUNDARY_GROUPS)
+def test_production_boundary_packages_match_architecture_groups(
+    module_name: str,
+    group_name: str,
+) -> None:
+    """The default architecture policy classifies real boundary packages."""
+    group = default_policy().group_for(module_name)
+
+    assert group is not None
+    assert group.name == group_name
+
+@pytest.mark.parametrize(("module_name", "_group_name"), _PRODUCTION_BOUNDARY_GROUPS)
+def test_production_boundary_packages_are_importable(
+    module_name: str,
+    _group_name: str,
+) -> None:
+    """The production package exposes the planned hexagonal boundaries."""
+    module = importlib.import_module(module_name)
+
+    assert module.__name__ == module_name
