@@ -10,7 +10,7 @@ Status: IN PROGRESS
 Implementation began after explicit approval in the user request dated
 2026-05-20.
 
-## Purpose / Big picture
+## Purpose / big picture
 
 BeatCue's technical design depends on a stable hexagonal package boundary:
 domain code at the centre, application services around it, adapters at the
@@ -523,7 +523,7 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
 
 ## Outcomes & retrospective
 
-This section is intentionally empty while the plan is in draft. During
+This section is intentionally empty while the plan is in progress. During
 implementation, record the final package files, tests, documentation changes,
 gate results, CodeRabbit outcomes, commit hash, and any follow-up tasks here.
 
