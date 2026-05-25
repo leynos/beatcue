@@ -449,6 +449,9 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   with `make check-architecture`; it passed.
 - [x] (2026-05-20T23:53:43+02:00) Checked `pytest-bdd` availability with
   `uv run python`; it is not installed in the current dev environment.
+- [x] (2026-05-25T23:28:20+02:00) Received user approval to install
+  `pytest-bdd`, then added it to the dev dependency group with
+  `uv add --group dev pytest-bdd`.
 - [ ] Add red unit and behavioural tests for the skeleton.
 - [ ] Create the package skeleton.
 - [ ] Run CodeRabbit and clear skeleton-milestone concerns.
@@ -520,6 +523,13 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   Rationale: 1.2.1 introduces package boundaries and architecture-fitness
   checks, not output formats, business invariants, or formal domain logic.
   Date: 2026-05-19.
+
+- Decision: Add `pytest-bdd` in roadmap item 1.2.1 after explicit user
+  approval.
+  Rationale: behavioural coverage is requested for this task, and waiting for
+  1.2.3 would leave the package-skeleton workflow without the planned
+  behavioural scenario.
+  Date: 2026-05-25.
 
 ## Outcomes & retrospective
 
