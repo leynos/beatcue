@@ -5,10 +5,10 @@ This ExecPlan (execution plan) is a living document. The sections
 `Decision log`, and `Outcomes & retrospective` must be kept up to date as work
 proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Implementation began after explicit approval in the user request dated
-2026-05-20.
+2026-05-20 and completed on 2026-05-25.
 
 ## Purpose / big picture
 
@@ -469,11 +469,17 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   two trivial test-cleanup findings; both were valid, fixed, and revalidated
   with the full deterministic gate set. The follow-up CodeRabbit review
   reported zero findings.
-- [ ] Align developer-facing documentation.
-- [ ] Run all required gates.
-- [ ] Run CodeRabbit and clear validation-milestone concerns.
-- [ ] Commit the approved change.
-- [ ] Mark roadmap item 1.2.1 done.
+- [x] (2026-05-25T23:50:00+02:00) Aligned `docs/developers-guide.md` with the
+  new production boundary packages and checked off roadmap item 1.2.1 in
+  `docs/roadmap.md`.
+- [x] (2026-05-25T23:58:00+02:00) Reran the full required gate set after the
+  documentation and roadmap updates: `make check-fmt`, `make typecheck`,
+  `make lint`, `make test`, `make markdownlint`, and `make nixie` all passed.
+- [x] (2026-05-25T23:58:00+02:00) Ran `coderabbit review --agent` for the
+  validation milestone; it reported zero findings.
+- [x] (2026-05-25T23:58:00+02:00) Committed the package skeleton milestone as
+  `da95b51`.
+- [x] (2026-05-25T23:50:00+02:00) Marked roadmap item 1.2.1 done.
 
 ## Surprises & discoveries
 
@@ -547,9 +553,30 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
 
 ## Outcomes & retrospective
 
-This section is intentionally empty while the plan is in progress. During
-implementation, record the final package files, tests, documentation changes,
-gate results, CodeRabbit outcomes, commit hash, and any follow-up tasks here.
+Roadmap item 1.2.1 is complete. The production package now exposes
+boundary-only packages for `beatcue.domain`, `beatcue.application`,
+`beatcue.adapters`, `beatcue.adapters.inbound`, `beatcue.adapters.outbound`,
+and `beatcue.config`. Each package is importable and intentionally contains no
+cross-layer imports or behaviour modules.
+
+The architecture coverage now checks the real package skeleton in unit tests
+and in a pytest-bdd scenario. `pytest-bdd` was added to the development
+dependency group after explicit user approval so the behavioural test could
+land with this task.
+
+`docs/developers-guide.md` now describes the production boundary packages as
+present, `docs/roadmap.md` marks 1.2.1 done, and no user-facing API or CLI
+behaviour changed. `docs/users-guide.md` therefore did not need an update.
+
+Validation passed with `make check-fmt`, `make typecheck`, `make lint`,
+`make test`, `make markdownlint`, and `make nixie`. CodeRabbit reported two
+valid trivial test-cleanup findings during the skeleton milestone; both were
+fixed, revalidated, and followed by a zero-finding review. The final validation
+milestone CodeRabbit review also reported zero findings.
+
+No follow-up work remains for 1.2.1. Later roadmap items still own concrete
+domain values, application services, CLI wiring, adapter implementations, and
+the remaining design dependencies.
 
 [^1]: Import Linter documentation, "Import Linter", accessed 2026-05-19,
     <https://import-linter.readthedocs.io/en/v2.4/readme.html>.

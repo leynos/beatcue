@@ -65,7 +65,7 @@ This step answers whether the repository can enforce the intended dependency
 direction during normal development. The outcome informs every implementation
 task after this phase. See beatcue-technical-design.md §§5-8 and §17.
 
-- [ ] 1.2.1. Create the `domain`, `application`, `adapters`, and `config`
+- [x] 1.2.1. Create the `domain`, `application`, `adapters`, and `config`
   package skeleton.
   - Requires 1.1.1.
   - Include placeholder modules only where they express a real boundary.
