@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import importlib
 import json
-import tomllib
-import typing as typ
 from pathlib import Path
 
 import pytest
+from conftest import hecate_group_for, hecate_policy, typed_mapping, typed_sequence
 from hecate.cli import main as hecate_main
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -24,12 +23,6 @@ _PRODUCTION_BOUNDARY_GROUPS: tuple[tuple[str, str], ...] = (
 )
 
 
-def _hecate_policy() -> dict[str, typ.Any]:
-    """Read the production Hecate policy from pyproject.toml."""
-    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
-    return dict(pyproject["tool"]["hecate"])
-
-
 def _fixture_prefix(prefix: str, package: str) -> str:
     """Map production BeatCue package prefixes onto one fixture package."""
     if prefix == BEATCUE_PACKAGE:
@@ -41,7 +34,7 @@ def _fixture_prefix(prefix: str, package: str) -> str:
 
 def _fixture_policy(package: str) -> str:
     """Build a Hecate policy for one fixture package from production policy."""
-    policy = _hecate_policy()
+    policy = hecate_policy()
     lines = [
         "[tool.hecate]",
         f"root_packages = [{json.dumps(package)}]",
@@ -50,12 +43,12 @@ def _fixture_policy(package: str) -> str:
     ]
 
     for group in policy["groups"]:
-        group_mapping = _typed_mapping(group)
+        group_mapping = typed_mapping(group)
         prefixes = [
             _fixture_prefix(prefix, package)
-            for prefix in _typed_sequence(group_mapping["prefixes"])
+            for prefix in typed_sequence(group_mapping["prefixes"])
         ]
-        allowed = _typed_sequence(group_mapping["allowed"])
+        allowed = typed_sequence(group_mapping["allowed"])
         lines.extend([
             "[[tool.hecate.groups]]",
             f"name = {json.dumps(group_mapping['name'])}",
@@ -67,42 +60,9 @@ def _fixture_policy(package: str) -> str:
     return "\n".join(lines)
 
 
-def _typed_mapping(value: object) -> dict[str, typ.Any]:
-    """Narrow parsed TOML group values for static analysis."""
-    assert isinstance(value, dict)
-    return typ.cast("dict[str, typ.Any]", value)
-
-
-def _typed_sequence(value: object) -> list[str]:
-    """Narrow parsed TOML arrays for static analysis."""
-    assert isinstance(value, list)
-    assert all(isinstance(item, str) for item in value)
-    return typ.cast("list[str]", value)
-
-
 def _toml_string_array(values: list[str]) -> str:
     """Render a compact TOML string array."""
     return f"[{', '.join(json.dumps(value) for value in values)}]"
-
-
-def _hecate_group_for(module_name: str) -> dict[str, typ.Any] | None:
-    """Return the configured Hecate group for a production module."""
-    groups = [_typed_mapping(group) for group in _hecate_policy()["groups"]]
-    matching_groups = [
-        group
-        for group in groups
-        if any(
-            module_name == prefix or module_name.startswith(f"{prefix}.")
-            for prefix in _typed_sequence(group["prefixes"])
-        )
-    ]
-    return max(
-        matching_groups,
-        key=lambda group: max(
-            len(prefix) for prefix in _typed_sequence(group["prefixes"])
-        ),
-        default=None,
-    )
 
 
 def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
@@ -268,9 +228,11 @@ def test_hecate_accepts_allowed_fixture_graphs(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 0
-    assert "architecture check passed" in captured.out
-    assert not captured.err
+    assert exit_code == 0, f"Expected exit 0, got {exit_code}.\nstdout:\n{captured.out}"
+    assert "architecture check passed" in captured.out, (
+        f"Expected 'architecture check passed' in stdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
 
 
 def test_hecate_accepts_current_beatcue_package(
@@ -280,9 +242,11 @@ def test_hecate_accepts_current_beatcue_package(
     exit_code = hecate_main(["check", "--format", "text"])
 
     captured = capsys.readouterr()
-    assert exit_code == 0
-    assert "architecture check passed" in captured.out
-    assert not captured.err
+    assert exit_code == 0, f"Expected exit 0, got {exit_code}.\nstdout:\n{captured.out}"
+    assert "architecture check passed" in captured.out, (
+        f"Expected 'architecture check passed' in stdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
 
 
 def test_hecate_reports_missing_package_root_as_configuration_error(
@@ -305,9 +269,11 @@ def test_hecate_reports_missing_package_root_as_configuration_error(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 2
-    assert not captured.out
-    assert f"package root {missing_root} is not a directory" in captured.err
+    assert exit_code == 2, f"Expected exit 2, got {exit_code}"
+    assert not captured.out, f"Unexpected stdout:\n{captured.out}"
+    assert f"package root {missing_root} is not a directory" in captured.err, (
+        f"Expected directory error in stderr:\n{captured.err}"
+    )
 
 
 def test_hecate_reports_file_package_root_as_configuration_error(
@@ -331,9 +297,11 @@ def test_hecate_reports_file_package_root_as_configuration_error(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 2
-    assert not captured.out
-    assert f"package root {file_root} is not a directory" in captured.err
+    assert exit_code == 2, f"Expected exit 2, got {exit_code}"
+    assert not captured.out, f"Unexpected stdout:\n{captured.out}"
+    assert f"package root {file_root} is not a directory" in captured.err, (
+        f"Expected directory error in stderr:\n{captured.err}"
+    )
 
 
 @pytest.mark.parametrize(("module_name", "group_name"), _PRODUCTION_BOUNDARY_GROUPS)
@@ -342,7 +310,7 @@ def test_production_boundary_packages_match_architecture_groups(
     group_name: str,
 ) -> None:
     """The default architecture policy classifies real boundary packages."""
-    group = _hecate_group_for(module_name)
+    group = hecate_group_for(module_name)
 
     assert group is not None, f"module {module_name!r} not classified by Hecate"
     assert group["name"] == group_name, (
