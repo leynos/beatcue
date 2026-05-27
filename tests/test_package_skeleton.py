@@ -8,21 +8,13 @@ import keyword
 from pathlib import Path
 
 import pytest
-from conftest import hecate_group_for
+from conftest import PRODUCTION_BOUNDARY_GROUPS, hecate_group_for
 from hecate.cli import main as hecate_main
 from hypothesis import given
 from hypothesis import strategies as st
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BEATCUE_PACKAGE = "beatcue"
-_PRODUCTION_BOUNDARY_GROUPS: tuple[tuple[str, str], ...] = (
-    ("beatcue.domain", "domain"),
-    ("beatcue.application", "application"),
-    ("beatcue.adapters", "adapter"),
-    ("beatcue.adapters.inbound", "inbound_adapter"),
-    ("beatcue.adapters.outbound", "outbound_adapter"),
-    ("beatcue.config", "composition_root"),
-)
 _PRODUCTION_BOUNDARY_FILES: tuple[tuple[str, str, Path], ...] = (
     (
         "beatcue.domain",
@@ -154,7 +146,7 @@ def test_hecate_rejects_temporary_boundary_violation(
 
 
 @given(
-    boundary_group=st.sampled_from(_PRODUCTION_BOUNDARY_GROUPS),
+    boundary_group=st.sampled_from(PRODUCTION_BOUNDARY_GROUPS),
     suffix=st.lists(_IDENTIFIER, min_size=1, max_size=3).map(tuple),
 )
 def test_production_boundary_descendants_match_architecture_groups(
@@ -172,4 +164,31 @@ def test_production_boundary_descendants_match_architecture_groups(
     assert group["name"] == group_name, (
         f"module {descendant_module_name!r} classified as {group['name']!r}, "
         f"expected {group_name!r}"
+    )
+
+
+@pytest.mark.parametrize(
+    ("module_name", "expected_group_name"),
+    [
+        # beatcue.adapters.inbound.* must select inbound_adapter over adapter
+        ("beatcue.adapters.inbound.cli", "inbound_adapter"),
+        ("beatcue.adapters.inbound.http.handler", "inbound_adapter"),
+        # beatcue.adapters.outbound.* must select outbound_adapter over adapter
+        ("beatcue.adapters.outbound.ffprobe", "outbound_adapter"),
+        ("beatcue.adapters.outbound.cache.lru", "outbound_adapter"),
+    ],
+)
+def test_hecate_group_for_selects_most_specific_prefix(
+    module_name: str,
+    expected_group_name: str,
+) -> None:
+    """Longest-prefix match picks the most specific group when prefixes overlap."""
+    group = hecate_group_for(module_name)
+
+    assert group is not None, (
+        f"Module {module_name!r} not classified by any Hecate group"
+    )
+    assert group["name"] == expected_group_name, (
+        f"Module {module_name!r} classified as {group['name']!r}, "
+        f"expected {expected_group_name!r}"
     )

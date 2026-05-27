@@ -7,20 +7,16 @@ import json
 from pathlib import Path
 
 import pytest
-from conftest import hecate_group_for, hecate_policy, typed_mapping, typed_sequence
+from conftest import (
+    PRODUCTION_BOUNDARY_GROUPS,
+    hecate_group_for,
+    hecate_policy,
+)
 from hecate.cli import main as hecate_main
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 BEATCUE_PACKAGE = "beatcue"
-_PRODUCTION_BOUNDARY_GROUPS: tuple[tuple[str, str], ...] = (
-    ("beatcue.domain", "domain"),
-    ("beatcue.application", "application"),
-    ("beatcue.adapters", "adapter"),
-    ("beatcue.adapters.inbound", "inbound_adapter"),
-    ("beatcue.adapters.outbound", "outbound_adapter"),
-    ("beatcue.config", "composition_root"),
-)
 
 
 def _fixture_prefix(prefix: str, package: str) -> str:
@@ -43,15 +39,11 @@ def _fixture_policy(package: str) -> str:
     ]
 
     for group in policy["groups"]:
-        group_mapping = typed_mapping(group)
-        prefixes = [
-            _fixture_prefix(prefix, package)
-            for prefix in typed_sequence(group_mapping["prefixes"])
-        ]
-        allowed = typed_sequence(group_mapping["allowed"])
+        prefixes = [_fixture_prefix(prefix, package) for prefix in group["prefixes"]]
+        allowed = group["allowed"]
         lines.extend([
             "[[tool.hecate.groups]]",
-            f"name = {json.dumps(group_mapping['name'])}",
+            f"name = {json.dumps(group['name'])}",
             f"prefixes = {_toml_string_array(prefixes)}",
             f"allowed = {_toml_string_array(allowed)}",
             "",
@@ -177,8 +169,10 @@ def test_hecate_reports_fixture_boundary_violations(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 1
-    assert not captured.err
+    assert exit_code == 1, (
+        f"Expected exit code 1, got {exit_code}.\nstdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
     violation_lines = [
         line for line in captured.out.splitlines() if line.startswith("ARCH001:")
     ]
@@ -304,7 +298,7 @@ def test_hecate_reports_file_package_root_as_configuration_error(
     )
 
 
-@pytest.mark.parametrize(("module_name", "group_name"), _PRODUCTION_BOUNDARY_GROUPS)
+@pytest.mark.parametrize(("module_name", "group_name"), PRODUCTION_BOUNDARY_GROUPS)
 def test_production_boundary_packages_match_architecture_groups(
     module_name: str,
     group_name: str,
@@ -319,7 +313,7 @@ def test_production_boundary_packages_match_architecture_groups(
     )
 
 
-@pytest.mark.parametrize(("module_name", "_group_name"), _PRODUCTION_BOUNDARY_GROUPS)
+@pytest.mark.parametrize(("module_name", "_group_name"), PRODUCTION_BOUNDARY_GROUPS)
 def test_production_boundary_packages_are_importable(
     module_name: str,
     _group_name: str,

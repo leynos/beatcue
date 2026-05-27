@@ -1,9 +1,8 @@
 # Create the package skeleton for BeatCue's architecture
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & discoveries`,
-`Decision log`, and `Outcomes & retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & discoveries`, `Decision log`,
+and `Outcomes & retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -16,9 +15,9 @@ BeatCue's technical design depends on a stable hexagonal package boundary:
 domain code at the centre, application services around it, adapters at the
 edge, and `beatcue.config` as the composition root that wires concrete
 implementations. Roadmap item 1.2.2 has already added a local architecture
-checker, but the production package still lacks the real
-`beatcue.domain`, `beatcue.application`, `beatcue.adapters`, and
-`beatcue.config` packages that later work will inhabit.
+checker, but the production package still lacks the real `beatcue.domain`,
+`beatcue.application`, `beatcue.adapters`, and `beatcue.config` packages that
+later work will inhabit.
 
 After this plan is approved and implemented, a contributor can inspect the
 package tree and see the intended boundary before any infrastructure adapters
@@ -97,44 +96,33 @@ the conflict in `Decision log`, and ask for direction.
 ## Risks
 
 - Risk: creating empty modules could look like progress while adding no
-  enforceable boundary.
-  Severity: medium.
-  Likelihood: medium.
-  Mitigation: limit production additions to package boundary files and add
-  tests that prove those packages are importable and classified by the
-  architecture policy.
+  enforceable boundary. Severity: medium. Likelihood: medium. Mitigation: limit
+  production additions to package boundary files and add tests that prove those
+  packages are importable and classified by the architecture policy.
 
 - Risk: roadmap item 1.2.2 is already complete while 1.2.1 is still open, so
   tests may already cover future-shape fixtures rather than the real package.
-  Severity: low.
-  Likelihood: high.
-  Mitigation: add production-package checks that assert the newly created
-  packages participate in the same policy as the fixtures.
+  Severity: low. Likelihood: high. Mitigation: add production-package checks
+  that assert the newly created packages participate in the same policy as the
+  fixtures.
 
 - Risk: the current design references both `beatcue.cli` and
-  `beatcue.adapters.inbound.cli`.
-  Severity: medium.
-  Likelihood: medium.
+  `beatcue.adapters.inbound.cli`. Severity: medium. Likelihood: medium.
   Mitigation: do not create a command-line module in this task unless a real
   boundary requires it. If documentation must be clarified, make the smallest
   guide update and record the decision here.
 
 - Risk: the user's requested pytest-bdd behavioural validation may overlap with
   roadmap item 1.2.3, which is scheduled to wire pytest-bdd and other
-  development dependencies after 1.2.1.
-  Severity: medium.
-  Likelihood: medium.
+  development dependencies after 1.2.1. Severity: medium. Likelihood: medium.
   Mitigation: first check whether pytest-bdd is already available in the
   environment. If not, use the tolerance above to ask whether to add the dev
   dependency in this task or defer behavioural coverage until 1.2.3.
 
 - Risk: Markdown or full Python gates may fail because of unrelated repository
-  state.
-  Severity: medium.
-  Likelihood: low.
-  Mitigation: capture tee logs, distinguish pre-existing failures from new
-  failures, and do not commit until the required gates for this change pass or
-  the user gives explicit direction.
+  state. Severity: medium. Likelihood: low. Mitigation: capture tee logs,
+  distinguish pre-existing failures from new failures, and do not commit until
+  the required gates for this change pass or the user gives explicit direction.
 
 ## Relevant documentation and skills
 
@@ -399,14 +387,14 @@ Create architecture package skeleton
 ```
 
 After committing, update this plan's `Outcomes & retrospective` with the commit
-hash, validation logs, CodeRabbit result, and any follow-up work left for
-1.2.3 or later roadmap items.
+hash, validation logs, CodeRabbit result, and any follow-up work left for 1.2.3
+or later roadmap items.
 
 ## Acceptance criteria
 
 - `beatcue.domain`, `beatcue.application`, `beatcue.adapters`,
-  `beatcue.adapters.inbound`, `beatcue.adapters.outbound`, and
-  `beatcue.config` exist as importable packages.
+  `beatcue.adapters.inbound`, `beatcue.adapters.outbound`, and `beatcue.config`
+  exist as importable packages.
 - The new production files contain only boundary-bearing package metadata and
   do not import outward across the hexagonal boundary.
 - The existing public smoke API still works.
@@ -484,59 +472,51 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
 ## Surprises & discoveries
 
 - Observation: roadmap item 1.2.2 is already complete, even though 1.2.1 is
-  still open.
-  Evidence: `docs/roadmap.md` marks 1.2.2 done and 1.2.1 not done.
+  still open. Evidence: `docs/roadmap.md` marks 1.2.2 done and 1.2.1 not done.
   Impact: implementation should not build a new checker. It should make the
-  existing checker meaningful against the production packages created by
-  1.2.1.
+  existing checker meaningful against the production packages created by 1.2.1.
 
 - Observation: the architecture policy already includes package prefixes for
   `beatcue.domain`, `beatcue.application`, `beatcue.adapters`,
   `beatcue.adapters.inbound`, `beatcue.adapters.outbound`, `beatcue.config`,
-  and a future `beatcue.cli`.
-  Evidence: `beatcue/architecture/policy.py` defines those groups in
-  `_beatcue_groups`.
-  Impact: the skeleton probably needs no policy change unless tests expose a
-  classification gap.
+  and a future `beatcue.cli`. Evidence: `beatcue/architecture/policy.py`
+  defines those groups in `_beatcue_groups`. Impact: the skeleton probably
+  needs no policy change unless tests expose a classification gap.
 
 - Observation: the technical design mentions `beatcue.cli` as an inbound
   adapter, while the package-structure section places CLI under
-  `beatcue.adapters.inbound.cli`.
-  Evidence: `docs/beatcue-technical-design.md` §§5-6.
-  Impact: this task should not settle the CLI module location by creating a
-  placeholder CLI. If a decision becomes unavoidable, escalate or document it
-  separately.
+  `beatcue.adapters.inbound.cli`. Evidence: `docs/beatcue-technical-design.md`
+  §§5-6. Impact: this task should not settle the CLI module location by
+  creating a placeholder CLI. If a decision becomes unavoidable, escalate or
+  document it separately.
 
 - Observation: Import Linter prior art supports the same general
-  fitness-function approach already present in BeatCue.
-  Evidence: Firecrawl retrieved Import Linter documentation describing
-  forbidden contracts and layered architecture contracts for Python packages.
-  Impact: keep 1.2.1 focused on BeatCue's local checker and avoid adding a
-  redundant dependency.
+  fitness-function approach already present in BeatCue. Evidence: Firecrawl
+  retrieved Import Linter documentation describing forbidden contracts and
+  layered architecture contracts for Python packages. Impact: keep 1.2.1
+  focused on BeatCue's local checker and avoid adding a redundant dependency.
 
 - Observation: `pytest-bdd` is not available in the current development
-  environment.
-  Evidence: `uv run python` reported `ModuleNotFoundError` for `pytest_bdd`.
-  Impact: behavioural coverage for this task requires either adding the
-  development dependency earlier than roadmap item 1.2.3 or deferring
-  pytest-bdd coverage until 1.2.3 wires the requested test dependencies.
+  environment. Evidence: `uv run python` reported `ModuleNotFoundError` for
+  `pytest_bdd`. Impact: behavioural coverage for this task requires either
+  adding the development dependency earlier than roadmap item 1.2.3 or
+  deferring pytest-bdd coverage until 1.2.3 wires the requested test
+  dependencies.
 
 ## Decision log
 
 - Decision: The default implementation path creates only package
   `__init__.py` files for `domain`, `application`, `adapters`,
-  `adapters.inbound`, `adapters.outbound`, and `config`.
-  Rationale: those files express the real package boundary without implying
-  domain models, ports, application services, CLI commands, or adapters that
-  later roadmap tasks own.
+  `adapters.inbound`, `adapters.outbound`, and `config`. Rationale: those files
+  express the real package boundary without implying domain models, ports,
+  application services, CLI commands, or adapters that later roadmap tasks own.
   Date: 2026-05-19.
 
 - Decision: The default implementation path does not create `beatcue.cli` or
-  `beatcue.adapters.inbound.cli`.
-  Rationale: the design has a documented location ambiguity, and no actual CLI
-  behaviour exists in 1.2.1. Creating a placeholder would make the ambiguity
-  look settled without delivering behaviour.
-  Date: 2026-05-19.
+  `beatcue.adapters.inbound.cli`. Rationale: the design has a documented
+  location ambiguity, and no actual CLI behaviour exists in 1.2.1. Creating a
+  placeholder would make the ambiguity look settled without delivering
+  behaviour. Date: 2026-05-19.
 
 - Decision: This plan treats syrupy snapshots, CrossHair, Rust extensions, and
   Verus proofs as not applicable unless implementation scope changes.
@@ -545,18 +525,16 @@ hash, validation logs, CodeRabbit result, and any follow-up work left for
   Date: 2026-05-19.
 
 - Decision: Add `pytest-bdd` in roadmap item 1.2.1 after explicit user
-  approval.
-  Rationale: behavioural coverage is requested for this task, and waiting for
-  1.2.3 would leave the package-skeleton workflow without the planned
-  behavioural scenario.
-  Date: 2026-05-25.
+  approval. Rationale: behavioural coverage is requested for this task, and
+  waiting for 1.2.3 would leave the package-skeleton workflow without the
+  planned behavioural scenario. Date: 2026-05-25.
 
 ## Outcomes & retrospective
 
 Roadmap item 1.2.1 is complete. The production package now exposes
 boundary-only packages for `beatcue.domain`, `beatcue.application`,
-`beatcue.adapters`, `beatcue.adapters.inbound`, `beatcue.adapters.outbound`,
-and `beatcue.config`. Each package is importable and intentionally contains no
+`beatcue.adapters`, `beatcue.adapters.inbound`, `beatcue.adapters.outbound`, and
+`beatcue.config`. Each package is importable and intentionally contains no
 cross-layer imports or behaviour modules.
 
 The architecture coverage now checks the real package skeleton in unit tests
@@ -569,14 +547,20 @@ present, `docs/roadmap.md` marks 1.2.1 done, and no user-facing API or CLI
 behaviour changed. `docs/users-guide.md` therefore did not need an update.
 
 Validation passed with `make check-fmt`, `make typecheck`, `make lint`,
-`make test`, `make markdownlint`, and `make nixie`. CodeRabbit reported two
-valid trivial test-cleanup findings during the skeleton milestone; both were
-fixed, revalidated, and followed by a zero-finding review. The final validation
-milestone CodeRabbit review also reported zero findings.
+`make test`, `make markdownlint`, and `make nixie`.
 
-No follow-up work remains for 1.2.1. Later roadmap items still own concrete
-domain values, application services, CLI wiring, adapter implementations, and
-the remaining design dependencies.
+Post-merge review identified residual findings addressed in a follow-up commit:
+bare assertions lacking failure messages in
+`test_hecate_reports_fixture_boundary_violations`; absent TypedDict types for
+Hecate policy and group structures with undocumented fallibility on
+`hecate_policy()`; `_PRODUCTION_BOUNDARY_GROUPS` duplicated across test files
+rather than extracted to `conftest.py`; a redundant `_classified_group` wrapper
+and `boundary_packages_are_classified` BDD step exercising only internal
+helpers rather than the CLI boundary; and the absence of a multi-match
+prefix-specificity test for the longest-prefix selection logic. Two
+out-of-scope items were captured as GitHub issues: snapshot testing for Hecate
+diagnostic output (`#14`) and evaluation of whether the single pytest-bdd
+scenario should be replaced with plain pytest (`#15`).
 
 [^1]: Import Linter documentation, "Import Linter", accessed 2026-05-19,
     <https://import-linter.readthedocs.io/en/v2.4/readme.html>.
