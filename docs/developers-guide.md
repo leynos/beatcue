@@ -42,7 +42,7 @@ The main rule is simple: domain code must not import infrastructure. Domain
 modules should not import Cyclopts, Rich, OpenCV, librosa, Transformers,
 Cuprum, CmdMox, filesystem adapters, or CLI modules.
 
-Planned package boundaries:
+Production package boundaries:
 
 - `beatcue.domain`: Pure domain values, cue types, feature summaries,
   invariants, and port protocols.
@@ -83,13 +83,11 @@ prefixes such as `beatcue.adapters`. Keep documented exceptions as
 `[[tool.hecate.ignore_imports]]` entries with a non-empty reason; do not use
 ignores to mask real boundary violations.
 
-Because the repository is still design-first and most future packages are not
-implemented, the architecture tests use small fixture packages under
-`tests/fixtures/architecture/` to prove planned boundaries. Do not add empty
-production domain, application, or adapter modules only to satisfy the checker;
-add real modules when the corresponding roadmap work lands. BeatCue tests
-should cover BeatCue-specific policy examples and leave parser, configuration,
-and re-export internals to Hecate's own test suite.
+The production boundary packages exist only where they express the
+architecture. Keep their `__init__.py` files free of cross-layer imports. Add
+behaviour modules only when the corresponding roadmap work lands. BeatCue
+tests should cover BeatCue-specific policy examples and leave parser,
+configuration, and re-export internals to Hecate's own test suite.
 
 ## Domain and application APIs
 

@@ -2,23 +2,21 @@
 
 from __future__ import annotations
 
+import importlib
 import json
-import tomllib
-import typing as typ
 from pathlib import Path
 
 import pytest
+from conftest import (
+    PRODUCTION_BOUNDARY_GROUPS,
+    hecate_group_for,
+    hecate_policy,
+)
 from hecate.cli import main as hecate_main
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
 BEATCUE_PACKAGE = "beatcue"
-
-
-def _hecate_policy() -> dict[str, typ.Any]:
-    """Read the production Hecate policy from pyproject.toml."""
-    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
-    return dict(pyproject["tool"]["hecate"])
 
 
 def _fixture_prefix(prefix: str, package: str) -> str:
@@ -32,7 +30,7 @@ def _fixture_prefix(prefix: str, package: str) -> str:
 
 def _fixture_policy(package: str) -> str:
     """Build a Hecate policy for one fixture package from production policy."""
-    policy = _hecate_policy()
+    policy = hecate_policy()
     lines = [
         "[tool.hecate]",
         f"root_packages = [{json.dumps(package)}]",
@@ -41,34 +39,17 @@ def _fixture_policy(package: str) -> str:
     ]
 
     for group in policy["groups"]:
-        group_mapping = _typed_mapping(group)
-        prefixes = [
-            _fixture_prefix(prefix, package)
-            for prefix in _typed_sequence(group_mapping["prefixes"])
-        ]
-        allowed = _typed_sequence(group_mapping["allowed"])
+        prefixes = [_fixture_prefix(prefix, package) for prefix in group["prefixes"]]
+        allowed = group["allowed"]
         lines.extend([
             "[[tool.hecate.groups]]",
-            f"name = {json.dumps(group_mapping['name'])}",
+            f"name = {json.dumps(group['name'])}",
             f"prefixes = {_toml_string_array(prefixes)}",
             f"allowed = {_toml_string_array(allowed)}",
             "",
         ])
 
     return "\n".join(lines)
-
-
-def _typed_mapping(value: object) -> dict[str, typ.Any]:
-    """Narrow parsed TOML group values for static analysis."""
-    assert isinstance(value, dict)
-    return typ.cast("dict[str, typ.Any]", value)
-
-
-def _typed_sequence(value: object) -> list[str]:
-    """Narrow parsed TOML arrays for static analysis."""
-    assert isinstance(value, list)
-    assert all(isinstance(item, str) for item in value)
-    return typ.cast("list[str]", value)
 
 
 def _toml_string_array(values: list[str]) -> str:
@@ -188,8 +169,10 @@ def test_hecate_reports_fixture_boundary_violations(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 1
-    assert not captured.err
+    assert exit_code == 1, (
+        f"Expected exit code 1, got {exit_code}.\nstdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
     violation_lines = [
         line for line in captured.out.splitlines() if line.startswith("ARCH001:")
     ]
@@ -239,9 +222,11 @@ def test_hecate_accepts_allowed_fixture_graphs(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 0
-    assert "architecture check passed" in captured.out
-    assert not captured.err
+    assert exit_code == 0, f"Expected exit 0, got {exit_code}.\nstdout:\n{captured.out}"
+    assert "architecture check passed" in captured.out, (
+        f"Expected 'architecture check passed' in stdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
 
 
 def test_hecate_accepts_current_beatcue_package(
@@ -251,9 +236,11 @@ def test_hecate_accepts_current_beatcue_package(
     exit_code = hecate_main(["check", "--format", "text"])
 
     captured = capsys.readouterr()
-    assert exit_code == 0
-    assert "architecture check passed" in captured.out
-    assert not captured.err
+    assert exit_code == 0, f"Expected exit 0, got {exit_code}.\nstdout:\n{captured.out}"
+    assert "architecture check passed" in captured.out, (
+        f"Expected 'architecture check passed' in stdout:\n{captured.out}"
+    )
+    assert not captured.err, f"Unexpected stderr:\n{captured.err}"
 
 
 def test_hecate_reports_missing_package_root_as_configuration_error(
@@ -276,9 +263,11 @@ def test_hecate_reports_missing_package_root_as_configuration_error(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 2
-    assert not captured.out
-    assert f"package root {missing_root} is not a directory" in captured.err
+    assert exit_code == 2, f"Expected exit 2, got {exit_code}"
+    assert not captured.out, f"Unexpected stdout:\n{captured.out}"
+    assert f"package root {missing_root} is not a directory" in captured.err, (
+        f"Expected directory error in stderr:\n{captured.err}"
+    )
 
 
 def test_hecate_reports_file_package_root_as_configuration_error(
@@ -302,6 +291,36 @@ def test_hecate_reports_file_package_root_as_configuration_error(
     ])
 
     captured = capsys.readouterr()
-    assert exit_code == 2
-    assert not captured.out
-    assert f"package root {file_root} is not a directory" in captured.err
+    assert exit_code == 2, f"Expected exit 2, got {exit_code}"
+    assert not captured.out, f"Unexpected stdout:\n{captured.out}"
+    assert f"package root {file_root} is not a directory" in captured.err, (
+        f"Expected directory error in stderr:\n{captured.err}"
+    )
+
+
+@pytest.mark.parametrize(("module_name", "group_name"), PRODUCTION_BOUNDARY_GROUPS)
+def test_production_boundary_packages_match_architecture_groups(
+    module_name: str,
+    group_name: str,
+) -> None:
+    """The default architecture policy classifies real boundary packages."""
+    group = hecate_group_for(module_name)
+
+    assert group is not None, f"module {module_name!r} not classified by Hecate"
+    assert group["name"] == group_name, (
+        f"module {module_name!r} classified as {group['name']!r}, "
+        f"expected {group_name!r}"
+    )
+
+
+@pytest.mark.parametrize(("module_name", "_group_name"), PRODUCTION_BOUNDARY_GROUPS)
+def test_production_boundary_packages_are_importable(
+    module_name: str,
+    _group_name: str,
+) -> None:
+    """The production package exposes the planned hexagonal boundaries."""
+    module = importlib.import_module(module_name)
+
+    assert module.__name__ == module_name, (
+        f"imported {module.__name__!r}, expected {module_name!r}"
+    )

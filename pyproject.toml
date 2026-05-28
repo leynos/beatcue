@@ -13,6 +13,7 @@ dev = [
     "hypothesis>=6.152.7",
     "pyright",
     "pytest",
+    "pytest-bdd>=8.1.0",
     "ruff",
     "pytest-timeout",
     "pytest-xdist",
