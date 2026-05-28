@@ -52,9 +52,7 @@ def hecate_policy() -> HecatePolicy:
 
 def hecate_group_for(module_name: str) -> HecateGroup | None:
     """Return the configured Hecate group that best matches a module name."""
-    groups: list[HecateGroup] = [
-        typ.cast("HecateGroup", g) for g in hecate_policy()["groups"]
-    ]
+    groups = hecate_policy()["groups"]
     matching_groups = [
         group
         for group in groups
