@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 005: v1 object-tracking boundary
+# Architectural decision record (ADR) 008: v1 object-tracking boundary
 
 ## Status
 

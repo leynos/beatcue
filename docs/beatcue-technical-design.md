@@ -87,7 +87,7 @@ exit cues, OTIO enrichment, remote model execution, graphics processing unit
 (GPU) scheduling, advanced video segmentation, and trainable genre profiles.
 These features remain behind ports in the design, but they are not required for
 the first credible release unless a later architectural decision record (ADR)
-changes the boundary. ADR 005 records the selected object-tracking boundary for
+changes the boundary. ADR 008 records the selected object-tracking boundary for
 later implementation tasks without moving tracking into v1. ADR 006 records the
 v1 local-only model and privacy policy, so remote model execution remains out
 of scope until a separate privacy and credentials design is accepted.
@@ -397,7 +397,7 @@ _Table 3: Domain-owned driven ports._
 The twelve-port surface is intentional as the long-term boundary, but v1
 implementation work should prioritize the ports marked required. Object and
 semantic ports exist, so post-v1 enrichment cannot leak model packages into the
-domain. ADR 002 records this decision. ADR 005 records `ObjectTracker` as a
+domain. ADR 002 records this decision. ADR 008 records `ObjectTracker` as a
 domain-owned port whose first implementation should be a simple
 centroid-association default fed by detector observations. Group injected
 dependencies only after constructor arity becomes a demonstrated maintenance
@@ -638,7 +638,7 @@ length, and contributing signals in `features`.
 Object entry and exit classification requires persistence. A single detection
 near a boundary does not create an entry cue. The object tracker must observe a
 track for at least `min_track_persistence_s`, and the first or last centroid
-must fall inside the configured frame-edge margin. ADR 005 records the selected
+must fall inside the configured frame-edge margin. ADR 008 records the selected
 object-tracking boundary for that persistence requirement.
 
 ## 12. Semantic annotation
@@ -686,7 +686,7 @@ serialization layer maps those values to typed `msgspec` structures for fast
 JSON encoding, decoding, and validation. This choice keeps the schema close to
 the Python data model, gives tests a concrete round-trip contract, and avoids
 deferring a decision that blocks writer and snapshot work. Replacing `msgspec`
-requires an ADR or design update before implementation continues. ADR 003 is
+requires an ADR or design update before implementation continues. ADR 007 is
 the durable decision record for this schema choice. This resolves the schema
 deferral called out in `docs/beatcue-logisphere-design-stage-review.md` §7
 finding 7.
@@ -1022,7 +1022,7 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 
 ## 21. Deferred decisions
 
-- ADR 005 resolves the first object-tracking boundary: later implementation
+- ADR 008 resolves the first object-tracking boundary: later implementation
   work should add a domain-owned `ObjectTracker` port with a simple
   centroid-association default fed by detector observations. Florence-2
   detection is useful for labels and boxes, but it does not own persistence.

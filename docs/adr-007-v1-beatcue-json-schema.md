@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 003: V1 BeatCue JSON schema
+# Architectural decision record (ADR) 007: V1 BeatCue JSON schema
 
 ## Status
 

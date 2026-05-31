@@ -36,13 +36,13 @@ right source of truth for use, maintenance, design, and planning work.
   surface and integration boundary.
 - [ADR 003: Hexagonal architecture enforcement](adr-003-hexagonal-architecture-enforcement.md)
   - Architecture enforcement policy for the Python package.
-- [ADR 003: V1 BeatCue JSON schema](adr-003-v1-beatcue-json-schema.md) -
+- [ADR 007: V1 BeatCue JSON schema](adr-007-v1-beatcue-json-schema.md) -
   Accepted v1 BeatCue JSON schema decision.
 - [ADR 004: Two-tier Python linting](adr-004-two-tier-python-linting.md) -
   Python linting policy and rationale.
 - [ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md)
   - Hecate-based enforcement decision for architecture boundaries.
-- [ADR 005: V1 object tracking boundary](adr-005-v1-object-tracking-boundary.md)
+- [ADR 008: V1 object tracking boundary](adr-008-v1-object-tracking-boundary.md)
   - Accepted object tracking ownership and extension boundary.
 - [ADR 006: V1 local-only model and privacy policy](adr-006-v1-local-only-model-and-privacy-policy.md)
   - Accepted local-only model and privacy decision.

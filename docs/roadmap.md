@@ -33,7 +33,7 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
   - Ratify `msgspec.Struct` as the selected v1 schema technology in an ADR if
     the project still wants a separate decision record.
   - See beatcue-technical-design.md §§7, 13.1, and 17.
-  - Decision: ADR 003 ratifies `msgspec.Struct` as the BeatCue JSON v1 schema
+  - Decision: ADR 007 ratifies `msgspec.Struct` as the BeatCue JSON v1 schema
     technology.
   - Success: the ADR or design signpost explains why `msgspec` is suitable for
     library callers, CLI output, round-trip validation, and stable snapshots.
@@ -42,7 +42,7 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
   - Decide whether v1 uses a centroid tracker, Florence-2-only detections, or a
     pluggable tracker port with a simple default.
   - See beatcue-technical-design.md §§8, 11, 12, and 21.
-  - Decision: ADR 005 ratifies a domain-owned `ObjectTracker` port with a
+  - Decision: ADR 008 ratifies a domain-owned `ObjectTracker` port with a
     simple centroid-association default fed by detector observations. Florence-2
     remains a detection and labelling adapter, not the persistence boundary.
   - Success: later object-entry tasks can implement one selected boundary
