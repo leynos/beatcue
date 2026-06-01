@@ -2,9 +2,11 @@
 
 ## Status
 
-Accepted. BeatCue JSON v1 uses `msgspec.Struct` definitions in the
-serialization layer as the stable schema technology for encoding, decoding, and
-validating lossless analysis output.
+Accepted (2026-05-10).
+
+BeatCue JSON v1 uses `msgspec.Struct` definitions in the serialization layer as
+the stable schema technology for encoding, decoding, and validating lossless
+analysis output.
 
 ## Date
 

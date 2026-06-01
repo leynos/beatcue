@@ -2,11 +2,11 @@
 
 ## Status
 
-Accepted. BeatCue records a domain-owned `ObjectTracker` port as the selected
-object-tracking boundary for post-v1 implementation work. The first tracker
-implementation should be a simple centroid-association default fed by detector
-observations, while Florence-2 remains a detection and labelling adapter rather
-than the tracking persistence boundary.
+Accepted (2026-05-17). BeatCue records a domain-owned `ObjectTracker` port as
+the selected object-tracking boundary for post-v1 implementation work. The
+first tracker implementation should be a simple centroid-association default
+fed by detector observations, while Florence-2 remains a detection and
+labelling adapter rather than the tracking persistence boundary.
 
 ## Date
 

@@ -231,7 +231,7 @@ developer and user guidance, and a roadmap update. Later implementation task
 
 - Observation: Rebasing onto `origin/main` showed that main had already added
   `docs/adr-004-two-tier-python-linting.md`. Impact: the object-tracking ADR
-  was renamed to ADR 008 so both decisions remain addressable.
+  was renamed to ADR 008, so both decisions remain addressable.
 
 ## Decision log
 
