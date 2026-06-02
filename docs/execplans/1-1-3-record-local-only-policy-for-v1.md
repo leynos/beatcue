@@ -121,7 +121,7 @@ conflict in `Decision Log`, and ask for direction.
   in this documentation-only task unless an approved implementation decision
   says otherwise.
 
-- Risk: ADR numbering is already imperfect because two ADR 003 files exist.
+- Risk: ADR numbering was already imperfect because two ADR 003 files existed.
   Severity: low. Likelihood: medium. Mitigation: use the next available number
   at implementation time, expected to be ADR 006, and record the numbering
   decision in this plan.
@@ -255,7 +255,7 @@ conflict in `Decision Log`, and ask for direction.
 
 - Decision: Expected ADR path is
   `docs/adr-006-v1-local-only-model-and-privacy-policy.md`. Rationale: ADR 005
-  is the current highest unique ADR number. Two ADR 003 files already exist, so
+  was the current highest unique ADR number. Two ADR 003 files existed, so
   implementation should use the next available number instead of renumbering
   history.
 

@@ -136,13 +136,13 @@ serializer and validation layer from this decision.
   JSON encoding and decoding, validation during decoding, performance, and no
   required dependencies.
 - [x] (2026-05-10 00:00Z) Created
-  `docs/adr-003-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for the
+  `docs/adr-007-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for the
   BeatCue JSON v1 serialization boundary.
 - [x] (2026-05-10 00:00Z) Added design, user-guide, and developer-guide
-  signposts so public and internal documentation point at ADR 003 without
+  signposts so public and internal documentation point at ADR 007 without
   claiming the serializer exists.
 - [x] (2026-05-10 00:00Z) Marked roadmap item 1.1.1 done and linked the item
-  to ADR 003.
+  to ADR 007.
 - [x] (2026-05-10 00:00Z) Ran Markdown gates and the user-requested Python
   gates sequentially with tee logs under `/tmp`. `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
@@ -174,7 +174,7 @@ serializer and validation layer from this decision.
 - Observation: The repository already has ADR conventions and two accepted
   ADRs. Evidence: `docs/adr-001-colourgram-domain-boundary.md` and
   `docs/adr-002-v1-port-surface.md` are accepted ADRs dated 2026-05-09. Impact:
-  the new ADR should probably be `docs/adr-003-v1-beatcue-json-schema.md`
+  the new ADR should probably be `docs/adr-007-v1-beatcue-json-schema.md`
   unless another ADR is added first.
 
 - Observation: The repository Makefile defines Markdown gates separately from
@@ -234,20 +234,20 @@ serializer and validation layer from this decision.
   Starting or depending on Vidai Mock here would widen the task beyond schema
   ratification. Date/Author: 2026-05-10 / Codex.
 
-- Decision: Use `docs/adr-003-v1-beatcue-json-schema.md` as the ADR file.
+- Decision: Use `docs/adr-007-v1-beatcue-json-schema.md` as the ADR file.
   Rationale: no newer ADR number appeared before implementation, and the
   existing repository sequence ends at ADR 002. Date/Author: 2026-05-10 / Codex.
 
 - Decision: Do not add pytest, pytest-bdd, syrupy, or Hypothesis tests in this
   task. Rationale: the implementation is an ADR and documentation signpost
   change only; there is no executable serializer, CLI workflow, or public
-  output contract to test yet. ADR 003 records those test obligations for the
+  output contract to test yet. ADR 007 records those test obligations for the
   later BeatCue JSON writer implementation. Date/Author: 2026-05-10 / Codex.
 
 ## Outcomes & retrospective
 
 Implemented the schema ratification as documentation-only work. The change
-adds `docs/adr-003-v1-beatcue-json-schema.md`, signposts ADR 003 from
+adds `docs/adr-007-v1-beatcue-json-schema.md`, signposts ADR 007 from
 `docs/beatcue-technical-design.md`, `docs/users-guide.md`, and
 `docs/developers-guide.md`, and marks roadmap item 1.1.1 done in
 `docs/roadmap.md`.
@@ -276,7 +276,7 @@ Validation evidence:
   passed.
 
 No production serializer, package dependency, CLI command, inference-service
-behaviour, or test suite was added. ADR 003 records the required pytest,
+behaviour, or test suite was added. ADR 007 records the required pytest,
 pytest-bdd, syrupy, Hypothesis, and Vidai Mock expectations for the later
 writer and inference-service implementation tasks.
 
@@ -356,7 +356,7 @@ Acceptance for this milestone:
 
 ### Milestone 2: Add the schema ADR
 
-Create `docs/adr-003-v1-beatcue-json-schema.md`, or the next available ADR
+Create `docs/adr-007-v1-beatcue-json-schema.md`, or the next available ADR
 number if `003` is taken. Use the documentation style guide's ADR structure.
 The ADR should be `Accepted` and dated with the implementation date.
 
