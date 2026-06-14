@@ -31,9 +31,11 @@ def _fixture_prefix(prefix: str, package: str) -> str:
 def _fixture_policy(package: str) -> str:
     """Build a Hecate policy for one fixture package from production policy."""
     policy = hecate_policy()
+    include_external_packages = str(policy["include_external_packages"]).lower()
     lines = [
         "[tool.hecate]",
         f"root_packages = [{json.dumps(package)}]",
+        f"include_external_packages = {include_external_packages}",
         f"default_rule_id = {json.dumps(policy['default_rule_id'])}",
         "",
     ]
@@ -78,6 +80,20 @@ def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
                         "domain -> outbound_adapter",
                     ),
                     2,
+                ),
+            ),
+        ),
+        (
+            "domain_imports_cmd_mox",
+            (
+                (
+                    (
+                        "ARCH001",
+                        "domain_imports_cmd_mox.domain",
+                        "cmd_mox",
+                        "domain -> infrastructure",
+                    ),
+                    1,
                 ),
             ),
         ),

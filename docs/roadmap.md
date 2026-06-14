@@ -80,7 +80,7 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - Success: a deliberate adapter import in `beatcue.domain` fails the gate.
   - Implementation: Hecate now enforces the architecture policy through
     `make check-architecture`; see ADR 005.
-- [ ] 1.2.3. Wire the development dependencies required by the design.
+- [x] 1.2.3. Wire the development dependencies required by the design.
   - Requires 1.2.1.
   - Add runtime or optional dependency groups for Cyclopts, Rich, Cuprum,
     OpenTimelineIO, OpenCV, librosa, PySceneDetect, Transformers, and related
@@ -90,6 +90,9 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - See beatcue-technical-design.md §§14, 16, and 17.
   - Success: `make all` installs the package and can discover the empty unit
     and behavioural test suites.
+  - Implementation: dependency extras and dev tooling are declared in
+    `pyproject.toml`, Hecate tracks the actual import names, and ADR 009
+    records the Python 3.14 marker policy.
 
 ### 1.3. Prove real I/O through a walking skeleton
 

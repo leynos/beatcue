@@ -7,6 +7,54 @@ requires-python = ">=3.14"
 license = { text = "ISC" }
 dependencies = []
 
+[project.optional-dependencies]
+# Library values, BeatCue JSON, WebVTT, Cyclopts, Rich, and Cuprum.
+core = [
+    "cyclopts>=4.16",
+    "rich>=15",
+    "cuprum>=0.1.0",
+    "msgspec>=0.21",
+]
+
+# Deterministic analysis with OpenCV, librosa, and PySceneDetect.
+# Use the headless OpenCV stack to avoid X11/Qt runtime deps and to
+# prevent the same-`cv2` conflict that occurs when both `opencv-python`
+# and `opencv-python-headless` are installed.
+# Note: librosa is currently broken on Python 3.14 (upstream issue
+# librosa/librosa#1989) because llvmlite/numba lag. The PEP 508 marker
+# excludes it from the resolver graph on 3.14 so `uv lock` succeeds,
+# while keeping the declaration in place. Remove the marker once
+# librosa publishes a 3.14-compatible release.
+media = [
+    "opencv-python-headless>=4.13",
+    "scenedetect-headless>=0.7",
+    "librosa>=0.11; python_full_version < '3.14'",
+]
+
+# Post-v1 OTIO marker writing. No cp314 wheel for OpenTimelineIO 0.18.1
+# at the time of writing; installation on 3.14 currently requires a
+# CMake sdist build, so the marker excludes it from the resolver until
+# upstream ships cp314 wheels.
+editorial = [
+    "OpenTimelineIO>=0.18; python_full_version < '3.14'",
+]
+
+# Post-v1 local model adapters. ADR 006 forbids remote execution; this
+# extra is declared but never installed by default. `torch` has no cp314
+# wheel yet and the rest of the stack pulls it in transitively, so the
+# whole `models` set is marker-gated to keep `uv lock` solvable today.
+# Remove the markers once `torch` ships cp314 wheels.
+models = [
+    "transformers>=5.9; python_full_version < '3.14'",
+    "torch; python_full_version < '3.14'",
+    "accelerate; python_full_version < '3.14'",
+    "timm; python_full_version < '3.14'",
+    "einops; python_full_version < '3.14'",
+    "pillow; python_full_version < '3.14'",
+    "sentencepiece; python_full_version < '3.14'",
+    "qwen-vl-utils; python_full_version < '3.14'",
+]
+
 [dependency-groups]
 dev = [
     "hecate @ git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12",
@@ -17,6 +65,8 @@ dev = [
     "ruff",
     "pytest-timeout",
     "pytest-xdist",
+    "syrupy>=5.3",
+    "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
 ]
 
 [tool.hecate]
@@ -50,7 +100,13 @@ allowed = ["application", "domain"]
 [[tool.hecate.groups]]
 name = "inbound_adapter"
 prefixes = ["beatcue.cli", "beatcue.adapters.inbound"]
-allowed = ["inbound_adapter", "composition_root", "application", "domain"]
+allowed = [
+    "inbound_adapter",
+    "composition_root",
+    "application",
+    "domain",
+    "infrastructure",
+]
 
 [[tool.hecate.groups]]
 name = "outbound_adapter"
@@ -77,12 +133,23 @@ allowed = [
 [[tool.hecate.groups]]
 name = "infrastructure"
 prefixes = [
-    "cmdmox",
+    "accelerate",
+    # Was "cmdmox"; the importable module name uses an underscore.
+    "cmd_mox",
     "cuprum",
     "cv2",
     "cyclopts",
+    "einops",
     "librosa",
+    "msgspec",
+    "opentimelineio",
+    "pillow",
+    "qwen_vl_utils",
     "rich",
+    "scenedetect",
+    "sentencepiece",
+    "timm",
+    "torch",
     "transformers",
 ]
 allowed = ["infrastructure"]

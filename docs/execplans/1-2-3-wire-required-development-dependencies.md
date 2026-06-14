@@ -4,7 +4,7 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
 `Tolerances`, `Risks`, `Progress`, `Surprises & discoveries`, `Decision log`,
 and `Outcomes & retrospective` must be kept up to date as work proceeds.
 
-Status: DRAFT
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -179,25 +179,102 @@ the conflict in `Decision log`, and ask for direction.
   `inbound_adapter` Hecate gap for Cyclopts/Rich, and the misleading scope of
   the `cmd_mox` regression test); all three are folded into Stages B and D and
   the Risks, Decision log, and Validation sections below.
-- [ ] Receive user approval before implementation.
-- [ ] Rename branch to `1-2-3-wire-required-development-dependencies`
-  and verify a clean working tree.
-- [ ] Stage A: baseline gate run captured to `/tmp`.
-- [ ] Stage B: extras with `python_full_version < '3.14'` markers for
-  librosa, OpenTimelineIO, and the `models` set applied; dev additions
-  (`syrupy`, `cmd-mox`) wired with the import-name comment; Hecate
-  `infrastructure.prefixes` rename to `cmd_mox` plus the new package entries
-  committed; `inbound_adapter.allowed` extended with `"infrastructure"`.
-- [ ] Stage B: architecture-fixture test for the renamed `cmd_mox`
-  prefix added under `tests/fixtures/architecture/` and exercised from
-  `tests/test_architecture_checker.py`. Runtime smoke check
+- [x] (2026-06-14T04:52:03+02:00) Received user approval by direct
+  implementation request.
+- [x] (2026-06-14T04:52:03+02:00) Verified branch is already
+  `1-2-3-wire-required-development-dependencies` and the working tree was clean
+  before implementation.
+- [x] (2026-06-14T04:52:03+02:00) Stage A: baseline `make all`
+  passed with 37 tests. Log:
+  `/tmp/baseline-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+  Pre-edit `uv.lock` size was 394 lines.
+- [x] (2026-06-14T04:52:03+02:00) Red stage for the `cmd_mox`
+  architecture fixture failed for the intended reason: Hecate returned exit 0
+  and printed `architecture check passed` while the test expected a
+  `domain -> infrastructure` violation for `cmd_mox`. Log:
+  `/tmp/red-cmd-mox-fixture-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Stage B: extras with
+  `python_full_version < '3.14'` markers for librosa, OpenTimelineIO, and the
+  `models` set applied; dev additions (`syrupy`, `cmd-mox`) wired with the
+  import-name comment; Hecate `infrastructure.prefixes` rename to `cmd_mox`
+  plus the new package entries staged for commit; `inbound_adapter.allowed`
+  extended with `"infrastructure"`.
+- [x] (2026-06-14T04:52:03+02:00) Stage B: architecture-fixture test
+  for the renamed `cmd_mox` prefix added under `tests/fixtures/architecture/`
+  and exercised from `tests/test_architecture_checker.py`. Runtime smoke check
   (`tests/test_dependency_wiring.py`) added with an honest docstring.
-- [ ] Stage C: `uv lock` and `uv sync --group dev` succeed cleanly.
-- [ ] Stage D: full `make all` passes with both unit and BDD
-  collection.
-- [ ] `coderabbit review --agent` clean.
-- [ ] Documentation updates landed.
-- [ ] Roadmap item 1.2.3 marked done.
+- [x] (2026-06-14T04:52:03+02:00) Stage C: `uv lock` and
+  `uv sync --group dev` succeeded cleanly. Logs:
+  `/tmp/uv-lock-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`
+  and
+  `/tmp/uv-sync-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Focused Stage B checks passed:
+  `tests/test_architecture_checker.py::test_hecate_reports_fixture_boundary_violations[domain_imports_cmd_mox-expected_diagnostics1]`
+  and `tests/test_dependency_wiring.py`. Full
+  `tests/test_architecture_checker.py` also passed with 24 tests. Logs:
+  `/tmp/focused-stage-b-2-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`
+  and
+  `/tmp/architecture-tests-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Stage D: full `make all`
+  passed with 39 tests after lint and typecheck fixes. Log:
+  `/tmp/make-all-stage-d-4-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) `uv run pytest --collect-only -q`
+  collected 39 tests, including top-level unit suites and
+  `tests/test_architecture_package_skeleton_bdd.py`. Log:
+  `/tmp/collect-only-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Standalone
+  `make check-architecture` passed. Log:
+  `/tmp/check-architecture-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Markdown gates passed:
+  `make markdownlint` and `make nixie`. Logs:
+  `/tmp/markdownlint-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`
+  and
+  `/tmp/nixie-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Documentation updates landed:
+  ADR 009 records the dependency-extra and Python 3.14 marker policy;
+  `docs/contents.md`, `docs/developers-guide.md`,
+  `docs/beatcue-technical-design.md`, and `docs/roadmap.md` signpost the
+  decision.
+- [x] (2026-06-14T04:52:03+02:00) Roadmap item 1.2.3 marked done.
+- [x] (2026-06-14T04:52:03+02:00) CodeRabbit review found one
+  minor issue in `tests/test_dependency_wiring.py`: the smoke test used
+  `__import__()` and assertions without failure messages. Replaced those with
+  `import_module()` and explicit assertion messages. Focused test passed. Logs:
+  `/tmp/coderabbit-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`
+  and
+  `/tmp/focused-coderabbit-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Full `make all` passed after
+  the CodeRabbit fix with 39 tests. Log:
+  `/tmp/make-all-coderabbit-fix-2-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Second CodeRabbit review found
+  two still-valid comments: justify the deliberate fixture `F401` suppression,
+  and remove unreachable assertion messages from the dependency smoke test.
+  Both were fixed. Focused checks and full `make all` passed with 39 tests.
+  Logs:
+  `/tmp/coderabbit-2-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  `/tmp/focused-coderabbit-2-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  and
+  `/tmp/make-all-coderabbit-2-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Third CodeRabbit review found
+  three still-valid comments: link ADR 006 from ADR 009, parameterize the
+  dependency smoke test, and assert on captured version/module return values.
+  All were fixed. Focused smoke tests passed with two cases, and full
+  `make all` passed with 40 tests. Logs:
+  `/tmp/coderabbit-3-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  `/tmp/focused-coderabbit-3-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  and
+  `/tmp/make-all-coderabbit-3-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Fourth CodeRabbit review found
+  one still-valid comment: add diagnostic messages to the parameterized smoke
+  test assertions. The messages were added. Focused smoke tests passed with two
+  cases, and full `make all` passed with 40 tests. Logs:
+  `/tmp/coderabbit-4-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  `/tmp/focused-coderabbit-4-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
+  and
+  `/tmp/make-all-coderabbit-4-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-14T04:52:03+02:00) Fifth CodeRabbit review completed
+  with zero findings. Log:
+  `/tmp/coderabbit-5-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
 
 ## Surprises & discoveries
 
@@ -218,6 +295,38 @@ the conflict in `Decision log`, and ask for direction.
   `tests/test_dependency_wiring.py` claim that "the test proves the rename" was
   wrong. The plan now adds a fixture-based architecture test instead, following
   the pattern already in `tests/fixtures/architecture/`.
+
+- Observation: the fixture Hecate policy builder copied production groups and
+  `default_rule_id` but did not copy `include_external_packages = true`.
+  Evidence: after adding `domain_imports_cmd_mox`, the focused test still
+  printed `hecate: architecture check passed` after `pyproject.toml` had been
+  updated, while the dependency smoke test proved `cmd_mox` was installed.
+  Impact: existing fixture tests exercised internal BeatCue-like imports but
+  could not detect mistakes in third-party infrastructure prefixes. The test
+  helper now mirrors production's external-import scanning, and the full
+  architecture test module passes with 24 tests.
+
+- Observation: CodeRabbit review caught that the first dependency smoke test
+  used the low-level `__import__()` idiom and assertions without diagnostic
+  messages. Impact: failures would have been correct but less actionable for a
+  contributor diagnosing a miswired dev dependency. The test now uses
+  `importlib.import_module()` and explicit assertion messages.
+
+- Observation: a later CodeRabbit pass correctly noted that the explicit
+  assertion messages were unreachable because `metadata.version()` and
+  `import_module()` raise on failure. Impact: the test is clearer as direct
+  calls that let the underlying exception explain the missing distribution or
+  import name. The same pass also required a reason on the fixture's
+  intentional `F401` suppression.
+
+- Observation: the third CodeRabbit pass asked for a parameterized dependency
+  smoke test with assertions on the captured version string and module object,
+  and for ADR cross-references to be Markdown links. Impact: the smoke test now
+  has one case per dev dependency mapping, and ADR 009 links to ADR 006.
+
+- Observation: the fourth CodeRabbit pass asked for assertion messages on the
+  now-reachable smoke-test assertions. Impact: the test keeps explicit value
+  checks while reporting which dependency mapping failed.
 
 ## Decision log
 
@@ -295,7 +404,24 @@ the conflict in `Decision log`, and ask for direction.
 
 ## Outcomes & retrospective
 
-TBD on completion.
+Roadmap item 1.2.3 is complete. A fresh checkout can resolve the declared
+development environment with `uv sync --group dev`, and `make all` passes with
+the dev tooling, the `core` runtime extra, and the Hecate import-name policy in
+place. The optional `media`, `editorial`, and `models` extras are declared in
+`pyproject.toml`; packages with known Python 3.14 resolver gaps remain
+marker-gated until upstream support lands.
+
+The most important implementation lesson was that fixture architecture tests
+must mirror production's `include_external_packages = true` setting. Without
+that setting, fixture tests can prove BeatCue-to-BeatCue import direction but
+cannot prove third-party infrastructure prefix coverage. The new `cmd_mox`
+fixture now exercises the exact import name used by the `cmd-mox`
+distribution.
+
+CodeRabbit review was useful but iterative for the dependency smoke test. The
+final shape is a parameterized test that verifies each distribution name maps
+to the import name used in Hecate policy, with explicit assertions on the
+installed version and imported module object.
 
 ## Context and orientation
 
@@ -579,10 +705,10 @@ allowed = ["infrastructure"]
 Repair the existing `inbound_adapter` `allowed` list so it can import
 infrastructure modules. Cyclopts and Rich are infrastructure under §6.1 of the
 design, but §14 requires the CLI to import both, and the current
-`inbound_adapter.allowed` list — `["inbound_adapter", "composition_root",
-"application", "domain"]` — does not include `"infrastructure"`. Without this
-change, the very first CLI commit in roadmap 1.3.x will fail
-`make check-architecture`. Update the group to:
+`inbound_adapter.allowed` list —
+`["inbound_adapter", "composition_root", "application", "domain"]` — does not
+include `"infrastructure"`. Without this change, the very first CLI commit in
+roadmap 1.3.x will fail `make check-architecture`. Update the group to:
 
 ```toml
 [[tool.hecate.groups]]

@@ -251,6 +251,14 @@ weights; BeatCue v1 must not trigger remote downloads. ADR 006 defines backend
 locality as an explicit configured capability rather than something inferred
 from a package name or model name.
 
+ADR 009 records the packaging policy for these groups. BeatCue uses
+`[project.optional-dependencies]` for runtime capability extras and
+`[dependency-groups].dev` for tooling. Optional packages that do not yet resolve
+cleanly on Python 3.14 are declared with temporary
+`python_full_version < '3.14'` markers, and the media stack uses headless OpenCV
+and PySceneDetect distributions for server and continuous-integration
+environments.
+
 ## 7. Domain model
 
 The domain model is serializable without importing Pydantic, NumPy, OpenCV, or
@@ -1033,6 +1041,9 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 - GPU scheduling, remote models, and advanced segmentation remain deferred. The
   initial composition root may select CPU-only adapters and fail clearly when a
   requested model requires unavailable hardware.
+- ADR 009 resolves the dependency-extra packaging policy. Runtime capability
+  extras are declared even when optional post-v1 packages need temporary Python
+  3.14 markers; development tooling stays in the `dev` dependency group.
 
 ## 22. References
 

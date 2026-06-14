@@ -46,6 +46,9 @@ right source of truth for use, maintenance, design, and planning work.
   Accepted v1 BeatCue JSON schema decision.
 - [ADR 008: V1 object tracking boundary](adr-008-v1-object-tracking-boundary.md)
   - Accepted object tracking ownership and extension boundary.
+- [ADR 009: Dependency extras and Python 3.14 markers](adr-009-dependency-extras-and-python-314-markers.md)
+  - Accepted dependency-extra layout, headless media stack, and temporary
+    Python 3.14 markers for optional packages.
 
 ## Plans
 
@@ -60,6 +63,9 @@ right source of truth for use, maintenance, design, and planning work.
     - Plan for the local-only model and privacy decision.
   - [Create package skeleton](execplans/1-2-1-create-package-skeleton.md) -
     Plan for the initial package skeleton.
+  - [Wire required development dependencies](execplans/1-2-3-wire-required-development-dependencies.md)
+    - Plan for wiring dependency extras, dev tooling, and Hecate import-name
+      coverage.
   - [Adopt Hecate](execplans/adopt-hecate.md) - Plan for adopting Hecate
     architecture enforcement.
   - [Import hex architecture enforcement](execplans/import-hex-architecture-enforcement.md)
