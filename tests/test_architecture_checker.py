@@ -98,6 +98,20 @@ def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
             ),
         ),
         (
+            "domain_imports_pil",
+            (
+                (
+                    (
+                        "ARCH001",
+                        "domain_imports_pil.domain",
+                        "PIL",
+                        "domain -> infrastructure",
+                    ),
+                    2,
+                ),
+            ),
+        ),
+        (
             "application_imports_adapter",
             (
                 (

@@ -199,7 +199,7 @@ PEP 508 markers until upstream support lands.
 Hecate configuration tracks importable module names, not PyPI distribution
 names. In particular, `cmd-mox` imports as `cmd_mox`, PySceneDetect imports as
 `scenedetect`, OpenCV imports as `cv2`, and OpenTimelineIO imports as
-`opentimelineio`.
+`opentimelineio`. Pillow imports through the `PIL` package root.
 
 ## CLI implementation requirements
 

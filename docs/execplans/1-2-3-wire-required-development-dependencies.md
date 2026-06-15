@@ -275,6 +275,11 @@ the conflict in `Decision log`, and ask for direction.
 - [x] (2026-06-14T04:52:03+02:00) Fifth CodeRabbit review completed
   with zero findings. Log:
   `/tmp/coderabbit-5-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-15T00:00:00+02:00) Follow-up review corrected the
+  Pillow Hecate prefix from distribution name `pillow` to import root `PIL`.
+  Added `domain_imports_pil` fixture coverage for the standard
+  `from PIL import Image` import form. Focused architecture test passed. Log:
+  `/tmp/focused-pil-prefix-2-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
 
 ## Surprises & discoveries
 
@@ -327,6 +332,14 @@ the conflict in `Decision log`, and ask for direction.
 - Observation: the fourth CodeRabbit pass asked for assertion messages on the
   now-reachable smoke-test assertions. Impact: the test keeps explicit value
   checks while reporting which dependency mapping failed.
+
+- Observation: the original Stage B Hecate prefix list used the PyPI
+  distribution name `pillow`, but model code imports Pillow through the `PIL`
+  package root. Impact: Hecate would not classify `from PIL import Image` as
+  infrastructure, leaving the intended domain/application boundary unenforced.
+  The infrastructure prefix is now `PIL`, and a fixture test proves that Hecate
+  reports the violation. Hecate emits one diagnostic for `PIL` and one for
+  `PIL.Image`, so the fixture expects two matching lines.
 
 ## Decision log
 
@@ -417,6 +430,10 @@ that setting, fixture tests can prove BeatCue-to-BeatCue import direction but
 cannot prove third-party infrastructure prefix coverage. The new `cmd_mox`
 fixture now exercises the exact import name used by the `cmd-mox`
 distribution.
+
+The Pillow follow-up adds a second lesson: Hecate prefixes must always be
+import roots, not distribution names. The table already identified Pillow's
+import root as `PIL`; the enforced prefix now matches that fact.
 
 CodeRabbit review was useful but iterative for the dependency smoke test. The
 final shape is a parameterized test that verifies each distribution name maps
@@ -552,7 +569,7 @@ prove the current `make all` is green. No production changes.
 - update `[tool.hecate.groups]` `infrastructure.prefixes` to track the
   actual import names (replace `cmdmox` with `cmd_mox`; add `msgspec`,
   `scenedetect`, `opentimelineio`, `torch`, `accelerate`, `timm`, `einops`,
-  `pillow`, `sentencepiece`, `qwen_vl_utils`);
+  `PIL`, `sentencepiece`, `qwen_vl_utils`);
 - add `"infrastructure"` to `[tool.hecate.groups]` `inbound_adapter.allowed`
   so the CLI can import Cyclopts and Rich in 1.3.x.
 
@@ -891,7 +908,7 @@ once it lands.
 _Table 1: Dependencies added by this plan, grouped by extra._
 
 Hecate `infrastructure` group prefix changes: `cmdmox` → `cmd_mox`; add
-`accelerate`, `einops`, `msgspec`, `opentimelineio`, `pillow`, `qwen_vl_utils`,
+`accelerate`, `einops`, `msgspec`, `opentimelineio`, `PIL`, `qwen_vl_utils`,
 `scenedetect`, `sentencepiece`, `timm`, `torch`. The existing entries `cuprum`,
 `cv2`, `cyclopts`, `librosa`, `rich`, `transformers` remain.
 
