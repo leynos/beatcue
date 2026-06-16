@@ -280,6 +280,15 @@ the conflict in `Decision log`, and ask for direction.
   Added `domain_imports_pil` fixture coverage for the standard
   `from PIL import Image` import form. Focused architecture test passed. Log:
   `/tmp/focused-pil-prefix-2-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
+- [x] (2026-06-16T16:20:28+02:00) Follow-up review verified the
+  marker-gating concern remains valid but is tracking work, not a code defect
+  in this branch. Opened GitHub issue #18 to track removal of Python 3.14
+  markers before roadmap 3.1.3 depends on librosa.
+- [x] (2026-06-16T16:20:28+02:00) Captured the per-extra dry-run
+  evidence requested by the plan. `core` installs Cuprum and msgspec; `media`
+  installs OpenCV headless and PySceneDetect without librosa; `editorial` and
+  `models` install no optional packages on Python 3.14. Log:
+  `/tmp/dry-run-extras-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
 
 ## Surprises & discoveries
 
@@ -388,6 +397,18 @@ the conflict in `Decision log`, and ask for direction.
   `pyproject.toml` while excluding the entries from the resolver graph on 3.14.
   The markers must be removed once upstream ships cp314 wheels; tracked under
   Risks.
+
+- 2026-06-16 — Track marker removal in GitHub issue #18 before roadmap
+  3.1.3 starts. Rationale: `librosa` is a v1 media dependency, and the current
+  marker is unsatisfiable for every supported Python version while BeatCue
+  requires Python 3.14 or newer. This is intentional for lockfile health today,
+  but it needs a visible trigger before audio feature loading depends on it.
+
+- 2026-06-16 — Leave `docs/users-guide.md` unchanged. Rationale: this
+  milestone changed dependency metadata and contributor setup, but did not add
+  or change a user-facing install command or application workflow. The relevant
+  maintainer-facing dependency policy is recorded in ADR 009, the technical
+  design, and the developers' guide.
 
 - 2026-06-03 — Repair `inbound_adapter.allowed` in Stage B by adding
   `"infrastructure"`. Rationale: design §14 requires the CLI to import Cyclopts
