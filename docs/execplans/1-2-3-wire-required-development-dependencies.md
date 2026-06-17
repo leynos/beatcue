@@ -55,11 +55,15 @@ Architecture enforcement must track the import name, not the distribution name.
 - Prefer Makefile targets over direct tool commands for gates.
 - Run formatting, linting, typechecking, architecture checks, and tests
   sequentially. Do not run those gates in parallel.
-- Use `tee` for long gate output with log files under `/tmp`, following
-  the project naming convention:
+- Use `tee` for long gate output with log files under `/tmp`, normalizing the
+  branch name so detached HEADs and branch names with slashes produce stable
+  file names:
 
 ```bash
-/tmp/$ACTION-$(basename "$(pwd)")-$(git branch --show-current).out
+BRANCH_REF=$(git branch --show-current)
+BRANCH_REF=${BRANCH_REF:-$(git rev-parse --short HEAD)}
+SAFE_BRANCH_REF=$(printf '%s' "$BRANCH_REF" | tr -c '[:alnum:]._-' '-')
+LOG=/tmp/$ACTION-$(basename "$(pwd)")-$SAFE_BRANCH_REF.out
 ```
 
 - Use `coderabbit review --agent` after each major implementation
@@ -127,14 +131,13 @@ the conflict in `Decision log`, and ask for direction.
   approach also lets the future `models` → `models` + `models-torch` split
   (recorded in the Decision log) happen without breaking declared extras.
 
-- Risk: the current `inbound_adapter` Hecate group does NOT allow imports
-  from `infrastructure`, but §14 of the design requires the CLI to import
-  Cyclopts and Rich (both infrastructure). Severity: medium. Likelihood:
-  certain — the next roadmap milestone (1.3.x) will trigger the failure on its
-  first commit. Mitigation: add `"infrastructure"` to the
-  `inbound_adapter.allowed` list as part of Stage B. The change is purely
-  additive and matches the hexagonal rule that inbound adapters sit at the
-  infrastructure boundary, the same as outbound adapters.
+- Historical risk: the baseline `inbound_adapter` Hecate group did not allow
+  imports from `infrastructure`, but §14 of the design requires the CLI to
+  import Cyclopts and Rich (both infrastructure). Severity: medium. Likelihood:
+  certain before Stage B. Resolution: Stage B added `"infrastructure"` to
+  `inbound_adapter.allowed`. The change is purely additive and matches the
+  hexagonal rule that inbound adapters sit at the infrastructure boundary, the
+  same as outbound adapters.
 
 - Risk: confusion between the PyPI distribution name `cmd-mox` and the
   Python import name `cmd_mox`. Severity: medium. Likelihood: high. Impact: if
@@ -726,7 +729,7 @@ prefixes = [
     "librosa",
     "msgspec",
     "opentimelineio",
-    "pillow",
+    "PIL",
     "qwen_vl_utils",
     "rich",
     "scenedetect",

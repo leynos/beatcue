@@ -39,9 +39,9 @@ outbound adapters        -> domain-owned ports
 ```
 
 The main rule is simple: domain code must not import infrastructure. Domain
-modules should not import Cyclopts, Rich, OpenCV, librosa, Transformers,
-Cuprum, CmdMox, msgspec, OpenTimelineIO, Torch, filesystem adapters, or CLI
-modules.
+modules should not import `cyclopts`, `rich`, `cv2`, `librosa`,
+`transformers`, `cuprum`, `cmd_mox`, `msgspec`, `opentimelineio`, `torch`,
+filesystem adapters, or CLI modules.
 
 Production package boundaries:
 
@@ -187,6 +187,22 @@ Runtime capability extras are declared in `[project.optional-dependencies]` in
 
 ```bash
 uv sync --group dev
+```
+
+Install runtime capability extras from a checkout with `uv sync --extra`:
+
+```bash
+uv sync --group dev --extra core
+uv sync --group dev --extra media
+uv sync --group dev --extra editorial
+uv sync --group dev --extra models
+```
+
+Combine extras by repeating `--extra`, or install every declared extra:
+
+```bash
+uv sync --group dev --extra core --extra media
+uv sync --group dev --all-extras
 ```
 
 `core` contains the lightweight runtime libraries used by the CLI, human

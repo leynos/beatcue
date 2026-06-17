@@ -257,7 +257,10 @@ ADR 009 records the packaging policy for these groups. BeatCue uses
 cleanly on Python 3.14 are declared with temporary
 `python_full_version < '3.14'` markers, and the media stack uses headless OpenCV
 and PySceneDetect distributions for server and continuous-integration
-environments.
+environments. Remove these markers when librosa, OpenTimelineIO, Torch, and
+their blocking transitive dependencies publish reliable cp314 wheels; issue #18
+tracks that prerequisite before roadmap item 3.1.3 depends on librosa feature
+loading.
 
 ## 7. Domain model
 
@@ -1041,9 +1044,6 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 - GPU scheduling, remote models, and advanced segmentation remain deferred. The
   initial composition root may select CPU-only adapters and fail clearly when a
   requested model requires unavailable hardware.
-- ADR 009 resolves the dependency-extra packaging policy. Runtime capability
-  extras are declared even when optional post-v1 packages need temporary Python
-  3.14 markers; development tooling stays in the `dev` dependency group.
 
 ## 22. References
 
