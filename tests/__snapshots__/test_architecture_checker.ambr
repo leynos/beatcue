@@ -1,0 +1,50 @@
+# serializer version: 1
+# name: test_hecate_reports_fixture_boundary_violations[application_imports_adapter]
+  '''
+  ARCH001: tests.fixtures.architecture.application_imports_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_adapter.adapters.outbound (application -> outbound_adapter)
+  ARCH001: tests.fixtures.architecture.application_imports_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_adapter.adapters.outbound.StorageAdapter (application -> outbound_adapter)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[application_imports_reexported_adapter]
+  '''
+  ARCH001: tests.fixtures.architecture.application_imports_reexported_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_reexported_adapter.adapters (application -> adapter)
+  ARCH001: tests.fixtures.architecture.application_imports_reexported_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_reexported_adapter.adapters.StorageAdapter (application -> adapter)
+  ARCH001: tests.fixtures.architecture.application_imports_reexported_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_reexported_adapter.adapters.outbound.StorageAdapter (application -> outbound_adapter)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[application_imports_star_reexported_adapter]
+  '''
+  ARCH001: tests.fixtures.architecture.application_imports_star_reexported_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_star_reexported_adapter.adapters (application -> adapter)
+  ARCH001: tests.fixtures.architecture.application_imports_star_reexported_adapter.application:5 imports forbidden module tests.fixtures.architecture.application_imports_star_reexported_adapter.adapters.StorageAdapter (application -> adapter)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[domain_imports_adapter]
+  '''
+  ARCH001: tests.fixtures.architecture.domain_imports_adapter.domain:5 imports forbidden module tests.fixtures.architecture.domain_imports_adapter.adapters.outbound (domain -> outbound_adapter)
+  ARCH001: tests.fixtures.architecture.domain_imports_adapter.domain:5 imports forbidden module tests.fixtures.architecture.domain_imports_adapter.adapters.outbound.StorageAdapter (domain -> outbound_adapter)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[domain_imports_cmd_mox]
+  '''
+  ARCH001: tests.fixtures.architecture.domain_imports_cmd_mox.domain:3 imports forbidden module cmd_mox (domain -> infrastructure)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[domain_imports_pil]
+  '''
+  ARCH001: tests.fixtures.architecture.domain_imports_pil.domain:5 imports forbidden module PIL (domain -> infrastructure)
+  ARCH001: tests.fixtures.architecture.domain_imports_pil.domain:5 imports forbidden module PIL.Image (domain -> infrastructure)
+  
+  '''
+# ---
+# name: test_hecate_reports_fixture_boundary_violations[inbound_cli_imports_outbound_adapter]
+  '''
+  ARCH001: tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.cli:5 imports forbidden module tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.adapters.outbound (inbound_adapter -> outbound_adapter)
+  ARCH001: tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.cli:5 imports forbidden module tests.fixtures.architecture.inbound_cli_imports_outbound_adapter.adapters.outbound.StorageAdapter (inbound_adapter -> outbound_adapter)
+  
+  '''
+# ---
