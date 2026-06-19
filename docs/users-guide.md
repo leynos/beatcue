@@ -37,7 +37,7 @@ hello from Python
 This confirms that the editable package can be imported. It does not perform
 video analysis yet.
 
-## Optional Dependency Groups
+## Optional dependency groups
 
 BeatCue declares optional dependency groups for planned runtime capabilities.
 From a checkout, install them with `uv sync --extra`:

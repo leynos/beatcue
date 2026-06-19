@@ -407,11 +407,11 @@ the conflict in `Decision log`, and ask for direction.
   requires Python 3.14 or newer. This is intentional for lockfile health today,
   but it needs a visible trigger before audio feature loading depends on it.
 
-- 2026-06-16 — Leave `docs/users-guide.md` unchanged. Rationale: this
-  milestone changed dependency metadata and contributor setup, but did not add
-  or change a user-facing install command or application workflow. The relevant
-  maintainer-facing dependency policy is recorded in ADR 009, the technical
-  design, and the developers' guide.
+- 2026-06-16 — Update `docs/users-guide.md` with optional dependency install
+  guidance. Rationale: this milestone declares runtime extras that users can
+  install directly, so the users' guide must show the supported `uv sync
+  --extra` commands alongside the maintainer-facing dependency policy recorded
+  in ADR 009, the technical design, and the developers' guide.
 
 - 2026-06-03 — Repair `inbound_adapter.allowed` in Stage B by adding
   `"infrastructure"`. Rationale: design §14 requires the CLI to import Cyclopts
@@ -784,9 +784,9 @@ invisible to the architecture checker. Follow the existing fixture pattern under
    `cmd_mox`. The test proves that the prefix string matches an actual import
    statement; without the rename it would silently pass.
 
-Optionally also add a runtime smoke check (`tests/test_dependency_wiring.py`)
-that calls `importlib.metadata.version("cmd-mox")` and
-`importlib.import_module( "cmd_mox")` so reviewers can see the dist-vs-import
+Add a runtime smoke check (`tests/test_dependency_wiring.py`) that calls
+`importlib.metadata.version("cmd-mox")` and
+`importlib.import_module("cmd_mox")` so reviewers can see the dist-vs-import
 mapping documented at the call site. Phrase the docstring as "smoke check that
 the cmd-mox distribution installs and exposes the cmd_mox import name"; do NOT
 claim the test proves Hecate's rule.
