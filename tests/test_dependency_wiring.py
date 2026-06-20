@@ -85,21 +85,23 @@ def test_runtime_optional_dependency_groups_match_design() -> None:
     project = pyproject["project"]
     optional_dependencies = project["optional-dependencies"]
 
-    assert set(optional_dependencies) == {"core", "media", "editorial", "models"}
+    assert set(optional_dependencies) == {"core", "media", "editorial", "models"}, (
+        "optional-dependencies should declare exactly the runtime capability groups"
+    )
     assert optional_dependencies["core"] == [
         "cyclopts>=4.16",
         "rich>=15",
         "cuprum>=0.1.0",
         "msgspec>=0.21",
-    ]
+    ], "optional-dependencies.core should match the design-required core packages"
     assert optional_dependencies["media"] == [
         "opencv-python-headless>=4.13",
         "scenedetect-headless>=0.7",
         f"librosa>=0.11; {PYTHON_314_MARKER}",
-    ]
+    ], "optional-dependencies.media should match the design-required media packages"
     assert optional_dependencies["editorial"] == [
         f"OpenTimelineIO>=0.18; {PYTHON_314_MARKER}",
-    ]
+    ], "optional-dependencies.editorial should carry the OpenTimelineIO marker gate"
     assert optional_dependencies["models"] == [
         f"transformers>=5.9; {PYTHON_314_MARKER}",
         f"torch; {PYTHON_314_MARKER}",
@@ -109,7 +111,7 @@ def test_runtime_optional_dependency_groups_match_design() -> None:
         f"pillow; {PYTHON_314_MARKER}",
         f"sentencepiece; {PYTHON_314_MARKER}",
         f"qwen-vl-utils; {PYTHON_314_MARKER}",
-    ]
+    ], "optional-dependencies.models should match the marker-gated model packages"
 
 
 def test_dev_dependency_group_includes_review_tooling() -> None:
@@ -117,8 +119,12 @@ def test_dev_dependency_group_includes_review_tooling() -> None:
     pyproject = _pyproject()
     dev_dependencies = pyproject["dependency-groups"]["dev"]
 
-    assert "cmd-mox>=0.2" in dev_dependencies
-    assert "syrupy>=5.3" in dev_dependencies
+    assert "cmd-mox>=0.2" in dev_dependencies, (
+        "dependency-groups.dev should include cmd-mox review tooling"
+    )
+    assert "syrupy>=5.3" in dev_dependencies, (
+        "dependency-groups.dev should include syrupy snapshot tooling"
+    )
 
 
 def test_hecate_policy_models_external_import_names() -> None:
@@ -127,8 +133,18 @@ def test_hecate_policy_models_external_import_names() -> None:
     hecate_groups = pyproject["tool"]["hecate"]["groups"]
     groups_by_name = {group["name"]: group for group in hecate_groups}
 
-    assert "infrastructure" in groups_by_name["inbound_adapter"]["allowed"]
-    assert "PIL" in groups_by_name["infrastructure"]["prefixes"]
-    assert "pillow" not in groups_by_name["infrastructure"]["prefixes"]
-    assert "cmd_mox" in groups_by_name["infrastructure"]["prefixes"]
-    assert "cmdmox" not in groups_by_name["infrastructure"]["prefixes"]
+    assert "infrastructure" in groups_by_name["inbound_adapter"]["allowed"], (
+        "inbound_adapter.allowed should permit infrastructure imports"
+    )
+    assert "PIL" in groups_by_name["infrastructure"]["prefixes"], (
+        "infrastructure.prefixes should track Pillow's PIL import root"
+    )
+    assert "pillow" not in groups_by_name["infrastructure"]["prefixes"], (
+        "infrastructure.prefixes should not use Pillow's distribution name"
+    )
+    assert "cmd_mox" in groups_by_name["infrastructure"]["prefixes"], (
+        "infrastructure.prefixes should track the cmd-mox cmd_mox import root"
+    )
+    assert "cmdmox" not in groups_by_name["infrastructure"]["prefixes"], (
+        "infrastructure.prefixes should not use the obsolete cmdmox import root"
+    )
