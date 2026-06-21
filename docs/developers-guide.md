@@ -39,8 +39,9 @@ outbound adapters        -> domain-owned ports
 ```
 
 The main rule is simple: domain code must not import infrastructure. Domain
-modules should not import Cyclopts, Rich, OpenCV, librosa, Transformers,
-Cuprum, CmdMox, filesystem adapters, or CLI modules.
+modules should not import `cyclopts`, `rich`, `cv2`, `librosa`,
+`transformers`, `cuprum`, `cmd_mox`, `msgspec`, `opentimelineio`, `torch`,
+filesystem adapters, or CLI modules.
 
 Production package boundaries:
 
@@ -177,6 +178,44 @@ without recording secret values.
 Tests for command adapters use CmdMox. Use CmdMox to verify exact command
 vectors and to simulate missing binaries, malformed JSON, non-zero exits, and
 no-audio media.
+
+## Dependency extras
+
+Runtime capability extras are declared in `[project.optional-dependencies]` in
+`pyproject.toml`. Development-only tooling is declared in
+`[dependency-groups].dev` and installed with:
+
+```bash
+uv sync --group dev
+```
+
+Install runtime capability extras from a checkout with `uv sync --extra`:
+
+```bash
+uv sync --group dev --extra core
+uv sync --group dev --extra media
+uv sync --group dev --extra editorial
+uv sync --group dev --extra models
+```
+
+Combine extras by repeating `--extra`, or install every declared extra:
+
+```bash
+uv sync --group dev --extra core --extra media
+uv sync --group dev --all-extras
+```
+
+`core` contains the lightweight runtime libraries used by the CLI, human
+output, command execution, and BeatCue JSON. `media`, `editorial`, and `models`
+remain optional capability groups. ADR 009 records the current dependency
+policy: use the headless OpenCV and PySceneDetect distributions for server and
+CI use, and keep Python 3.14-incompatible optional packages behind temporary
+PEP 508 markers until upstream support lands.
+
+Hecate configuration tracks importable module names, not PyPI distribution
+names. In particular, `cmd-mox` imports as `cmd_mox`, PySceneDetect imports as
+`scenedetect`, OpenCV imports as `cv2`, and OpenTimelineIO imports as
+`opentimelineio`. Pillow imports through the `PIL` package root.
 
 ## CLI implementation requirements
 

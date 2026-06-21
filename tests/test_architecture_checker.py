@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import typing as typ
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,9 @@ from conftest import (
     hecate_policy,
 )
 from hecate.cli import main as hecate_main
+
+if typ.TYPE_CHECKING:
+    from syrupy.assertion import SnapshotAssertion
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures" / "architecture"
@@ -31,9 +35,11 @@ def _fixture_prefix(prefix: str, package: str) -> str:
 def _fixture_policy(package: str) -> str:
     """Build a Hecate policy for one fixture package from production policy."""
     policy = hecate_policy()
+    include_external_packages = str(policy["include_external_packages"]).lower()
     lines = [
         "[tool.hecate]",
         f"root_packages = [{json.dumps(package)}]",
+        f"include_external_packages = {include_external_packages}",
         f"default_rule_id = {json.dumps(policy['default_rule_id'])}",
         "",
     ]
@@ -65,94 +71,22 @@ def _write_fixture_policy(tmp_path: Path, package: str) -> Path:
 
 
 @pytest.mark.parametrize(
-    ("package_name", "expected_diagnostics"),
+    "package_name",
     [
-        (
-            "domain_imports_adapter",
-            (
-                (
-                    (
-                        "ARCH001",
-                        "domain_imports_adapter.domain",
-                        "domain_imports_adapter.adapters.outbound",
-                        "domain -> outbound_adapter",
-                    ),
-                    2,
-                ),
-            ),
-        ),
-        (
-            "application_imports_adapter",
-            (
-                (
-                    (
-                        "ARCH001",
-                        "application_imports_adapter.application",
-                        "application_imports_adapter.adapters.outbound",
-                        "application -> outbound_adapter",
-                    ),
-                    2,
-                ),
-            ),
-        ),
-        (
-            "application_imports_reexported_adapter",
-            (
-                (
-                    (
-                        "ARCH001",
-                        "application_imports_reexported_adapter.application",
-                        "application_imports_reexported_adapter.adapters",
-                        "application -> adapter",
-                    ),
-                    2,
-                ),
-                (
-                    (
-                        "ARCH001",
-                        "application_imports_reexported_adapter.application",
-                        "application_imports_reexported_adapter.adapters.outbound",
-                        "application -> outbound_adapter",
-                    ),
-                    1,
-                ),
-            ),
-        ),
-        (
-            "application_imports_star_reexported_adapter",
-            (
-                (
-                    (
-                        "ARCH001",
-                        "application_imports_star_reexported_adapter.application",
-                        "application_imports_star_reexported_adapter.adapters",
-                        "application -> adapter",
-                    ),
-                    2,
-                ),
-            ),
-        ),
-        (
-            "inbound_cli_imports_outbound_adapter",
-            (
-                (
-                    (
-                        "ARCH001",
-                        "inbound_cli_imports_outbound_adapter.cli",
-                        "inbound_cli_imports_outbound_adapter.adapters.outbound",
-                        "inbound_adapter -> outbound_adapter",
-                    ),
-                    2,
-                ),
-            ),
-        ),
+        "domain_imports_adapter",
+        "domain_imports_cmd_mox",
+        "domain_imports_pil",
+        "application_imports_adapter",
+        "application_imports_reexported_adapter",
+        "application_imports_star_reexported_adapter",
+        "inbound_cli_imports_outbound_adapter",
     ],
 )
 def test_hecate_reports_fixture_boundary_violations(
     package_name: str,
-    expected_diagnostics: tuple[tuple[tuple[str, ...], int], ...],
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
+    snapshot: SnapshotAssertion,
 ) -> None:
     """Forbidden fixture imports produce stable Hecate diagnostics."""
     package = f"tests.fixtures.architecture.{package_name}"
@@ -173,25 +107,7 @@ def test_hecate_reports_fixture_boundary_violations(
         f"Expected exit code 1, got {exit_code}.\nstdout:\n{captured.out}"
     )
     assert not captured.err, f"Unexpected stderr:\n{captured.err}"
-    violation_lines = [
-        line for line in captured.out.splitlines() if line.startswith("ARCH001:")
-    ]
-    expected_violation_count = sum(count for _, count in expected_diagnostics)
-    assert len(violation_lines) == expected_violation_count, (
-        f"Expected {expected_violation_count} violation lines, "
-        f"found {len(violation_lines)}.\nstdout:\n{captured.out}"
-    )
-    for expected_parts, expected_count in expected_diagnostics:
-        matching_violation_lines = [
-            line
-            for line in violation_lines
-            if all(expected_part in line for expected_part in expected_parts)
-        ]
-        assert len(matching_violation_lines) == expected_count, (
-            "Expected violation lines matching "
-            f"{expected_parts!r}: {expected_count}, found "
-            f"{len(matching_violation_lines)}.\nstdout:\n{captured.out}"
-        )
+    assert captured.out == snapshot
 
 
 @pytest.mark.parametrize(

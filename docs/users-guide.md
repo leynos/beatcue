@@ -37,6 +37,37 @@ hello from Python
 This confirms that the editable package can be imported. It does not perform
 video analysis yet.
 
+## Optional dependency groups
+
+BeatCue declares optional dependency groups for planned runtime capabilities.
+From a checkout, install them with `uv sync --extra`:
+
+```bash
+uv sync --extra core
+uv sync --extra media
+uv sync --extra editorial
+uv sync --extra models
+```
+
+Combine extras by repeating `--extra`, or install every declared extra:
+
+```bash
+uv sync --extra core --extra media
+uv sync --all-extras
+```
+
+The groups are:
+
+- `core`: CLI, human output, command execution, and BeatCue JSON dependencies.
+- `media`: deterministic media analysis dependencies.
+- `editorial`: planned OpenTimelineIO marker-writing dependencies.
+- `models`: planned local-only model adapter dependencies.
+
+Some optional packages are temporarily marker-gated on Python 3.14 while
+upstream wheel support catches up. Missing optional packages are expected to be
+reported as capability errors when the corresponding feature is implemented,
+not as import-time crashes.
+
 ## Development architecture check
 
 Contributors can verify the package import boundaries with:

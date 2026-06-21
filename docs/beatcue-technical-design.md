@@ -251,6 +251,17 @@ weights; BeatCue v1 must not trigger remote downloads. ADR 006 defines backend
 locality as an explicit configured capability rather than something inferred
 from a package name or model name.
 
+ADR 009 records the packaging policy for these groups. BeatCue uses
+`[project.optional-dependencies]` for runtime capability extras and
+`[dependency-groups].dev` for tooling. Optional packages that do not yet resolve
+cleanly on Python 3.14 are declared with temporary
+`python_full_version < '3.14'` markers, and the media stack uses headless OpenCV
+and PySceneDetect distributions for server and continuous-integration
+environments. Remove these markers when librosa, OpenTimelineIO, Torch, and
+their blocking transitive dependencies publish reliable cp314 wheels; issue #18
+tracks that prerequisite before roadmap item 3.1.3 depends on librosa feature
+loading.
+
 ## 7. Domain model
 
 The domain model is serializable without importing Pydantic, NumPy, OpenCV, or

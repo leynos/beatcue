@@ -31,6 +31,7 @@ class HecatePolicy(typ.TypedDict):
     """The [tool.hecate] section of pyproject.toml."""
 
     root_packages: list[str]
+    include_external_packages: bool
     default_rule_id: str
     groups: list[HecateGroup]
 
