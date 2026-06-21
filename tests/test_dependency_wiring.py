@@ -133,6 +133,12 @@ def test_hecate_policy_models_external_import_names() -> None:
     hecate_groups = pyproject["tool"]["hecate"]["groups"]
     groups_by_name = {group["name"]: group for group in hecate_groups}
 
+    assert "inbound_adapter" in groups_by_name, (
+        "tool.hecate.groups should include the inbound_adapter group"
+    )
+    assert "infrastructure" in groups_by_name, (
+        "tool.hecate.groups should include the infrastructure group"
+    )
     assert "infrastructure" in groups_by_name["inbound_adapter"]["allowed"], (
         "inbound_adapter.allowed should permit infrastructure imports"
     )
