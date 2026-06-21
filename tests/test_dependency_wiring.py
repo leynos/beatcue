@@ -72,7 +72,12 @@ def test_dev_dependency_import_names_are_resolvable(
 
 
 def _pyproject() -> PyprojectMetadata:
-    """Return parsed project metadata from `pyproject.toml`."""
+    """Return parsed project metadata from ``pyproject.toml``.
+
+    Raises:
+        FileNotFoundError: If ``pyproject.toml`` is absent from the project root.
+        tomllib.TOMLDecodeError: If ``pyproject.toml`` contains invalid TOML.
+    """
     return typ.cast(
         "PyprojectMetadata",
         tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text()),
