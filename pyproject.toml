@@ -65,7 +65,7 @@ dev = [
     "ruff",
     "pytest-timeout",
     "pytest-xdist",
-    "syrupy>=5.3",
+    "syrupy>=5.4.0",
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
 ]
 
