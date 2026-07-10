@@ -283,11 +283,13 @@ def _refresh_local(
 
 def _conditional_headers(saved: cabc.Mapping[str, object]) -> dict[str, str]:
     """Build conditional HTTP headers from persisted validators."""
-    headers = {}
-    if isinstance(saved.get("etag"), str):
-        headers["If-None-Match"] = saved["etag"]
-    if isinstance(saved.get("last_modified"), str):
-        headers["If-Modified-Since"] = saved["last_modified"]
+    headers: dict[str, str] = {}
+    etag = saved.get("etag")
+    if isinstance(etag, str):
+        headers["If-None-Match"] = etag
+    last_modified = saved.get("last_modified")
+    if isinstance(last_modified, str):
+        headers["If-Modified-Since"] = last_modified
     return headers
 
 
