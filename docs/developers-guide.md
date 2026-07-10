@@ -337,6 +337,11 @@ make markdownlint
 make nixie
 ```
 
+The Markdown and lint gates run `make spelling`. It refreshes the shared
+en-GB-oxendict base when newer, regenerates `typos.toml`, and checks maintained
+prose with the pinned `typos` release. Put narrow repository-only exceptions in
+`typos.local.toml`; never edit the generated configuration by hand.
+
 For Python changes, run the full relevant gate set:
 
 ```bash

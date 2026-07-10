@@ -101,3 +101,7 @@ ______________________________________________________________________
 Contributions are welcome. Please read [AGENTS.md](AGENTS.md) before changing
 the repository; it defines the local workflow, quality gates, and documentation
 standards.
+
+Run `make spelling` to refresh the shared en-GB-oxendict dictionary when newer,
+regenerate `typos.toml`, and check maintained Markdown with a pinned `typos`
+release. A valid committed config remains usable without network access.
