@@ -159,7 +159,7 @@ the conflict in `Decision log`, and ask for direction.
 
 - Risk: `uv.lock` churn becomes large and reviewer-hostile.
   Severity: low. Likelihood: medium. Mitigation: lock once at the end of Stage
-  B in a single, isolated commit, with the diff summarised in the commit body.
+  B in a single, isolated commit, with the diff summarized in the commit body.
 
 - Risk: `syrupy` plus `pytest-xdist` `--snapshot-update` disables
   unused-snapshot detection (syrupy issue #535). Severity: low for this plan
@@ -526,7 +526,7 @@ Relevant ADRs:
 - ADR 005 — Hecate is the enforcement mechanism; the project's
   architectural rules live in `[tool.hecate]` and are checked in CI.
 - ADR 006 — V1 model execution is strictly local; the `models` extra
-  must remain optional and is never installed by default in containerised or
+  must remain optional and is never installed by default in containerized or
   managed environments.
 - ADR 007 — BeatCue JSON uses `msgspec.Struct` as its schema
   substrate, so `msgspec` belongs in `core` and `msgspec.json` is already
@@ -924,7 +924,7 @@ once it lands.
 | `timm`                   | `timm`           | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                    |
 | `einops`                 | `einops`         | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                    |
 | `pillow`                 | `PIL` (`pillow`) | (unpinned) | `models`    | Marker-gated `< 3.14`; imaging dep for Transformers (finding 8).            |
-| `sentencepiece`          | `sentencepiece`  | (unpinned) | `models`    | Marker-gated `< 3.14`; tokeniser dep (finding 8).                           |
+| `sentencepiece`          | `sentencepiece`  | (unpinned) | `models`    | Marker-gated `< 3.14`; tokenizer dep (finding 8).                           |
 | `qwen-vl-utils`          | `qwen_vl_utils`  | (unpinned) | `models`    | Marker-gated `< 3.14`; Qwen helper (finding 8).                             |
 | `syrupy`                 | `syrupy`         | `>=5.3`    | `dev`       | Pure-Python wheel installs on 3.14 (finding 3); xdist caveat noted.         |
 | `cmd-mox`                | `cmd_mox`        | `>=0.2`    | `dev`       | Dist vs import-name mismatch — Hecate prefix MUST be `cmd_mox` (finding 2). |

@@ -65,7 +65,7 @@
   - New functionality or behaviour changes are fully validated by relevant unit
     and behavioural tests.
   - Bug fixes include a failing test before the fix and a passing test
-    afterward.
+    afterwards.
   - Code passes lint checks.
   - Formatting is correct and validated.
 - **For Python files:**
@@ -136,6 +136,10 @@
 ## Markdown guidance
 
 - Validate Markdown files using `make markdownlint`.
+- The Markdown and lint gates refresh the shared en-GB-oxendict base,
+  regenerate `typos.toml`, and check maintained prose with the pinned `typos`
+  release. Put narrow repository-only exceptions in `typos.local.toml`; never
+  edit the generated configuration by hand.
 - Run `make fmt` after documentation changes to format Markdown and fix table
   markup.
 - Validate Mermaid diagrams in Markdown by running `make nixie`.

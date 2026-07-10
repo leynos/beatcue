@@ -10,9 +10,11 @@ PYLINT_TARGETS ?= beatcue tests
 PYLINT_PYPY_SHIM_REF ?= 726d09f968b4d729ee4b29c71fc732e744854f3b
 PYLINT_PYPY_SHIM = git+https://github.com/leynos/pylint-pypy-shim.git@$(PYLINT_PYPY_SHIM_REF)
 PYLINT = $(UV_ENV) $(UV) tool run --python $(PYLINT_PYTHON) --from '$(PYLINT_PYPY_SHIM)' pylint-pypy
+TYPOS_VERSION ?= 1.48.0
+TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        check-architecture markdownlint nixie test typecheck $(TOOLS) \
+        check-architecture markdownlint nixie spelling test typecheck $(TOOLS) \
         $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
@@ -44,6 +46,7 @@ clean: ## Remove build artifacts
 	rm -rf build dist *.egg-info \
 	  .mypy_cache .pytest_cache .coverage coverage.* \
 	  lcov.info htmlcov .venv .deps
+	rm -f .typos-oxendict-base.json .typos-oxendict-base.toml
 	find . -type d -name '__pycache__' -print0 | xargs -0 -r rm -rf
 
 define ensure_tool
@@ -89,6 +92,7 @@ lint: .deps ## Run linters
 	$(UV_ENV) $(UV) run ruff check
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
+	+$(MAKE) spelling
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
@@ -100,6 +104,12 @@ typecheck: .deps ty ## Run typechecking
 
 markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'
+	+$(MAKE) spelling
+
+spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
+	@$(UV) run scripts/generate_typos_config.py
+	@find . -type f -name '*.md' -not -path './.venv/*' -print0 | \
+		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
 
 nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,nixie)
