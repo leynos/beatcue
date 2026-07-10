@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import importlib
 import os
 import typing as typ
@@ -14,6 +15,16 @@ if typ.TYPE_CHECKING:
     import types
 
 SCRIPT_DIRECTORY = Path(__file__).resolve().parents[1]
+
+
+def test_rollout_scripts_support_python_313() -> None:
+    """Every rollout script parses with the declared minimum Python version."""
+    for script in SCRIPT_DIRECTORY.glob("*.py"):
+        ast.parse(
+            script.read_text(encoding="utf-8"),
+            filename=str(script),
+            feature_version=(3, 13),
+        )
 
 
 @pytest.fixture(name="rollout_modules")
