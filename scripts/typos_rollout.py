@@ -192,7 +192,7 @@ def _read_metadata(path: pathlib.Path) -> dict[str, object]:
     """Read best-effort HTTP freshness metadata."""
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError, json.JSONDecodeError:
+    except (FileNotFoundError, json.JSONDecodeError):
         return {}
     return value if isinstance(value, dict) else {}
 
@@ -236,7 +236,7 @@ def _remote_is_not_newer(
         return email.utils.parsedate_to_datetime(
             modified
         ) <= email.utils.parsedate_to_datetime(saved_modified)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return modified == saved_modified
 
 

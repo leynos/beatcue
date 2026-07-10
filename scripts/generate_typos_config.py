@@ -51,7 +51,7 @@ def _tracked_remote_fallback(
         return None
     try:
         tomllib.loads(destination.read_text(encoding="utf-8"))
-    except FileNotFoundError, OSError, tomllib.TOMLDecodeError:
+    except (FileNotFoundError, OSError, tomllib.TOMLDecodeError):
         return None
     return rollout.RefreshResult("tracked-config", destination)
 
@@ -72,7 +72,7 @@ def main(
             metadata=repository / ".typos-oxendict-base.json",
             offline=offline,
         )
-    except OSError, urllib.error.URLError:
+    except (OSError, urllib.error.URLError):
         fallback = _tracked_remote_fallback(source, destination)
         if fallback is not None:
             return fallback

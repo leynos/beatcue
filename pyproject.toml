@@ -159,6 +159,9 @@ line-length = 88
 preview = true
 target-version = "py314"
 
+[tool.ruff.per-file-target-version]
+"scripts/**/*.py" = "py313"
+
 [tool.ruff.lint]
 select = [
     "F",        # Pyflakes rules
