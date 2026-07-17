@@ -10,7 +10,7 @@ dependencies = []
 [project.optional-dependencies]
 # Library values, BeatCue JSON, WebVTT, Cyclopts, Rich, and Cuprum.
 core = [
-    "cyclopts>=4.16",
+    "cyclopts>=4.21.0",
     "rich>=15",
     "cuprum>=0.1.0",
     "msgspec>=0.21",
