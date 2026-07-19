@@ -1,5 +1,8 @@
 # BeatCue
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](
+https://deepwiki.com/leynos/beatcue)
+
 *Machine-readable timing cues for video analysis.*
 
 BeatCue is being designed as both a Python library and an agent-friendly CLI
