@@ -19,8 +19,8 @@ lower confidence unless a trained evaluator validates it.
 BeatCue uses WebVTT metadata cues for time-aligned machine-readable playback
 metadata because WebVTT text tracks support timed cues and generic metadata
 aligned with audio or video.[^1] It uses OpenTimelineIO (OTIO) for editorial
-interchange because OTIO defines an API and interchange format for editorial
-cut information.[^2] It stores full diagnostic output in BeatCue JSON because
+interchange because OTIO defines an API and interchange format for editorial cut
+information.[^2] It stores full diagnostic output in BeatCue JSON because
 WebVTT and OTIO intentionally omit some internal feature-series detail.
 
 The design uses hexagonal architecture. The domain owns cue entities,
@@ -253,10 +253,10 @@ from a package name or model name.
 
 ADR 009 records the packaging policy for these groups. BeatCue uses
 `[project.optional-dependencies]` for runtime capability extras and
-`[dependency-groups].dev` for tooling. Optional packages that do not yet resolve
-cleanly on Python 3.14 are declared with temporary
-`python_full_version < '3.14'` markers, and the media stack uses headless OpenCV
-and PySceneDetect distributions for server and continuous-integration
+`[dependency-groups].dev` for tooling. Optional packages that do not yet
+resolve cleanly on Python 3.14 are declared with temporary
+`python_full_version < '3.14'` markers, and the media stack uses headless
+OpenCV and PySceneDetect distributions for server and continuous-integration
 environments. Remove these markers when librosa, OpenTimelineIO, Torch, and
 their blocking transitive dependencies publish reliable cp314 wheels; issue #18
 tracks that prerequisite before roadmap item 3.1.3 depends on librosa feature

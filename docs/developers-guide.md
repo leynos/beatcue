@@ -39,9 +39,9 @@ outbound adapters        -> domain-owned ports
 ```
 
 The main rule is simple: domain code must not import infrastructure. Domain
-modules should not import `cyclopts`, `rich`, `cv2`, `librosa`,
-`transformers`, `cuprum`, `cmd_mox`, `msgspec`, `opentimelineio`, `torch`,
-filesystem adapters, or CLI modules.
+modules should not import `cyclopts`, `rich`, `cv2`, `librosa`, `transformers`,
+`cuprum`, `cmd_mox`, `msgspec`, `opentimelineio`, `torch`, filesystem adapters,
+or CLI modules.
 
 Production package boundaries:
 
@@ -86,9 +86,9 @@ ignores to mask real boundary violations.
 
 The production boundary packages exist only where they express the
 architecture. Keep their `__init__.py` files free of cross-layer imports. Add
-behaviour modules only when the corresponding roadmap work lands. BeatCue
-tests should cover BeatCue-specific policy examples and leave parser,
-configuration, and re-export internals to Hecate's own test suite.
+behaviour modules only when the corresponding roadmap work lands. BeatCue tests
+should cover BeatCue-specific policy examples and leave parser, configuration,
+and re-export internals to Hecate's own test suite.
 
 ## Domain and application APIs
 

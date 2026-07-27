@@ -1,7 +1,7 @@
 # Replace BeatCue's local architecture checker with Hecate
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`,
- `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision log`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision log`,
 and `Outcomes & retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
@@ -557,16 +557,17 @@ pass, plus `make check-architecture` visibly runs Hecate.
   as the active fitness function, the users' guide documents the
   contributor-facing architecture check, and roadmap task 1.2.2 notes Hecate as
   the implementation.
-- [x] 2026-05-20: Ran documentation gates for Milestone 5. `make
-  markdownlint` and `make nixie` both passed after unrelated formatter churn
-  from a failed repository-wide `make fmt` run was reversed.
+- [x] 2026-05-20: Ran documentation gates for Milestone 5. `make markdownlint`
+      and `make nixie` both passed after unrelated formatter churn
+      from a failed repository-wide `make fmt` run was reversed.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 5 after several recoverable
   service rate-limit responses; the completed review reported zero findings.
 - [x] 2026-05-20: Implemented the Hecate replacement after approval.
-- [x] 2026-05-20: Ran final validation. `make check-fmt`, `make lint`, `make
-  test`, `make markdownlint`, and `make nixie` all passed. `make lint` ran the
-  Hecate-backed `make check-architecture` gate and reported
-  `hecate: architecture check passed`.
+- [x] 2026-05-20: Ran final validation. `make check-fmt`, `make lint`,
+      `make test`, `make markdownlint`, and `make nixie` all passed.
+      `make lint` ran the
+      Hecate-backed `make check-architecture` gate and reported
+      `hecate: architecture check passed`.
 - [x] 2026-05-20: Ran final CodeRabbit review after one recoverable rate-limit
   response; the completed review reported zero findings.
 - [x] 2026-05-20: Marked the relevant roadmap entry done after implementation
@@ -661,12 +662,11 @@ as the single architecture checker behind `make check-architecture`.
 `beatcue.architecture` was removed, and BeatCue's policy now lives under
 `[tool.hecate]` in `pyproject.toml` with `default_rule_id = "ARCH001"`.
 
-The replacement preserves the contributor-facing Makefile workflow:
-`make lint` still runs Ruff, Pylint, and the architecture gate, and the
-architecture gate now reports `hecate: architecture check passed` for the
-current package. Hecate-backed fixture tests cover forbidden imports, allowed
-graphs, re-export visibility, current-package acceptance, and configuration
-errors.
+The replacement preserves the contributor-facing Makefile workflow: `make lint`
+still runs Ruff, Pylint, and the architecture gate, and the architecture gate
+now reports `hecate: architecture check passed` for the current package.
+Hecate-backed fixture tests cover forbidden imports, allowed graphs, re-export
+visibility, current-package acceptance, and configuration errors.
 
 Final validation on 2026-05-20 passed:
 

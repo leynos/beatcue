@@ -4,7 +4,7 @@
 
 Superseded on 2026-05-20 by
 [ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md).
- BeatCue now enforces its documented package dependency direction with Hecate
+BeatCue now enforces its documented package dependency direction with Hecate
 rather than the repository-local Python checker described here.
 
 ## Date
@@ -16,7 +16,7 @@ rather than the repository-local Python checker described here.
 BeatCue is still a skeleton package, but its design already defines strict
 hexagonal boundaries. Domain code must remain pure, application services must
 orchestrate through domain-owned ports, adapters may contain infrastructure, and
- `beatcue.config` is the narrow composition root that wires concrete
+`beatcue.config` is the narrow composition root that wires concrete
 dependencies.
 
 Ordinary unit tests are not enough to preserve those boundaries while the

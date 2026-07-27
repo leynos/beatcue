@@ -21,8 +21,8 @@ Some optional packages named by the design are not yet reliable on Python 3.14.
 `librosa` is blocked by its numba and llvmlite stack, OpenTimelineIO lacks a
 Python 3.14 wheel, and the post-v1 model stack depends on Torch wheel
 availability. Declaring those dependencies unconditionally would make `uv lock`
-fail even though the corresponding capabilities are optional or post-v1.
-The markers are therefore intentionally unsatisfiable while BeatCue's supported
+fail even though the corresponding capabilities are optional or post-v1. The
+markers are therefore intentionally unsatisfiable while BeatCue's supported
 Python floor remains 3.14. GitHub issue #18 tracks removing them before roadmap
 3.1.3 depends on librosa feature loading.
 
@@ -42,10 +42,10 @@ BeatCue declares:
 
 Packages known not to resolve cleanly on Python 3.14 are guarded with
 `python_full_version < '3.14'` markers until upstream support lands. This keeps
-the design contract visible while allowing `uv lock`, `uv sync --group dev`,
-and `make all` to succeed on the supported interpreter. The expected resolution
-is to remove those markers once librosa, OpenTimelineIO, Torch, and their
-blocking transitive dependencies publish reliable cp314 wheels.
+the design contract visible while allowing `uv lock`, `uv sync --group dev`, and
+`make all` to succeed on the supported interpreter. The expected resolution is
+to remove those markers once librosa, OpenTimelineIO, Torch, and their blocking
+transitive dependencies publish reliable cp314 wheels.
 
 BeatCue uses `opencv-python-headless` and `scenedetect-headless`, not the GUI
 OpenCV or bare PySceneDetect distributions. Both expose the same import

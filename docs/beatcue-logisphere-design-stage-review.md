@@ -11,8 +11,8 @@
 
 BeatCue is a Python package and CLI for extracting editorial timing cues from
 video files. It produces WebVTT metadata cues, OpenTimelineIO markers, and a
-lossless BeatCue JSON format from a single canonical analysis result. The design
-uses hexagonal architecture with twelve driven ports, a two-pass
+lossless BeatCue JSON format from a single canonical analysis result. The
+design uses hexagonal architecture with twelve driven ports, a two-pass
 action-intensity pipeline (deterministic first, then semantic enrichment), and
 an agent-native CLI built on Cyclopts with non-interactive defaults.
 
@@ -68,9 +68,9 @@ domain objects immutable.
   but some ports may be premature. `AudioExtractor` and `AudioFeatureExtractor`
   could be one port until a second audio backend exists. `JobLedger` and
   `ProfileStore` are persistence ports that will each have exactly one
-  implementation for the foreseeable future. The design should acknowledge which
-  ports exist because they have real substitutability requirements, and which
-  exist for testing convenience alone.
+  implementation for the foreseeable future. The design should acknowledge
+  which ports exist because they have real substitutability requirements, and
+  which exist for testing convenience alone.
 
 - 🟢 **The `AnalyseVideo` service dataclass is load-bearing.** Its constructor
   takes nine injected dependencies. This is honest about the pipeline's
@@ -87,9 +87,9 @@ domain objects immutable.
 - 💡 **The colourgram is domain or adapter?** The design describes the
   colourgram vector contents (§10) but does not say whether `Colourgram` is a
   domain value object or an adapter-internal structure. If domain services
-  operate on colourgram data for action-intensity computation, it needs a domain
-  representation. If it is only an intermediate adapter artefact, it should not
-  appear in the domain terminology table.
+  operate on colourgram data for action-intensity computation, it needs a
+  domain representation. If it is only an intermediate adapter artefact, it
+  should not appear in the domain terminology table.
 
 ### 3.2. Wafflecat 🐈🧇 — Alternative futures
 
@@ -103,10 +103,10 @@ domain objects immutable.
 - 🟡 **The 80/20 version is buried.** A simpler BeatCue that runs
   `ffprobe` + PySceneDetect + librosa beat detection and writes WebVTT would
   deliver substantial value with three adapters instead of twelve. The design
-  describes this path implicitly (phase 3 of the roadmap) but does not frame
-  it as a viable standalone product. If the project stalls after phase 3, is
-  that a useful tool or an incomplete skeleton? The roadmap's phase 2 idea
-  statement comes closest to acknowledging this, but the design itself does not.
+  describes this path implicitly (phase 3 of the roadmap) but does not frame it
+  as a viable standalone product. If the project stalls after phase 3, is that
+  a useful tool or an incomplete skeleton? The roadmap's phase 2 idea statement
+  comes closest to acknowledging this, but the design itself does not.
 
 - 🟢 **Dataflow-graph alternative.** BeatCue's pipeline is a directed acyclic
   graph: probe → sample → (colour, motion, audio, scene) → intensity →
@@ -127,11 +127,11 @@ domain objects immutable.
 
 - 🟡 **No load profile or resource estimates.** The design does not state
   expected input sizes (video duration, resolution, frame rate) or processing
-  costs. A 30-second trailer and a 2-hour film have vastly different memory
-  and compute profiles. Frame sampling at 4 fps on a 2-hour file produces
-  28,800 frames; dense optical flow on those frames may exhaust memory on a
-  typical workstation. The design should state target input bounds or describe
-  how the pipeline degrades for large inputs.
+  costs. A 30-second trailer and a 2-hour film have vastly different memory and
+  compute profiles. Frame sampling at 4 fps on a 2-hour file produces 28,800
+  frames; dense optical flow on those frames may exhaust memory on a typical
+  workstation. The design should state target input bounds or describe how the
+  pipeline degrades for large inputs.
 
 - 🟡 **Feature-series storage is unbounded by default.** The `--include-series`
   flag gates large arrays, but the default `AnalysisResult` still carries
@@ -210,8 +210,8 @@ correctly requires failing before side effects for dependency errors.
   partial from complete output without out-of-band knowledge?
 
 - 🟡 **Job ledger corruption.** The design uses JSON Lines for the job ledger
-  to avoid corruption from interrupted writes. This is a reasonable choice,
-  but it does not address concurrent writes from multiple BeatCue processes
+  to avoid corruption from interrupted writes. This is a reasonable choice, but
+  it does not address concurrent writes from multiple BeatCue processes
   targeting the same ledger file. File locking or per-process ledger files
   would prevent interleaving.
 
@@ -225,8 +225,8 @@ correctly requires failing before side effects for dependency errors.
 
 - 🟢 **Disk space exhaustion during writing.** The design requires atomic
   writes for delivery adapters but does not address partial writes when disk
-  space runs out mid-file. Atomic writes via temp-file-then-rename handle
-  this correctly if implemented, but the design should state the mechanism.
+  space runs out mid-file. Atomic writes via temp-file-then-rename handle this
+  correctly if implemented, but the design should state the mechanism.
 
 - 💡 **No graceful degradation for missing optional adapters.** The design says
   "BeatCue fails only if the user explicitly requested that model" (§18), but
@@ -243,8 +243,8 @@ correctly requires failing before side effects for dependency errors.
   analysis pipeline. The `pyproject.toml` shows no runtime dependencies yet.
   The gap between design ambition and current implementation is large. Without
   an explicit statement of team size and capacity, the roadmap risks being an
-  aspirational document rather than a delivery plan. The design should scope
-  a credible v1 boundary — possibly just phases 1–3 of the roadmap — and call
+  aspirational document rather than a delivery plan. The design should scope a
+  credible v1 boundary — possibly just phases 1–3 of the roadmap — and call
   everything else post-v1.
 
 - 🟡 **Dependency breadth is high.** The runtime dependency set includes
@@ -252,22 +252,22 @@ correctly requires failing before side effects for dependency errors.
   Transformers, Florence-2, and Qwen2.5-VL. Several of these (Transformers,
   Florence-2, Qwen2.5-VL) pull in PyTorch and hundreds of transitive
   dependencies. The design should distinguish required from optional
-  dependencies and specify dependency groups so a minimal installation (no
-  VLM, no object tracking) remains lightweight.
+  dependencies and specify dependency groups so a minimal installation (no VLM,
+  no object tracking) remains lightweight.
 
 - 🟡 **Cuprum and CmdMox are single-maintainer dependencies.** The design
   delegates all subprocess execution to Cuprum and all subprocess testing to
   CmdMox. Both appear to be maintained by the same developer who is building
-  BeatCue. This is fine for internal tooling but creates a bus-factor risk
-  for external contributors. The design should acknowledge this and note
-  whether the port abstraction allows swapping Cuprum for direct subprocess
-  calls if needed.
+  BeatCue. This is fine for internal tooling but creates a bus-factor risk for
+  external contributors. The design should acknowledge this and note whether
+  the port abstraction allows swapping Cuprum for direct subprocess calls if
+  needed.
 
 - 🟢 **The testing strategy is well-matched to the architecture.** Using
-  Hypothesis for domain invariants, CmdMox for subprocess contracts, syrupy
-  for output stability, and pytest-bdd for CLI workflows is a coherent
-  verification stack. The concern is whether the team has bandwidth to write
-  all these test types for all twelve adapters.
+  Hypothesis for domain invariants, CmdMox for subprocess contracts, syrupy for
+  output stability, and pytest-bdd for CLI workflows is a coherent verification
+  stack. The concern is whether the team has bandwidth to write all these test
+  types for all twelve adapters.
 
 - 🟢 **The hexagonal boundary reduces cognitive load per layer.** A developer
   working on the librosa adapter does not need to understand the Cyclopts CLI
@@ -298,24 +298,23 @@ integration work.
 **Signal missed:** No spike or prototype validated that the adapter
 integrations work before the full architecture was built.
 
-**Mitigation:** Add a "walking skeleton" task to phase 1 that runs
-`ffprobe` → sample one frame → write a single-cue WebVTT file through the full
-pipeline. This proves the hexagonal plumbing works with real I/O before
-investing in domain model polish.
+**Mitigation:** Add a "walking skeleton" task to phase 1 that runs `ffprobe` →
+sample one frame → write a single-cue WebVTT file through the full pipeline.
+This proves the hexagonal plumbing works with real I/O before investing in
+domain model polish.
 
 ### Scenario B: Memory exhaustion on real media
 
-**What happened:** A user ran `beatcue analyse` on a 90-minute documentary.
-The pipeline sampled 21,600 frames at 4 fps, computed dense optical flow for
-each pair, and accumulated all feature arrays in the `AnalysisResult`. The
-process consumed 32 GB of memory and was killed by the OS.
+**What happened:** A user ran `beatcue analyse` on a 90-minute documentary. The
+pipeline sampled 21,600 frames at 4 fps, computed dense optical flow for each
+pair, and accumulated all feature arrays in the `AnalysisResult`. The process
+consumed 32 GB of memory and was killed by the OS.
 
 **Root cause:** The design does not specify memory management for the feature
 pipeline. The `AnalysisResult` carries all features in memory until writers
 flush.
 
-**Signal missed:** No input-size bounds or memory-budget analysis in the
-design.
+**Signal missed:** No input-size bounds or memory-budget analysis in the design.
 
 **Mitigation:** Define maximum input duration or resolution tiers in the
 default profile. Process features in sliding windows rather than accumulating
@@ -331,8 +330,8 @@ object tracking was disabled inflated the effective semantic weight. The
 resulting cue sheet contained false action peaks that misled a downstream
 editing agent.
 
-**Root cause:** The weight redistribution logic (§10) is described in prose
-but not formally specified. The invariant "semantic annotations cannot create
+**Root cause:** The weight redistribution logic (§10) is described in prose but
+not formally specified. The invariant "semantic annotations cannot create
 timing cues without deterministic evidence" is stated, but the enforcement
 mechanism is not defined.
 
@@ -370,11 +369,11 @@ results.
 - Design consistency: the hexagonal ports-and-adapters model does not naturally
   compose with a dataflow graph; the two paradigms would need reconciliation.
 
-**Assessment:** The current procedural pipeline is the right choice for v1.
-The DAG alternative becomes compelling if BeatCue needs pluggable detector
-chains or incremental re-analysis post-v1. The current port design does not
-preclude migrating to a DAG executor later, since ports already abstract the
-individual stages.
+**Assessment:** The current procedural pipeline is the right choice for v1. The
+DAG alternative becomes compelling if BeatCue needs pluggable detector chains
+or incremental re-analysis post-v1. The current port design does not preclude
+migrating to a DAG executor later, since ports already abstract the individual
+stages.
 
 ## 6. Verdict
 
@@ -392,56 +391,56 @@ The conditions below must be addressed before or during early implementation.
 
 ### Design flaws (🔴)
 
-| # | Finding | Expert | Section |
-| - | ------- | ------ | ------- |
-| 1 | `AnalysisResult` — the single most important data structure — is never defined. Its fields, invariants, and serialization contract are absent from §7. | Telefono ☎️ | §7 |
-| 2 | Scope-to-team mismatch: twelve adapters, six command groups, three output formats, and two ML model integrations with no stated team size or explicit v1 boundary. | Dinolump 🦕 | §§5–6, 20 |
+| #   | Finding                                                                                                                                                            | Expert      | Section   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | --------- |
+| 1   | `AnalysisResult` — the single most important data structure — is never defined. Its fields, invariants, and serialization contract are absent from §7.             | Telefono ☎️ | §7        |
+| 2   | Scope-to-team mismatch: twelve adapters, six command groups, three output formats, and two ML model integrations with no stated team size or explicit v1 boundary. | Dinolump 🦕 | §§5–6, 20 |
 
 _Table 1: Design flaws._
 
 ### Unresolved risks (🟡)
 
-| # | Finding | Expert | Section |
-| - | ------- | ------ | ------- |
-| 3 | Twelve ports may be premature; some (e.g. `AudioExtractor` / `AudioFeatureExtractor`) have no real substitutability requirement yet. | Pandalump 🐼 | §8 |
-| 4 | No alternatives section in the design; hexagonal architecture is presented as given, not as a decision. | Wafflecat 🐈🧇 | §5 |
-| 5 | No load profile or resource estimates; unbounded input sizes can exhaust memory. | Buzzy Bee 🐝 | §§9–10 |
-| 6 | In-memory feature-series storage is unbounded and grows proportionally to video length. | Buzzy Bee 🐝 | §10 |
-| 7 | Schema technology for BeatCue JSON is listed as deferred (§21) but is actually blocking (roadmap 1.1.1). | Telefono ☎️ | §§13.1, 21 |
-| 8 | `agent-context` contract is described but its JSON shape, versioning, and compatibility promise are not specified. | Telefono ☎️ | §14 |
-| 9 | `--partial` mode does not say how outputs are marked incomplete for downstream consumers. | Doggylump 🐶 | §18 |
-| 10 | Job ledger does not address concurrent writes from multiple BeatCue processes. | Doggylump 🐶 | §15 |
-| 11 | Dependency breadth is high; no distinction between required and optional runtime dependencies. | Dinolump 🦕 | §§5, 20 |
-| 12 | Cuprum and CmdMox are single-maintainer dependencies with bus-factor risk. | Dinolump 🦕 | §16 |
-| 13 | The 80/20 product (probe + scene detect + beat detect → WebVTT) is not framed as a viable standalone deliverable. | Wafflecat 🐈🧇 | §§9, 20 |
+| #   | Finding                                                                                                                              | Expert         | Section    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------- | ---------- |
+| 3   | Twelve ports may be premature; some (e.g. `AudioExtractor` / `AudioFeatureExtractor`) have no real substitutability requirement yet. | Pandalump 🐼   | §8         |
+| 4   | No alternatives section in the design; hexagonal architecture is presented as given, not as a decision.                              | Wafflecat 🐈🧇 | §5         |
+| 5   | No load profile or resource estimates; unbounded input sizes can exhaust memory.                                                     | Buzzy Bee 🐝   | §§9–10     |
+| 6   | In-memory feature-series storage is unbounded and grows proportionally to video length.                                              | Buzzy Bee 🐝   | §10        |
+| 7   | Schema technology for BeatCue JSON is listed as deferred (§21) but is actually blocking (roadmap 1.1.1).                             | Telefono ☎️    | §§13.1, 21 |
+| 8   | `agent-context` contract is described but its JSON shape, versioning, and compatibility promise are not specified.                   | Telefono ☎️    | §14        |
+| 9   | `--partial` mode does not say how outputs are marked incomplete for downstream consumers.                                            | Doggylump 🐶   | §18        |
+| 10  | Job ledger does not address concurrent writes from multiple BeatCue processes.                                                       | Doggylump 🐶   | §15        |
+| 11  | Dependency breadth is high; no distinction between required and optional runtime dependencies.                                       | Dinolump 🦕    | §§5, 20    |
+| 12  | Cuprum and CmdMox are single-maintainer dependencies with bus-factor risk.                                                           | Dinolump 🦕    | §16        |
+| 13  | The 80/20 product (probe + scene detect + beat detect → WebVTT) is not framed as a viable standalone deliverable.                    | Wafflecat 🐈🧇 | §§9, 20    |
 
 _Table 2: Unresolved risks._
 
 ### Improvements (🟢)
 
-| # | Finding | Expert | Section |
-| - | ------- | ------ | ------- |
-| 14 | Consider grouping related port dependencies (e.g. `MediaInputs` bundle) to reduce `AnalyseVideo` constructor arity. | Pandalump 🐼 | §8 |
-| 15 | State explicitly that `beatcue.config` is the only package permitted to import adapters. | Pandalump 🐼 | §5 |
-| 16 | Cap the number of semantic keyframes to prevent runaway VLM inference on long videos. | Buzzy Bee 🐝 | §9 |
-| 17 | Clarify whether optical flow is computed incrementally or accumulated. | Buzzy Bee 🐝 | §10 |
-| 18 | Confirm whether WebVTT timestamps are truncated or rounded. | Telefono ☎️ | §13.2 |
-| 19 | Describe the cue ID generation algorithm. | Telefono ☎️ | §7 |
-| 20 | Address model download failures when `--caption-model` specifies a model not cached locally. | Doggylump 🐶 | §18 |
-| 21 | State the atomic-write mechanism for delivery adapters. | Doggylump 🐶 | §19 |
-| 22 | The testing strategy is well-matched to the architecture; concern is bandwidth to write all test types. | Dinolump 🦕 | §17 |
-| 23 | The hexagonal boundary reduces cognitive load per layer, provided port protocols are well-documented. | Dinolump 🦕 | §5 |
+| #   | Finding                                                                                                             | Expert       | Section |
+| --- | ------------------------------------------------------------------------------------------------------------------- | ------------ | ------- |
+| 14  | Consider grouping related port dependencies (e.g. `MediaInputs` bundle) to reduce `AnalyseVideo` constructor arity. | Pandalump 🐼 | §8      |
+| 15  | State explicitly that `beatcue.config` is the only package permitted to import adapters.                            | Pandalump 🐼 | §5      |
+| 16  | Cap the number of semantic keyframes to prevent runaway VLM inference on long videos.                               | Buzzy Bee 🐝 | §9      |
+| 17  | Clarify whether optical flow is computed incrementally or accumulated.                                              | Buzzy Bee 🐝 | §10     |
+| 18  | Confirm whether WebVTT timestamps are truncated or rounded.                                                         | Telefono ☎️  | §13.2   |
+| 19  | Describe the cue ID generation algorithm.                                                                           | Telefono ☎️  | §7      |
+| 20  | Address model download failures when `--caption-model` specifies a model not cached locally.                        | Doggylump 🐶 | §18     |
+| 21  | State the atomic-write mechanism for delivery adapters.                                                             | Doggylump 🐶 | §19     |
+| 22  | The testing strategy is well-matched to the architecture; concern is bandwidth to write all test types.             | Dinolump 🦕  | §17     |
+| 23  | The hexagonal boundary reduces cognitive load per layer, provided port protocols are well-documented.               | Dinolump 🦕  | §5      |
 
 _Table 3: Improvements._
 
 ### Open questions (💡)
 
-| # | Finding | Expert | Section |
-| - | ------- | ------ | ------- |
-| 24 | Is the colourgram a domain value object or an adapter-internal structure? | Pandalump 🐼 | §§4, 10 |
-| 25 | What prior art was evaluated? | Wafflecat 🐈🧇 | — |
-| 26 | Port protocol method signatures are absent; implementers lack input/output type contracts. | Telefono ☎️ | §8 |
-| 27 | What happens when PySceneDetect or OpenCV is not installed? Are these required or optional? | Doggylump 🐶 | §18 |
+| #   | Finding                                                                                     | Expert         | Section |
+| --- | ------------------------------------------------------------------------------------------- | -------------- | ------- |
+| 24  | Is the colourgram a domain value object or an adapter-internal structure?                   | Pandalump 🐼   | §§4, 10 |
+| 25  | What prior art was evaluated?                                                               | Wafflecat 🐈🧇 | —       |
+| 26  | Port protocol method signatures are absent; implementers lack input/output type contracts.  | Telefono ☎️    | §8      |
+| 27  | What happens when PySceneDetect or OpenCV is not installed? Are these required or optional? | Doggylump 🐶   | §18     |
 
 _Table 4: Open questions._
 
@@ -467,9 +466,9 @@ _Table 4: Open questions._
    processing, or explicit rejection). (Addresses findings 5 and 6.)
 
 5. **Add a walking-skeleton task to phase 1.** Run `ffprobe` → sample one
-   frame → emit a single-cue WebVTT through the full hexagonal pipeline.
-   This validates the architecture with real I/O before investing in domain
-   polish. (Addresses pre-mortem scenario A.)
+   frame → emit a single-cue WebVTT through the full hexagonal pipeline. This
+   validates the architecture with real I/O before investing in domain polish.
+   (Addresses pre-mortem scenario A.)
 
 6. **Specify port protocol signatures.** Define input and output types for at
    least the four riskiest ports (`MediaProbe`, `FrameSampler`,

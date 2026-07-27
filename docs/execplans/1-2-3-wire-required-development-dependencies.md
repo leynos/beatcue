@@ -333,8 +333,8 @@ the conflict in `Decision log`, and ask for direction.
   assertion messages were unreachable because `metadata.version()` and
   `import_module()` raise on failure. Impact: the test is clearer as direct
   calls that let the underlying exception explain the missing distribution or
-  import name. The same pass also required a reason on the fixture's
-  intentional `F401` suppression.
+  import name. The same pass also required a reason on the fixture's intentional
+  `F401` suppression.
 
 - Observation: the third CodeRabbit pass asked for a parameterized dependency
   smoke test with assertions on the captured version string and module object,
@@ -409,9 +409,9 @@ the conflict in `Decision log`, and ask for direction.
 
 - 2026-06-16 — Update `docs/users-guide.md` with optional dependency install
   guidance. Rationale: this milestone declares runtime extras that users can
-  install directly, so the users' guide must show the supported `uv sync
-  --extra` commands alongside the maintainer-facing dependency policy recorded
-  in ADR 009, the technical design, and the developers' guide.
+  install directly, so the users' guide must show the supported
+  `uv sync --extra` commands alongside the maintainer-facing dependency policy
+  recorded in ADR 009, the technical design, and the developers' guide.
 
 - 2026-06-03 — Repair `inbound_adapter.allowed` in Stage B by adding
   `"infrastructure"`. Rationale: design §14 requires the CLI to import Cyclopts
@@ -452,8 +452,7 @@ The most important implementation lesson was that fixture architecture tests
 must mirror production's `include_external_packages = true` setting. Without
 that setting, fixture tests can prove BeatCue-to-BeatCue import direction but
 cannot prove third-party infrastructure prefix coverage. The new `cmd_mox`
-fixture now exercises the exact import name used by the `cmd-mox`
-distribution.
+fixture now exercises the exact import name used by the `cmd-mox` distribution.
 
 The Pillow follow-up adds a second lesson: Hecate prefixes must always be
 import roots, not distribution names. The table already identified Pillow's

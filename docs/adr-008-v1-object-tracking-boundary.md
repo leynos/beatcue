@@ -69,14 +69,14 @@ can be a simple centroid-association default, but the boundary permits later
 OpenCV, SAM 2, or remote tracker adapters as long as they return the same
 domain values.
 
-| Topic                   | Florence-2 detections | Centroid tracker | Pluggable port |
-| ----------------------- | --------------------- | ---------------- | -------------- |
-| Track persistence       | Weak                  | Medium           | Strong         |
-| First implementation    | Medium                | Strong           | Strong         |
-| Future tracker swaps    | Weak                  | Medium           | Strong         |
-| Hexagonal boundary      | Medium                | Medium           | Strong         |
-| Test fixture stability  | Medium                | Strong           | Strong         |
-| Release-scope clarity   | Medium                | Medium           | Strong         |
+| Topic                  | Florence-2 detections | Centroid tracker | Pluggable port |
+| ---------------------- | --------------------- | ---------------- | -------------- |
+| Track persistence      | Weak                  | Medium           | Strong         |
+| First implementation   | Medium                | Strong           | Strong         |
+| Future tracker swaps   | Weak                  | Medium           | Strong         |
+| Hexagonal boundary     | Medium                | Medium           | Strong         |
+| Test fixture stability | Medium                | Strong           | Strong         |
+| Release-scope clarity  | Medium                | Medium           | Strong         |
 
 _Table 1: Object-tracking boundary trade-offs._
 
@@ -159,9 +159,9 @@ This decision follows BeatCue's hexagonal architecture. The domain owns the
 `ObjectTracker` port and tracking concepts. Inference libraries, computer
 vision libraries, remote services, and hardware scheduling stay in adapters.
 Application services depend on the domain port, so later tracker
-implementations can change without changing cue classification, writers, or
-CLI contracts.
+implementations can change without changing cue classification, writers, or CLI
+contracts.
 
 The decision also keeps the release boundary honest. V1 can ship deterministic
-cue extraction without object tracking, while later object-entry work can
-start from a documented and testable persistence boundary.
+cue extraction without object tracking, while later object-entry work can start
+from a documented and testable persistence boundary.

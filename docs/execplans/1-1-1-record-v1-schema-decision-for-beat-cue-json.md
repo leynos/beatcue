@@ -1,9 +1,8 @@
 # Record the v1 schema decision for BeatCue JSON
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -194,8 +193,8 @@ serializer and validation layer from this decision.
   and writer-contract needs.
 
 - Observation: `make fmt` still fails in its broad Markdown formatter path
-  after reporting line-length and table-alignment issues in existing
-  repository documents outside this task. Evidence: the log is
+  after reporting line-length and table-alignment issues in existing repository
+  documents outside this task. Evidence: the log is
   `/tmp/fmt-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`. Impact:
   unrelated formatter churn was restored, and the narrower required gates were
   run successfully. This matches the same known behaviour observed during the
@@ -246,22 +245,21 @@ serializer and validation layer from this decision.
 
 ## Outcomes & retrospective
 
-Implemented the schema ratification as documentation-only work. The change
-adds `docs/adr-007-v1-beatcue-json-schema.md`, signposts ADR 007 from
+Implemented the schema ratification as documentation-only work. The change adds
+`docs/adr-007-v1-beatcue-json-schema.md`, signposts ADR 007 from
 `docs/beatcue-technical-design.md`, `docs/users-guide.md`, and
 `docs/developers-guide.md`, and marks roadmap item 1.1.1 done in
 `docs/roadmap.md`.
 
-The implementation commit is
-`42364399e96249c24b9b9bb1f4ba452a4cdbf182`. The draft pull request is
-<https://github.com/leynos/beatcue/pull/7>.
+The implementation commit is `42364399e96249c24b9b9bb1f4ba452a4cdbf182`. The
+draft pull request is <https://github.com/leynos/beatcue/pull/7>.
 
 Validation evidence:
 
 - `make fmt 2>&1 | tee /tmp/fmt-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
-  was attempted and failed in the repository's broad Markdown formatter path
-  on existing long table and line-length issues outside this task. Formatter
-  churn in unrelated files was restored.
+  was attempted and failed in the repository's broad Markdown formatter path on
+  existing long table and line-length issues outside this task. Formatter churn
+  in unrelated files was restored.
 - `make markdownlint 2>&1 | tee /tmp/markdownlint-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`
   passed.
 - `make nixie 2>&1 | tee /tmp/nixie-1-1-1-record-v1-schema-decision-for-beat-cue-json.out`

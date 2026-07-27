@@ -1,9 +1,8 @@
 # Record the v1 object-tracking boundary
 
-This ExecPlan (execution plan) is a living document. The sections
-`Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`,
-`Decision log`, and `Outcomes & Retrospective` must be kept up to date as work
-proceeds.
+This ExecPlan (execution plan) is a living document. The sections `Constraints`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision log`,
+and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
 
@@ -30,9 +29,9 @@ developer and user guidance, and a roadmap update. Later implementation task
 ## Constraints
 
 - Do not implement production object tracking, object-entry cue extraction,
-  Florence-2 inference, centroid-association code, command-line interface
-  (CLI) commands, adapters, or writer changes in this task. This task records
-  the boundary decision.
+  Florence-2 inference, centroid-association code, command-line interface (CLI)
+  commands, adapters, or writer changes in this task. This task records the
+  boundary decision.
 - Do not overwrite
   `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md`. That
   file is the completed plan for roadmap item 1.1.1 and is part of project
@@ -156,21 +155,20 @@ developer and user guidance, and a roadmap update. Later implementation task
 - [x] (2026-05-17 11:35Z) Received explicit approval to implement the
   decision-record changes from this ExecPlan.
 - [x] (2026-05-17 11:35Z) Confirmed ADR 008 is available and the working tree
-  starts clean against
-  `origin/1-1-2-record-v1-object-tracking-boundary`.
+  starts clean against `origin/1-1-2-record-v1-object-tracking-boundary`.
 - [x] (2026-05-17 11:35Z) Updated this plan to `IN PROGRESS` before editing
   design documents.
 - [x] (2026-05-17 11:35Z) Created ADR 008 and added documentation signposts in
   the technical design, developers' guide, users' guide, and roadmap.
 - [x] Create the ADR and documentation signposts.
 - [x] (2026-05-17 11:48Z) Ran `coderabbit review --agent`. The first
-  implementation review found two valid minor ADR issues, which were fixed.
-  The second review emitted stale line-wrap findings after the file had already
+  implementation review found two valid minor ADR issues, which were fixed. The
+  second review emitted stale line-wrap findings after the file had already
   been rechecked locally; a third review completed with zero findings.
 - [x] Run `coderabbit review --agent` and clear concerns.
 - [x] (2026-05-17 11:50Z) Ran `make markdownlint`, `make nixie`,
-  `make check-fmt`, `make lint`, `make typecheck`, and `make test`
-  sequentially with `/tmp` logs. All gates passed.
+  `make check-fmt`, `make lint`, `make typecheck`, and `make test` sequentially
+  with `/tmp` logs. All gates passed.
 - [x] Run documentation gates and the user-requested Python gates.
 - [x] (2026-05-17 11:54Z) Committed the approved implementation changes as
   `fe0ba04` (`Record object-tracking boundary`) after rebasing onto

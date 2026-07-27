@@ -82,8 +82,8 @@ _Table 1: Lint architecture trade-offs._
 
 ## Decision outcome
 
-BeatCue chooses option C. The `lint` target depends on the `.deps` stamp,
-which runs `uv sync --group dev` only when the project environment or
+BeatCue chooses option C. The `lint` target depends on the `.deps` stamp, which
+runs `uv sync --group dev` only when the project environment or
 `pyproject.toml` is stale. The lint command then runs `ruff check` before
 running Pylint through the pinned `pylint-pypy-shim` tool against `beatcue` and
 `tests`.
