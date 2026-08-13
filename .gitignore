@@ -216,3 +216,7 @@ target/
 .*.sw?
 *~
 .*.un~
+.vtcode/
+.claude/
+*.swp
+*.swo
