@@ -70,7 +70,11 @@
   - Formatting is correct and validated.
 - **For Python files:**
   - **Testing:** Passes all relevant unit and behavioural tests (`make test`).
-  - **Linting:** Passes lint checks (`make lint`).
+  - **Linting:** Passes the complete `make lint` pipeline: Ruff, Pylint,
+    Hecate, spelling, and the blocking Skylos dead-code scan. Investigate every
+    finding and remove genuine dead code. After verifying a false positive,
+    record a reasoned named exception with
+    `make skylos-allow NAME=symbol REASON="Verified runtime caller"`.
   - **Formatting:** Adheres to formatting standards (`make check-fmt`; use
     `make fmt` to apply fixes).
   - **Typechecking:** Passes type checking (`make typecheck`).
