@@ -269,17 +269,17 @@ the conflict in `Decision Log`, and ask for direction.
 
 - Observation: The final CodeRabbit pass reported a minor spelling concern in
   ADR 003, but the current file already uses `behavioural tests` and a search
-  of the touched documentation found no `behavior` spelling. Evidence:
-  `nl -ba docs/adr-003-hexagonal-architecture-enforcement.md` shows
-  `behavioural tests` on line 81, and `grep -R "behavior" ...` returned no
-  matches. Impact: the finding was treated as stale after verification rather
-  than edited as a no-op.
+  of the touched documentation found no US spelling. Evidence:
+  `docs/adr-003-hexagonal-architecture-enforcement.md` shows
+  `behavioural tests` on line 81, and a repository search returned no matches.
+  Impact: the finding was treated as stale after verification rather than
+  edited as a no-op.
 
 - Observation: A repeat CodeRabbit pass reported three Markdown blank-line
   concerns that were already satisfied and one valid Oxford-comma concern in
   ADR 003. Evidence:
-  `nl -ba docs/adr-003-hexagonal-architecture-enforcement.md` showed blank
-  lines around the code fence, table, and `## Goals and non-goals` heading. The
+  `docs/adr-003-hexagonal-architecture-enforcement.md` showed blank lines
+  around the code fence, table, and `## Goals and non-goals` heading. The
   table row for `adapter` did omit the Oxford comma before
   `and infrastructure`. Impact: the stale blank-line findings were skipped
   after verification, and the table wording was changed to
@@ -747,7 +747,7 @@ If any gate fails for sandbox or network reasons, rerun the same command with
 the execution tool's elevated-permission mechanism and record the outcome in
 `Surprises & Discoveries`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 BeatCue repository evidence gathered before drafting:
 
