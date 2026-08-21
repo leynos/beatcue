@@ -112,7 +112,7 @@ check-architecture: .deps ## Verify hexagonal import boundaries
 
 typecheck: .deps ty ## Run typechecking
 	ty --version
-	ty check
+	ty check --extra-search-path scripts
 
 markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'

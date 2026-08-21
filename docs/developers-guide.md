@@ -351,6 +351,10 @@ make typecheck
 make test
 ```
 
+The `typecheck` target adds `scripts/` as a first-party module search path. This
+matches Python's runtime path when the spelling-policy script imports its peer
+modules.
+
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
