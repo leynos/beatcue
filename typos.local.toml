@@ -9,7 +9,6 @@ stems = []
 accepted = [
   "Astroid",
   "Center",
-  "color",
 ]
 
 [words.corrections]

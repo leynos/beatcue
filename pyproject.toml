@@ -71,6 +71,12 @@ dev = [
     "pyyaml",  # the workflow contract parses ci.yml
 ]
 
+[tool.skylos.gate]
+strict = true
+
+[tool.skylos.whitelist]
+names = []
+
 [tool.hecate]
 root_packages = ["beatcue"]
 include_external_packages = true

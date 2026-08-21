@@ -23,12 +23,16 @@ PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
 PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' pylint
+SKYLOS_VERSION = 4.33.2
+SKYLOS = $(UV_ENV) $(UV) tool run --from 'skylos==$(SKYLOS_VERSION)' skylos \
+	--config-file pyproject.toml
+SKYLOS_PRODUCTION_TARGETS ?= beatcue
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        check-architecture markdownlint nixie spelling test test-workflow-contracts typecheck $(TOOLS) \
-        $(VENV_TOOLS)
+        check-architecture markdownlint nixie skylos-allow spelling test \
+        test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
 
@@ -107,6 +111,14 @@ lint: .deps ## Run linters
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
 	+$(MAKE) spelling
+	$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --category dead_code --gate --format concise --no-upload --no-provenance --no-grep-verify
+
+skylos-allow: export SKYLOS_NAME = $(value NAME)
+skylos-allow: export SKYLOS_REASON = $(value REASON)
+skylos-allow: ## Document one named Skylos exception, not an entry point
+	@test -n "$${SKYLOS_NAME}" || { printf "Error: NAME is required for a named whitelist exception\\n" >&2; exit 2; }
+	@test -n "$${SKYLOS_REASON}" || { printf "Error: REASON is required for a named whitelist exception\\n" >&2; exit 2; }
+	$(SKYLOS) whitelist "$${SKYLOS_NAME}" --reason "$${SKYLOS_REASON}"
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)

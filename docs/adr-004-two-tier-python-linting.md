@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 004: Two-tier Python linting
+# Architectural decision record (ADR) 004: Python linting and dead-code detection
 
 ## Status
 
@@ -104,6 +104,20 @@ creating the virtual environment, syncing dependencies, or querying tools
 inside the virtual environment. Missing `uv` therefore fails with an explicit
 tooling error instead of a shell-level "file not found" message.
 
+### Amendment: blocking Skylos dead-code detection
+
+BeatCue additionally provisions Skylos as a pinned, isolated `uv tool` and
+runs it at the end of `make lint` against the production `beatcue/` package.
+The command selects only dead-code analysis, uses strict gate behaviour, and
+disables uploads, provenance collection, and repository-wide grep verification.
+This keeps the scan deterministic and prevents test-only references from
+making production symbols appear live.
+
+Every finding is investigated and genuine dead code is removed. A confirmed
+false positive is recorded through `make skylos-allow` with the symbol name and
+a reason identifying the verified runtime caller. The allow list remains narrow
+because it describes exceptional dynamic boundaries rather than a baseline.
+
 ## Goals and non-goals
 
 Goals:
@@ -113,6 +127,8 @@ Goals:
 - Add selected Pylint checks without adopting Pylint's full default policy.
 - Share the Episodic Python lint posture where it fits BeatCue.
 - Pin the PyPy shim revision used to run Pylint.
+- Detect dead production symbols that Ruff and Pylint do not model as liveness
+  failures.
 
 Non-goals:
 
@@ -121,6 +137,8 @@ Non-goals:
 - Treat the entire Episodic repository as BeatCue's configuration source of
   truth.
 - Add continuous integration behaviour in this ADR.
+- Import benchmark corpus, scoring logic, or benchmark infrastructure from
+  Episodic.
 
 ## Migration plan
 
@@ -132,6 +150,8 @@ Non-goals:
    entrypoints in the developers' guide.
 5. Revisit the policy when Episodic changes its lint baseline, and record any
    deliberate BeatCue divergence in the relevant pull request.
+6. Run Skylos after the existing lint checks and maintain only verified,
+   reasoned allow-list entries.
 
 ## Known risks and limitations
 
@@ -146,6 +166,9 @@ Non-goals:
   inference services, and CLI surfaces.
 - The Pylint version and interpreter pin must be advanced intentionally when
   Pylint compatibility or the target Python version changes.
+- Skylos is a static analysis tool and can miss dynamic callers. Exceptions
+  therefore require a verified caller and a reason, rather than a broad
+  baseline that would mask genuine dead code.
 
 ## Architectural rationale
 
