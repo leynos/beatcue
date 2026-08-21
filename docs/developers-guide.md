@@ -354,13 +354,14 @@ make test
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
-[ADR 004](adr-004-two-tier-python-linting.md). The lint gate is deliberately
-two-tier:
+[ADR 004](adr-004-two-tier-python-linting.md). The lint gate combines two
+Python lint tiers with a production-only dead-code scan:
 
 1. Ruff runs first from the project virtual environment.
 2. Pylint runs second through the pinned
    [`pylint-pypy-shim`](https://github.com/leynos/pylint-pypy-shim) tool under
    PyPy.
+3. Skylos scans the production `beatcue/` package for dead code.
 
 Ruff is the fast, broad gate for style, import hygiene, annotation discipline,
 bug patterns, performance hints, docstring policy, and Ruff's own Pylint-style
@@ -369,7 +370,7 @@ cover with the same semantics, especially logging format issues, pattern
 matching hazards, simplification opportunities, mutation during iteration,
 resource handling, and structural complexity limits.
 
-Run both tiers with:
+Run the complete lint pipeline with:
 
 ```bash
 make lint
@@ -382,11 +383,31 @@ configuration is stale, then runs:
 ```bash
 $(UV_ENV) $(UV) run ruff check
 $(PYLINT) $(PYLINT_TARGETS)
+$(MAKE) check-architecture
+$(MAKE) spelling
+$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --category dead_code --gate \\
+  --format concise --no-upload --no-provenance --no-grep-verify
 ```
 
-Use the Makefile target rather than invoking `ruff` or `pylint` directly. This
-keeps the selected interpreter, cache directories, shim revision, and target
-set consistent between local development and review.
+Use the Makefile target rather than invoking its tools directly. This keeps the
+selected interpreter, cache directories, shim revision, and target set
+consistent between local development, CI, and review.
+
+Skylos is separately provisioned at exact release `4.33.2`. Its gate is strict,
+production-only, non-interactive, and disables uploads, provenance collection,
+and repository-wide grep verification. Test references therefore cannot keep
+production symbols live. Treat a finding as genuine dead code until a runtime
+caller is verified, then remove it. For a confirmed false positive that cannot
+be represented in code, record the named exception and its verified caller:
+
+```bash
+make skylos-allow NAME=registered_handler \\
+  REASON="Loaded by the plugin registry; verified in its contract test"
+```
+
+Do not add speculative or bulk allow-list entries. The `skylos-allow` target
+rejects an empty name or reason and records the exception in
+`[tool.skylos.whitelist]` in `pyproject.toml`.
 
 ### Lint Makefile variables
 
@@ -412,6 +433,11 @@ The lint target is configured by these Makefile variables:
   `PYLINT_PYPY_SHIM_REF`. This defines the install source used by `uv tool run`.
 - `PYLINT`: assembles the complete `uv tool run --python ... pylint-pypy`
   command used by `make lint`.
+- `SKYLOS_VERSION`: pins the separately provisioned Skylos release.
+- `SKYLOS`: assembles the Skylos command with the reviewed `pyproject.toml`
+  configuration.
+- `SKYLOS_PRODUCTION_TARGETS`: defaults to `beatcue`, excluding test-only
+  references from dead-code liveness analysis.
 
 Override these variables only when diagnosing the lint toolchain itself. Pull
 requests should not depend on local overrides to pass.
@@ -460,6 +486,8 @@ The active lint configuration lives in `pyproject.toml`:
   second-tier checks. The enabled Pylint messages are grouped by purpose so
   logging, pattern matching, simplification, resource, hygiene, mutation, and
   complexity checks can be reviewed independently.
+- `[tool.skylos.gate]` enables strict gate behaviour, while
+  `[tool.skylos.whitelist]` records only verified, reasoned false positives.
 
 Use `tee` logs under `/tmp` for gates so long output remains reviewable. Do not
 run tests, linters, or format checks in parallel.

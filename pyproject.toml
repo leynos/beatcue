@@ -69,6 +69,12 @@ dev = [
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
 ]
 
+[tool.skylos.gate]
+strict = true
+
+[tool.skylos.whitelist]
+names = []
+
 [tool.hecate]
 root_packages = ["beatcue"]
 include_external_packages = true

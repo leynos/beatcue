@@ -9,13 +9,12 @@ stems = []
 accepted = [
   "Astroid",
   "Center",
-  "color",
 ]
 
 [words.corrections]
 
 [patterns]
-ignore = []
+ignore = ["`[^`\\n]+`"]
 
 [files]
 exclude = []
