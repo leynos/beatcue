@@ -171,7 +171,7 @@ developer and user guidance, and a roadmap update. Later implementation task
   with `/tmp` logs. All gates passed.
 - [x] Run documentation gates and the user-requested Python gates.
 - [x] (2026-05-17 11:54Z) Committed the approved implementation changes as
-  `fe0ba04` (`Record object-tracking boundary`) after rebasing onto
+  `d52976f` (`Record object-tracking boundary`) after rebasing onto
   `origin/main`.
 - [x] Commit the approved implementation changes.
 - [x] (2026-05-17 12:05Z) Rebasing onto `origin/main` found that main had
@@ -402,5 +402,5 @@ implementation.
 Validation completed with `coderabbit review --agent` returning zero findings
 on the final run, and `make markdownlint`, `make nixie`, `make check-fmt`,
 `make lint`, `make typecheck`, and `make test` all passing. The implementation
-commit is `fe0ba04` (`Record object-tracking boundary`) after rebasing onto
+commit is `d52976f` (`Record object-tracking boundary`) after rebasing onto
 `origin/main`.
