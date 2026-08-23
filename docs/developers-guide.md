@@ -358,14 +358,15 @@ modules.
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
-[ADR 004](adr-004-two-tier-python-linting.md). The lint gate combines two
-Python lint tiers with a production-only dead-code scan:
+[ADR 004](adr-004-two-tier-python-linting.md). The lint gate has four Python
+lint tiers:
 
 1. Ruff runs first from the project virtual environment.
 2. Pylint runs second through the pinned
    [`pylint-pypy-shim`](https://github.com/leynos/pylint-pypy-shim) tool under
    PyPy.
-3. Skylos scans the production `beatcue/` package for dead code.
+3. Hecate verifies the `beatcue/` import architecture.
+4. Skylos scans the production `beatcue/` package for dead code.
 
 Ruff is the fast, broad gate for style, import hygiene, annotation discipline,
 bug patterns, performance hints, docstring policy, and Ruff's own Pylint-style
@@ -389,7 +390,8 @@ $(UV_ENV) $(UV) run ruff check
 $(PYLINT) $(PYLINT_TARGETS)
 $(MAKE) check-architecture
 $(MAKE) spelling
-$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --category dead_code --gate \\
+$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) \\
+  --category dead_code --gate \\
   --format concise --no-upload --no-provenance --no-grep-verify
 ```
 
@@ -397,21 +399,42 @@ Use the Makefile target rather than invoking its tools directly. This keeps the
 selected interpreter, cache directories, shim revision, and target set
 consistent between local development, CI, and review.
 
-Skylos is separately provisioned at exact release `4.33.2`. Its gate is strict,
-production-only, non-interactive, and disables uploads, provenance collection,
-and repository-wide grep verification. Test references therefore cannot keep
-production symbols live. Treat a finding as genuine dead code until a runtime
-caller is verified, then remove it. For a confirmed false positive that cannot
-be represented in code, record the named exception and its verified caller:
+Skylos is separately provisioned at exact release `4.33.2` with Python 3.14.
+Skylos parses source with its own runtime abstract syntax tree (AST), so the
+pinned runtime prevents newer project syntax from creating phantom dead-code
+findings. Its gate is strict, production-only, non-interactive, and disables
+uploads, provenance collection, and repository-wide grep verification. Test
+references therefore cannot keep production symbols live. Treat a finding as
+genuine dead code until a runtime caller is verified, then remove it. For an
+implicit runtime caller, first model the boundary with a typed
+`[tool.skylos.dead_code.entrypoints]` rule. Only when that cannot model the
+boundary, record the named exception and its verified caller:
 
 ```bash
-make skylos-allow NAME=registered_handler \\
+make skylos-allow SYMBOL=registered_handler \\
   REASON="Loaded by the plugin registry; verified in its contract test"
 ```
 
 Do not add speculative or bulk allow-list entries. The `skylos-allow` target
-rejects an empty name or reason and records the exception in
+requires both `SYMBOL` and `REASON`, rejects either missing value with exit
+status 2, and records the exception in
 `[tool.skylos.whitelist]` in `pyproject.toml`.
+
+### Makefile contract parser
+
+The Skylos Makefile contract test uses the pinned
+[Makeutil](https://github.com/leynos/makeutil) parser. Before running
+`make test` locally, install the same parser and Rust toolchain used in
+Continuous Integration (CI):
+
+```bash
+rustup toolchain install nightly-2026-05-28 --profile minimal
+RUSTFLAGS="-Zpolonius=next" cargo +nightly-2026-05-28 install \\
+  --git https://github.com/leynos/makeutil \\
+  --rev 29fc5a1634ffbaa18a773eed9dff1b2838a45d9c \\
+  --locked --force makeutil
+make test
+```
 
 ### Lint Makefile variables
 
@@ -438,10 +461,13 @@ The lint target is configured by these Makefile variables:
 - `PYLINT`: assembles the complete `uv tool run --python ... pylint-pypy`
   command used by `make lint`.
 - `SKYLOS_VERSION`: pins the separately provisioned Skylos release.
-- `SKYLOS`: assembles the Skylos command with the reviewed `pyproject.toml`
-  configuration.
+- `SKYLOS_CLI`: assembles the command-only Python 3.14 Skylos invocation.
+- `SKYLOS`: adds the reviewed `pyproject.toml` scan configuration to
+  `SKYLOS_CLI`.
 - `SKYLOS_PRODUCTION_TARGETS`: defaults to `beatcue`, excluding test-only
   references from dead-code liveness analysis.
+- `SKYLOS_EXCLUDE_FOLDERS`: defaults to `tests`, making the production-only
+  scan scope explicit.
 
 Override these variables only when diagnosing the lint toolchain itself. Pull
 requests should not depend on local overrides to pass.

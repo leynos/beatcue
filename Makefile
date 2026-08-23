@@ -11,14 +11,17 @@ PYLINT_PYPY_SHIM_REF ?= 726d09f968b4d729ee4b29c71fc732e744854f3b
 PYLINT_PYPY_SHIM = git+https://github.com/leynos/pylint-pypy-shim.git@$(PYLINT_PYPY_SHIM_REF)
 PYLINT = $(UV_ENV) $(UV) tool run --python $(PYLINT_PYTHON) --from '$(PYLINT_PYPY_SHIM)' pylint-pypy
 SKYLOS_VERSION = 4.33.2
-SKYLOS = $(UV_ENV) $(UV) tool run --from 'skylos==$(SKYLOS_VERSION)' skylos \
-	--config-file pyproject.toml
+# Skylos parses source using its own Python AST, so Python 3.14 prevents
+# phantom dead-code findings from syntax older tool runtimes cannot parse.
+SKYLOS_CLI = $(UV_ENV) $(UV) tool run --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' skylos
+SKYLOS = $(SKYLOS_CLI) --config-file pyproject.toml
 SKYLOS_PRODUCTION_TARGETS ?= beatcue
+SKYLOS_EXCLUDE_FOLDERS ?= tests
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        check-architecture markdownlint nixie skylos-allow spelling test \
+        check-architecture markdownlint makeutil nixie skylos-allow spelling test \
         typecheck $(TOOLS) $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
@@ -97,14 +100,14 @@ lint: .deps ## Run linters
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
 	+$(MAKE) spelling
-	$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --category dead_code --gate --format concise --no-upload --no-provenance --no-grep-verify
+	$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) --category dead_code --gate --format concise --no-upload --no-provenance --no-grep-verify
 
-skylos-allow: export SKYLOS_NAME = $(value NAME)
+skylos-allow: export SKYLOS_SYMBOL = $(value SYMBOL)
 skylos-allow: export SKYLOS_REASON = $(value REASON)
 skylos-allow: ## Document one named Skylos exception, not an entry point
-	@test -n "$${SKYLOS_NAME}" || { printf "Error: NAME is required for a named whitelist exception\\n" >&2; exit 2; }
+	@test -n "$${SKYLOS_SYMBOL}" || { printf "Error: SYMBOL is required for a named whitelist exception\\n" >&2; exit 2; }
 	@test -n "$${SKYLOS_REASON}" || { printf "Error: REASON is required for a named whitelist exception\\n" >&2; exit 2; }
-	$(SKYLOS) whitelist "$${SKYLOS_NAME}" --reason "$${SKYLOS_REASON}"
+	$(SKYLOS_CLI) whitelist "$${SKYLOS_SYMBOL}" --reason "$${SKYLOS_REASON}"
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
@@ -127,7 +130,10 @@ nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,nixie)
 	$(NIXIE) --no-sandbox
 
-test: .deps $(VENV_TOOLS) ## Run tests
+makeutil: ## Verify the Makefile parser used by contract tests
+	$(call ensure_tool,$@)
+
+test: .deps $(VENV_TOOLS) makeutil ## Run tests
 	$(call ensure_uv)
 	$(UV_ENV) $(UV) run pytest -v -n auto
 

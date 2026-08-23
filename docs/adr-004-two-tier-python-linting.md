@@ -1,10 +1,11 @@
-# Architectural decision record (ADR) 004: Python linting and dead-code detection
+# Architectural decision record (ADR) 004: Four-tier Python linting and dead-code detection
 
 ## Status
 
-Accepted. BeatCue runs Ruff as the first lint tier and a focused Pylint pass
-through the PyPy-backed `pylint-pypy-shim` as the second lint tier. Amended on
-2026-08-21 to add blocking Skylos dead-code detection.
+Accepted. BeatCue runs Ruff as the first lint tier, a focused Pylint pass
+through the PyPy-backed `pylint-pypy-shim` as the second, Hecate as the third,
+and Skylos as the fourth. Amended on 2026-08-21 to add blocking Skylos
+dead-code detection and on 2026-08-23 to pin its parsing runtime.
 
 ## Date
 
@@ -118,6 +119,27 @@ Every finding is investigated and genuine dead code is removed. A confirmed
 false positive is recorded through `make skylos-allow` with the symbol name and
 a reason identifying the verified runtime caller. The allow list remains narrow
 because it describes exceptional dynamic boundaries rather than a baseline.
+
+### Addendum — 2026-08-23: Fourth Skylos lint tier and parsing runtime
+
+The original decision predates the complete lint architecture. The effective
+Python lint order is now:
+
+1. Ruff — broad source-quality and style rules.
+2. PyPy-backed Pylint — focused complementary rules.
+3. Hecate — architectural import-boundary rules.
+4. Skylos — strict production dead-code detection.
+
+Skylos runs as an isolated, pinned tool with Python 3.14. It parses source with
+its own runtime abstract syntax tree (AST), so pinning that runtime prevents
+newer project syntax from producing phantom dead-code findings. The command-only
+Skylos macro remains separate from the scan-options macro, which lets
+`skylos-allow` dispatch `whitelist` immediately after `skylos`.
+
+Skylos scans only `beatcue/` and explicitly excludes `tests/`. For verified
+dynamic callers, use a typed `[tool.skylos.dead_code.entrypoints]` rule first.
+Add a named allow-list entry only when that rule cannot model the boundary, and
+record the verified caller in its reason.
 
 ## Goals and non-goals
 
