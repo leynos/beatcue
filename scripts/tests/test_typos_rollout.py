@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import importlib
 import os
+import tomllib
 import typing as typ
 import urllib.error
 from pathlib import Path
@@ -105,3 +106,24 @@ def test_https_failure_reuses_valid_tracked_config(
 
     assert result.status == "tracked-config"
     assert result.cache == tracked_config
+
+
+def test_local_policy_preserves_inline_code_exemption(
+    rollout_modules: tuple[types.ModuleType, types.ModuleType, types.ModuleType],
+    tmp_path: Path,
+) -> None:
+    """The generated configuration retains the committed inline-code policy."""
+    _, _, generator = rollout_modules
+    (tmp_path / ".typos-oxendict-base.toml").write_text(
+        _dictionary_text(), encoding="utf-8"
+    )
+    (tmp_path / "typos.local.toml").write_text(
+        (SCRIPT_DIRECTORY.parent / "typos.local.toml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    configuration = tomllib.loads(generator.render_config(tmp_path))
+
+    assert "`[^`\\n]+`" in configuration["default"]["extend-ignore-re"], (
+        "repository inline-code exemption must survive generated configuration"
+    )

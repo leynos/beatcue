@@ -72,9 +72,10 @@
   - **Testing:** Passes all relevant unit and behavioural tests (`make test`).
   - **Linting:** Passes the complete `make lint` pipeline: Ruff, Pylint,
     Hecate, spelling, and the blocking Skylos dead-code scan. Investigate every
-    finding and remove genuine dead code. After verifying a false positive,
-    record a reasoned named exception with
-    `make skylos-allow NAME=symbol REASON="Verified runtime caller"`.
+    finding and remove genuine dead code. For a verified runtime caller, first
+    model the boundary with a typed `[tool.skylos.dead_code.entrypoints]` rule.
+    Only when that cannot model the boundary, record a reasoned named exception
+    with `make skylos-allow SYMBOL=symbol REASON="Verified runtime caller"`.
   - **Formatting:** Adheres to formatting standards (`make check-fmt`; use
     `make fmt` to apply fixes).
   - **Typechecking:** Passes type checking (`make typecheck`).
