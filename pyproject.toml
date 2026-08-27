@@ -58,7 +58,7 @@ models = [
 [dependency-groups]
 dev = [
     "hecate @ git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12",
-    "hypothesis>=6.156.1",
+    "hypothesis>=6.156.1,<7",
     "pyright",
     "pytest",
     "pytest-bdd>=8.1.0",
@@ -67,7 +67,16 @@ dev = [
     "pytest-xdist",
     "syrupy>=5.3",
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
+    "pyyaml>=6.0.3",
 ]
+
+[tool.skylos.gate]
+strict = true
+
+[tool.skylos.whitelist]
+names = []
+
+[tool.skylos.whitelist.documented]
 
 [tool.hecate]
 root_packages = ["beatcue"]

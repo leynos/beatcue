@@ -419,7 +419,7 @@ If the schema decision proves controversial during review, keep the v1 boundary,
 schema section into a short ADR-required decision point only after the user
 approves that revision.
 
-## Artifacts and notes
+## Artefacts and notes
 
 The most important source evidence is:
 

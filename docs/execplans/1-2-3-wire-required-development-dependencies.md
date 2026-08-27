@@ -897,7 +897,7 @@ following must hold after the change:
 - If the resolver gets into a half-locked state, delete `.venv` and
   `.deps`, then re-run `make build`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Captured logs under
 `/tmp/$ACTION-$(basename "$(pwd)")-$(git branch --show-current).out` for each of

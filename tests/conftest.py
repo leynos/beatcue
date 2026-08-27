@@ -62,6 +62,8 @@ def hecate_group_for(module_name: str) -> HecateGroup | None:
             for prefix in group["prefixes"]
         )
     ]
+    if not matching_groups:
+        return None
     return max(
         matching_groups,
         key=lambda group: max(
@@ -69,5 +71,4 @@ def hecate_group_for(module_name: str) -> HecateGroup | None:
             for prefix in group["prefixes"]
             if module_name == prefix or module_name.startswith(f"{prefix}.")
         ),
-        default=None,
     )

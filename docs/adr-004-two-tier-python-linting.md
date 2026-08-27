@@ -1,9 +1,11 @@
-# Architectural decision record (ADR) 004: Two-tier Python linting
+# Architectural decision record (ADR) 004: Four-tier Python linting and dead-code detection
 
 ## Status
 
-Accepted. BeatCue runs Ruff as the first lint tier and a focused Pylint pass
-through the PyPy-backed `pylint-pypy-shim` as the second lint tier.
+Accepted. BeatCue runs Ruff as the first lint tier, a focused Pylint pass
+through the PyPy-backed `pylint-pypy-shim` as the second, Hecate as the third,
+and Skylos as the fourth. Amended on 2026-08-21 to add blocking Skylos
+dead-code detection and on 2026-08-23 to pin its parsing runtime.
 
 ## Date
 
@@ -104,6 +106,41 @@ creating the virtual environment, syncing dependencies, or querying tools
 inside the virtual environment. Missing `uv` therefore fails with an explicit
 tooling error instead of a shell-level "file not found" message.
 
+### Amendment: blocking Skylos dead-code detection
+
+BeatCue additionally provisions Skylos as a pinned, isolated `uv tool` and
+runs it at the end of `make lint` against the production `beatcue/` package.
+The command selects only dead-code analysis, uses strict gate behaviour, and
+disables uploads, provenance collection, and repository-wide grep verification.
+This keeps the scan deterministic and prevents test-only references from
+making production symbols appear live.
+
+Every finding is investigated and genuine dead code is removed. A confirmed
+false positive is recorded through `make skylos-allow` with the symbol name and
+a reason identifying the verified runtime caller. The allow list remains narrow
+because it describes exceptional dynamic boundaries rather than a baseline.
+
+### Addendum — 2026-08-23: Fourth Skylos lint tier and parsing runtime
+
+The original decision predates the complete lint architecture. The effective
+Python lint order is now:
+
+1. Ruff — broad source-quality and style rules.
+2. PyPy-backed Pylint — focused complementary rules.
+3. Hecate — architectural import-boundary rules.
+4. Skylos — strict production dead-code detection.
+
+Skylos runs as an isolated, pinned tool with Python 3.14. It parses source with
+its own runtime abstract syntax tree (AST), so pinning that runtime prevents
+newer project syntax from producing phantom dead-code findings. The command-only
+Skylos macro remains separate from the scan-options macro, which lets
+`skylos-allow` dispatch `whitelist` immediately after `skylos`.
+
+Skylos scans only `beatcue/` and explicitly excludes `tests/`. For verified
+dynamic callers, use a typed `[tool.skylos.dead_code.entrypoints]` rule first.
+Add a named allow-list entry only when that rule cannot model the boundary, and
+record the verified caller in its reason.
+
 ## Goals and non-goals
 
 Goals:
@@ -113,6 +150,8 @@ Goals:
 - Add selected Pylint checks without adopting Pylint's full default policy.
 - Share the Episodic Python lint posture where it fits BeatCue.
 - Pin the PyPy shim revision used to run Pylint.
+- Detect dead production symbols that Ruff and Pylint do not model as liveness
+  failures.
 
 Non-goals:
 
@@ -121,6 +160,8 @@ Non-goals:
 - Treat the entire Episodic repository as BeatCue's configuration source of
   truth.
 - Add continuous integration behaviour in this ADR.
+- Import benchmark corpus, scoring logic, or benchmark infrastructure from
+  Episodic.
 
 ## Migration plan
 
@@ -132,6 +173,8 @@ Non-goals:
    entrypoints in the developers' guide.
 5. Revisit the policy when Episodic changes its lint baseline, and record any
    deliberate BeatCue divergence in the relevant pull request.
+6. Run Skylos after the existing lint checks and maintain only verified,
+   reasoned allow-list entries.
 
 ## Known risks and limitations
 
@@ -146,6 +189,9 @@ Non-goals:
   inference services, and CLI surfaces.
 - The shim pin must be advanced intentionally when upstream shim behaviour or
   Pylint compatibility changes.
+- Skylos is a static analysis tool and can miss dynamic callers. Exceptions
+  therefore require a verified caller and a reason, rather than a broad
+  baseline that would mask genuine dead code.
 
 ## Architectural rationale
 
