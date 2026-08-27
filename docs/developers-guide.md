@@ -416,8 +416,10 @@ make skylos-allow SYMBOL=registered_handler \\
 ```
 
 Do not add speculative or bulk allow-list entries. The `skylos-allow` target
-requires both `SYMBOL` and `REASON`, rejects either missing value with exit
-status 2, and records the exception in
+requires both `SYMBOL` and `REASON` to contain non-whitespace text, rejects an
+absent or whitespace-only value with exit status 2, and serializes the
+read-modify-write update through `flock` on the ignored
+`.skylos/skylos-allow.lock` file. It records the exception in
 `[tool.skylos.whitelist]` in `pyproject.toml`.
 
 ### Makefile contract parser
