@@ -464,6 +464,29 @@ The active lint configuration lives in `pyproject.toml`:
 Use `tee` logs under `/tmp` for gates so long output remains reviewable. Do not
 run tests, linters, or format checks in parallel.
 
+### Tool versions in CI
+
+Every tool the CI job installs names an exact version. An unpinned linter is
+what turned `main` red on 2026-07-30 and kept it red for six weeks: `uv tool
+install ty` and `uv tool install ruff` followed upstream, and the first release
+carrying a new rule failed a gate nobody had touched.
+
+| Tool | Where the version lives |
+| --- | --- |
+| `ruff` | the `dev` dependency group, resolved in `uv.lock` |
+| `ty` | the `dev` dependency group, resolved in `uv.lock` |
+| `mbake` | `MBAKE_VERSION` in `ci.yml` |
+| `markdownlint-cli2` | `MARKDOWNLINT_CLI2_VERSION` in `ci.yml` |
+| `slipcover`, `pytest-forked` | `SLIPCOVER_VERSION` and `PYTEST_FORKED_VERSION` in `ci.yml` |
+| `typos` | `TYPOS_VERSION` in the Makefile |
+
+`ruff` and `ty` are development dependencies rather than workflow installs, so
+one lockfile governs the local gate and the CI gate and dependabot moves both
+together. `tests/test_workflow_contract.py` parses `ci.yml` and fails if any
+`uv tool install`, `uv pip install` or `npm install -g` names a package without
+a version. It matches the install commands themselves, not the surrounding
+comments, and carries its own mutation check.
+
 ## Documentation updates
 
 Update documentation in the same change set when implementation changes user

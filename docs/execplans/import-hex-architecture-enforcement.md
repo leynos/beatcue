@@ -747,7 +747,7 @@ If any gate fails for sandbox or network reasons, rerun the same command with
 the execution tool's elevated-permission mechanism and record the outcome in
 `Surprises & Discoveries`.
 
-## Artifacts and notes
+## Artefacts and notes
 
 BeatCue repository evidence gathered before drafting:
 

@@ -67,6 +67,7 @@ dev = [
     "pytest-xdist",
     "syrupy>=5.3",
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
+    "ty",
 ]
 
 [tool.hecate]

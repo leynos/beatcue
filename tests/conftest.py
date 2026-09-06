@@ -53,21 +53,21 @@ def hecate_policy() -> HecatePolicy:
 
 def hecate_group_for(module_name: str) -> HecateGroup | None:
     """Return the configured Hecate group that best matches a module name."""
-    groups = hecate_policy()["groups"]
-    matching_groups = [
-        group
-        for group in groups
-        if any(
-            module_name == prefix or module_name.startswith(f"{prefix}.")
-            for prefix in group["prefixes"]
+
+    def matched_prefix_length(group: HecateGroup) -> int:
+        """Length of the longest prefix of ``group`` that matches the module."""
+        return max(
+            (
+                len(prefix)
+                for prefix in group["prefixes"]
+                if module_name == prefix or module_name.startswith(f"{prefix}.")
+            ),
+            default=0,
         )
+
+    matching_groups = [
+        group for group in hecate_policy()["groups"] if matched_prefix_length(group) > 0
     ]
-    return max(
-        matching_groups,
-        key=lambda group: max(
-            len(prefix)
-            for prefix in group["prefixes"]
-            if module_name == prefix or module_name.startswith(f"{prefix}.")
-        ),
-        default=None,
-    )
+    if not matching_groups:
+        return None
+    return max(matching_groups, key=matched_prefix_length)
