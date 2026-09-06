@@ -484,8 +484,20 @@ carrying a new rule failed a gate nobody had touched.
 one lockfile governs the local gate and the CI gate and dependabot moves both
 together. `tests/test_workflow_contract.py` parses `ci.yml` and fails if any
 `uv tool install`, `uv pip install` or `npm install -g` names a package without
-a version. It matches the install commands themselves, not the surrounding
-comments, and carries its own mutation check.
+an exact version. A moving tag or a range is not a pin: `@latest`, `^0.23`,
+`~0.23.0`, `1.*` and `>=1.1.0` are each rejected by name in the test. It
+matches the install commands themselves, not the surrounding comments, and
+carries its own mutation check.
+
+The same file holds the CodeScene installer's contract. That installer is
+fetched from the network rather than from a package manager, so it is
+downloaded to a file, checked against `CODESCENE_CLI_SHA256`, and only then
+executed. Piping `curl` into `bash` runs the script before anything can check
+it, and the digest comparison that used to follow compared against a file the
+pipe had never written, so it could not have passed. The digest variable is
+required, not optional: an unset variable must not quietly mean "run whatever
+the server sends". The contract asserts the absence of the pipe, the
+download-verify-execute order, and the refusal to proceed without a digest.
 
 ## Documentation updates
 
