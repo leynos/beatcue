@@ -112,12 +112,25 @@ def _environments() -> cabc.Iterator[tuple[str, dict[str, str]]]:
     assert isinstance(jobs, dict), "the workflow must declare a jobs mapping"
 
     for job in jobs.values():
-        if not isinstance(job, dict):
+        yield from _job_steps(job, workflow_env)
+
+
+def _job_steps(
+    job: object, inherited: dict[str, str]
+) -> cabc.Iterator[tuple[str, dict[str, str]]]:
+    """Yield one job's `run:` scripts with the environment visible to each."""
+    if not isinstance(job, dict):
+        return
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        return
+    job_env = inherited | _string_mapping(job.get("env"))
+    for step in steps:
+        if not isinstance(step, dict):
             continue
-        job_env = workflow_env | _string_mapping(job.get("env"))
-        for step in job.get("steps", []):
-            if isinstance(step, dict) and isinstance(step.get("run"), str):
-                yield step["run"], job_env | _string_mapping(step.get("env"))
+        script = step.get("run")
+        if isinstance(script, str):
+            yield script, job_env | _string_mapping(step.get("env"))
 
 
 def _resolve(package: str, environment: dict[str, str]) -> str:
