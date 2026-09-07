@@ -484,10 +484,12 @@ carrying a new rule failed a gate nobody had touched.
 one lockfile governs the local gate and the CI gate and dependabot moves both
 together. `tests/test_workflow_contract.py` parses `ci.yml` and fails if any
 `uv tool install`, `uv pip install` or `npm install -g` names a package without
-an exact version. A moving tag or a range is not a pin: `@latest`, `^0.23`,
-`~0.23.0`, `1.*` and `>=1.1.0` are each rejected by name in the test. It
-matches the install commands themselves, not the surrounding comments, and
-carries its own mutation check.
+an exact version. It resolves a version written as `${VERSION}` back to the
+value the step's `env` gives it, so a variable holding `latest` fails and a
+misspelt variable name fails rather than looking pinned. A moving tag or a
+range is not a pin either: `@latest`, `^0.23`, `~0.23.0`, `1.*` and `>=1.1.0`
+are each rejected by name in the test. It matches the install commands
+themselves, not the surrounding comments, and carries its own mutation check.
 
 The same file holds the CodeScene installer's contract. That installer is
 fetched from the network rather than from a package manager, so it is

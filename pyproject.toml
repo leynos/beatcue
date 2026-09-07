@@ -68,6 +68,7 @@ dev = [
     "syrupy>=5.3",
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
     "ty",
+    "pyyaml",  # the workflow contract parses ci.yml
 ]
 
 [tool.hecate]

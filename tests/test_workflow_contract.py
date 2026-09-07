@@ -19,6 +19,7 @@ import typing as typ
 from pathlib import Path
 
 import pytest
+import yaml
 
 if typ.TYPE_CHECKING:
     import collections.abc as cabc
@@ -41,7 +42,7 @@ INSTALL_COMMANDS = (
 EXACT_VERSION = r"\d+(?:\.\d+)+(?:[-.][0-9A-Za-z][0-9A-Za-z.]*)?"
 PINNED = re.compile(rf"^@?[A-Za-z0-9._/-]+(?:==|@){EXACT_VERSION}$")
 LINE_CONTINUATION = re.compile(r"\\\s*$")
-SHELL_VARIABLE = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}")
+SHELL_VARIABLE = re.compile(r"\$\{(?P<name>[A-Za-z_][A-Za-z0-9_]*)\}")
 
 # The CodeScene installer, which is fetched rather than installed by a package
 # manager and so needs its own three assertions.
@@ -90,17 +91,67 @@ def _package_tokens(text: str, line_end: int, arguments: str) -> cabc.Iterator[s
         position = newline
 
 
-def _resolve_shell_variables(package: str) -> str:
-    """Substitute `${VAR}` with a stand-in so the pin shape can be matched."""
-    return SHELL_VARIABLE.sub("0.0.0", package)
+def _string_mapping(value: object) -> dict[str, str]:
+    """Read an `env:` mapping, keeping only the entries with string values."""
+    if not isinstance(value, dict):
+        return {}
+    return {str(key): item for key, item in value.items() if isinstance(item, str)}
 
 
-def _is_pinned(package: str) -> bool:
-    """Whether ``package`` names an exact version."""
-    return PINNED.match(_resolve_shell_variables(package)) is not None
+def _environments() -> cabc.Iterator[tuple[str, dict[str, str]]]:
+    """Yield each `run:` script with the environment visible to it.
+
+    A version written as `${VAR}` means nothing without the value behind it, so
+    the workflow, job and step `env` mappings are merged in that order of
+    increasing precedence and carried alongside the script.
+    """
+    workflow = yaml.safe_load(WORKFLOW_TEXT)
+    assert isinstance(workflow, dict), "the workflow must be a mapping"
+    workflow_env = _string_mapping(workflow.get("env"))
+    jobs = workflow.get("jobs")
+    assert isinstance(jobs, dict), "the workflow must declare a jobs mapping"
+
+    for job in jobs.values():
+        if not isinstance(job, dict):
+            continue
+        job_env = workflow_env | _string_mapping(job.get("env"))
+        for step in job.get("steps", []):
+            if isinstance(step, dict) and isinstance(step.get("run"), str):
+                yield step["run"], job_env | _string_mapping(step.get("env"))
 
 
-INSTALLED = list(_installed_arguments(WORKFLOW_TEXT))
+def _resolve(package: str, environment: dict[str, str]) -> str:
+    """Substitute every `${VAR}` with the value the step's environment gives it.
+
+    Substituting a plausible version instead would let a variable holding
+    `latest`, or a misspelt variable name, pass the assertion the pin exists to
+    make. An unresolved name becomes a marker that cannot match a version.
+    """
+
+    def substitute(match: re.Match[str]) -> str:
+        return environment.get(match.group("name"), "<undefined>")
+
+    return SHELL_VARIABLE.sub(substitute, package)
+
+
+def _is_pinned(resolved: str) -> bool:
+    """Whether ``resolved`` names an exact version."""
+    return PINNED.match(resolved) is not None
+
+
+class Install(typ.NamedTuple):
+    """One package argument of one install command in the workflow."""
+
+    command: str
+    package: str
+    resolved: str
+
+
+INSTALLED = [
+    Install(command, package, _resolve(package, environment))
+    for script, environment in _environments()
+    for command, package in _installed_arguments(script)
+]
 
 
 class TestToolPins:
@@ -110,24 +161,21 @@ class TestToolPins:
         """Guard the patterns: one that matches nothing would prove nothing."""
         assert INSTALLED
 
-    @pytest.mark.parametrize(
-        ("command", "package"),
-        INSTALLED,
-        ids=lambda value: value.replace(" ", "-"),
-    )
-    def test_every_installed_tool_is_version_pinned(
-        self, command: str, package: str
-    ) -> None:
-        """Each install argument carries an exact version.
+    @pytest.mark.parametrize("install", INSTALLED, ids=lambda install: install.package)
+    def test_every_installed_tool_is_version_pinned(self, install: Install) -> None:
+        """The value behind the variable is a version, not a moving tag.
 
         Parameters
         ----------
-        command : str
-            The install command as written in the workflow, for the message.
-        package : str
-            One package argument of that command.
+        install : Install
+            One install command, its package argument, and the argument with
+            every `${VAR}` replaced by the value the step's environment gives
+            it.
         """
-        assert _is_pinned(package), f"{command!r} installs {package!r} without a pin"
+        assert _is_pinned(install.resolved), (
+            f"{install.command!r} installs {install.package!r}, "
+            f"which resolves to {install.resolved!r}"
+        )
 
     def test_the_contract_rejects_an_unpinned_install(self) -> None:
         """Mutation check: a bare package name must not pass."""
@@ -141,6 +189,15 @@ class TestToolPins:
         assert packages == ["mbake"]
         assert not _is_pinned(packages[0])
 
+    def test_an_undefined_variable_does_not_resolve_to_a_version(self) -> None:
+        """A misspelt variable name must fail rather than look pinned."""
+        assert _resolve("mbake==${TYPO}", {"MBAKE_VERSION": "1.4.6"}) == (
+            "mbake==<undefined>"
+        )
+        assert _resolve("mbake==${MBAKE_VERSION}", {"MBAKE_VERSION": "1.4.6"}) == (
+            "mbake==1.4.6"
+        )
+
     @pytest.mark.parametrize(
         "selector",
         [
@@ -150,8 +207,17 @@ class TestToolPins:
             "slipcover==1.*",
             "slipcover>=1.1.0",
             "ruff==",
+            "mbake==<undefined>",
         ],
-        ids=["latest", "caret", "tilde", "wildcard", "lower-bound", "empty"],
+        ids=[
+            "latest",
+            "caret",
+            "tilde",
+            "wildcard",
+            "lower-bound",
+            "empty",
+            "undefined",
+        ],
     )
     def test_the_contract_rejects_a_floating_selector(self, selector: str) -> None:
         """A range or a moving tag is not a pin, however it is spelt.
