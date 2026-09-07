@@ -14,7 +14,22 @@ accepted = [
 [words.corrections]
 
 [patterns]
-ignore = []
+# The shared base no longer excludes inline code spans, so an identifier or a
+# quotation inside backticks reaches the checker and must be recorded here,
+# scoped to its backticked form so the same word in prose is still caught.
+ignore = [
+  # The documentation style guide's own example of a US spelling kept inside
+  # an API name.
+  '`color`',
+  # A commit hash quoted in an execplan's progress notes.
+  '`fe0ba04`',
+  # The `nl` flag quoted in an execplan's verification evidence.
+  'nl -ba',
+  # A US spelling quoted in an execplan while recording that the repository
+  # does not use it, and the search that proved so.
+  '`behavior`',
+  '`grep -R "behavior" \.\.\.`',
+]
 
 [files]
 exclude = []

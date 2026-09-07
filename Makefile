@@ -2,7 +2,7 @@ MDLINT ?= markdownlint-cli2
 NIXIE ?= nixie
 MDFORMAT_ALL ?= mdformat-all
 UV ?= uv
-TOOLS = $(MDFORMAT_ALL) ty $(MDLINT)
+TOOLS = $(MDFORMAT_ALL) $(MDLINT)
 VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 PYLINT_PYTHON ?= pypy
@@ -98,9 +98,14 @@ check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
 	$(UV_ENV) $(UV) run hecate check
 
-typecheck: .deps ty ## Run typechecking
-	ty --version
-	ty check
+typecheck: .deps ## Run typechecking
+	$(call ensure_uv)
+	$(UV_ENV) $(UV) run ty --version
+	# scripts/generate_typos_config.py imports its sibling helper by module
+	# name and scripts/ is not a package, so the directory goes on the search
+	# path. ty 0.0.78 accepts environment.extra-paths in pyproject.toml but
+	# does not apply it to resolution; the flag does work.
+	$(UV_ENV) $(UV) run ty check --extra-search-path scripts
 
 markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'

@@ -24,9 +24,16 @@ jobs:
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
       - name: Install CLI tools
+        env:
+          # Pin every tool the job installs. An unpinned linter turned main red
+          # on 2026-07-30 and kept it red. ruff and ty are not installed here:
+          # both are development dependencies, so uv.lock pins them and
+          # dependabot moves them deliberately.
+          MBAKE_VERSION: '1.4.6'
+          MARKDOWNLINT_CLI2_VERSION: '0.23.2'
         run: |
-          for tool in mbake ty ruff; do uv tool install ${tool}; done
-          npm install -g markdownlint-cli2
+          uv tool install "mbake==${MBAKE_VERSION}"
+          npm install -g "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}"
 
       - name: Validate Makefile
         run: mbake validate Makefile
@@ -44,8 +51,13 @@ jobs:
         run: make typecheck
 
       - name: Run tests with coverage
+        env:
+          SLIPCOVER_VERSION: '1.1.0'
+          PYTEST_FORKED_VERSION: '1.7.5'
         run: |
-          uv pip install slipcover pytest-forked
+          uv pip install \
+            "slipcover==${SLIPCOVER_VERSION}" \
+            "pytest-forked==${PYTEST_FORKED_VERSION}"
           uv run python -m slipcover \
             --source=./beatcue \
             --omit="*/unittests/*,*/.venv/*" \
@@ -61,11 +73,23 @@ jobs:
 
       - name: Install CodeScene Coverage CLI
         if: env.CS_ACCESS_TOKEN != ''
+        env:
+          CODESCENE_INSTALLER_URL: https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
         run: |
-          curl -fsSL https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh | bash -s -- -y
-          if [ -n "${CODESCENE_CLI_SHA256:-}" ]; then
-            echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
+          set -euo pipefail
+          # Download, verify, then execute. Piping curl into bash executes the
+          # script before anything can check it, which made the digest
+          # comparison that used to follow decorative; it also compared against
+          # a file the pipe never wrote, so it could not have passed. The digest
+          # is required rather than optional for the same reason: an absent
+          # variable must not silently mean "run whatever the server sends".
+          if [ -z "${CODESCENE_CLI_SHA256:-}" ]; then
+            echo "::error::CODESCENE_CLI_SHA256 must name the installer digest" >&2
+            exit 1
           fi
+          curl -fsSL "${CODESCENE_INSTALLER_URL}" -o install-cs-coverage-tool.sh
+          echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
+          bash install-cs-coverage-tool.sh -y
 
       - name: Upload coverage to CodeScene
         if: env.CS_ACCESS_TOKEN != ''
