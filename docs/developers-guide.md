@@ -333,6 +333,7 @@ and in-memory fakes rather than model simulation.
 Prefer Makefile targets over direct tool calls. For Markdown-only changes, run:
 
 ```bash
+make check-fmt
 make markdownlint
 make nixie
 ```
@@ -467,18 +468,19 @@ run tests, linters, or format checks in parallel.
 ### Tool versions in CI
 
 Every tool the CI job installs names an exact version. An unpinned linter is
-what turned `main` red on 2026-07-30 and kept it red for six weeks: `uv tool
-install ty` and `uv tool install ruff` followed upstream, and the first release
-carrying a new rule failed a gate nobody had touched.
+what turned `main` red on 2026-07-30 and kept it red for six weeks:
+`uv tool install ty` and `uv tool install ruff` followed upstream, and the
+first release carrying a new rule failed a gate nobody had touched.
 
-| Tool | Where the version lives |
-| --- | --- |
-| `ruff` | the `dev` dependency group, resolved in `uv.lock` |
-| `ty` | the `dev` dependency group, resolved in `uv.lock` |
-| `mbake` | `MBAKE_VERSION` in `ci.yml` |
-| `markdownlint-cli2` | `MARKDOWNLINT_CLI2_VERSION` in `ci.yml` |
+| Tool                         | Where the version lives                                     |
+| ---------------------------- | ----------------------------------------------------------- |
+| `ruff`                       | the `dev` dependency group, resolved in `uv.lock`           |
+| `ty`                         | the `dev` dependency group, resolved in `uv.lock`           |
+| `mbake`                      | `MBAKE_VERSION` in `ci.yml`                                 |
+| `markdownlint-cli2`          | the pinned markdownlint-cli2 action SHA in `ci.yml`         |
+| `mdtablefix`                 | the `version` input of the install step in `ci.yml`         |
 | `slipcover`, `pytest-forked` | `SLIPCOVER_VERSION` and `PYTEST_FORKED_VERSION` in `ci.yml` |
-| `typos` | `TYPOS_VERSION` in the Makefile |
+| `typos`                      | `TYPOS_VERSION` in the Makefile                             |
 
 `ruff` and `ty` are development dependencies rather than workflow installs, so
 one lockfile governs the local gate and the CI gate and dependabot moves both
