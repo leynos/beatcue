@@ -8,9 +8,6 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
-    env:
-      CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-      CODESCENE_CLI_SHA256: ${{ vars.CODESCENE_CLI_SHA256 }}
     steps:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
@@ -65,55 +62,14 @@ jobs:
       - name: Run typechecker
         run: make typecheck
 
-      - name: Run tests with coverage
-        env:
-          SLIPCOVER_VERSION: '1.1.0'
-          PYTEST_FORKED_VERSION: '1.7.5'
-        run: |
-          uv pip install \
-            "slipcover==${SLIPCOVER_VERSION}" \
-            "pytest-forked==${PYTEST_FORKED_VERSION}"
-          uv run python -m slipcover \
-            --source=./beatcue \
-            --omit="*/unittests/*,*/.venv/*" \
-            --branch \
-            --out coverage.xml \
-            -m pytest --forked -v
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v7
+      - name: Generate coverage
+        if: github.event_name == 'pull_request'
+        uses: leynos/shared-actions/.github/actions/generate-coverage@152d9c4784d0ae5877938a984fe6d1f04d718fd8
         with:
-          name: coverage
-          path: coverage.xml
-
-      - name: Install CodeScene Coverage CLI
-        if: env.CS_ACCESS_TOKEN != ''
-        env:
-          CODESCENE_INSTALLER_URL: https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
-        run: |
-          set -euo pipefail
-          # Download, verify, then execute. Piping curl into bash executes the
-          # script before anything can check it, which made the digest
-          # comparison that used to follow decorative; it also compared against
-          # a file the pipe never wrote, so it could not have passed. The digest
-          # is required rather than optional for the same reason: an absent
-          # variable must not silently mean "run whatever the server sends".
-          if [ -z "${CODESCENE_CLI_SHA256:-}" ]; then
-            echo "::error::CODESCENE_CLI_SHA256 must name the installer digest" >&2
-            exit 1
-          fi
-          curl -fsSL "${CODESCENE_INSTALLER_URL}" -o install-cs-coverage-tool.sh
-          echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
-          bash install-cs-coverage-tool.sh -y
-
-      - name: Upload coverage to CodeScene
-        if: env.CS_ACCESS_TOKEN != ''
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "coverage.xml not found!"
-            exit 1
-          fi
-          cs-coverage upload \
-            --format "cobertura" \
-            --metric "line-coverage" \
-            coverage.xml
+          language: python
+          python-source: ./beatcue
+          output-path: coverage.xml
+          format: cobertura
+          baseline-python-file: .coverage-baseline.python
+          pytest-workers: ''
+          with-ratchet: 'true'

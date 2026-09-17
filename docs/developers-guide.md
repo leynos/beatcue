@@ -472,15 +472,15 @@ what turned `main` red on 2026-07-30 and kept it red for six weeks:
 `uv tool install ty` and `uv tool install ruff` followed upstream, and the
 first release carrying a new rule failed a gate nobody had touched.
 
-| Tool                         | Where the version lives                                     |
-| ---------------------------- | ----------------------------------------------------------- |
-| `ruff`                       | the `dev` dependency group, resolved in `uv.lock`           |
-| `ty`                         | the `dev` dependency group, resolved in `uv.lock`           |
-| `mbake`                      | `MBAKE_VERSION` in `ci.yml`                                 |
-| `markdownlint-cli2`          | the pinned markdownlint-cli2 action SHA in `ci.yml`         |
-| `mdtablefix`                 | the `version` input of the install step in `ci.yml`         |
-| `slipcover`, `pytest-forked` | `SLIPCOVER_VERSION` and `PYTEST_FORKED_VERSION` in `ci.yml` |
-| `typos`                      | `TYPOS_VERSION` in the Makefile                             |
+| Tool                | Where the version lives                                |
+| ------------------- | ------------------------------------------------------ |
+| `ruff`              | the `dev` dependency group, resolved in `uv.lock`      |
+| `ty`                | the `dev` dependency group, resolved in `uv.lock`      |
+| `mbake`             | `MBAKE_VERSION` in `ci.yml`                            |
+| `markdownlint-cli2` | the pinned markdownlint-cli2 action SHA in `ci.yml`    |
+| `mdtablefix`        | the `version` input of the install step in `ci.yml`    |
+| coverage tooling    | the pinned shared coverage action revision in `ci.yml` |
+| `typos`             | `TYPOS_VERSION` in the Makefile                        |
 
 `ruff` and `ty` are development dependencies rather than workflow installs, so
 one lockfile governs the local gate and the CI gate and dependabot moves both
@@ -493,15 +493,19 @@ range is not a pin either: `@latest`, `^0.23`, `~0.23.0`, `1.*` and `>=1.1.0`
 are each rejected by name in the test. It matches the install commands
 themselves, not the surrounding comments, and carries its own mutation check.
 
-The same file holds the CodeScene installer's contract. That installer is
-fetched from the network rather than from a package manager, so it is
-downloaded to a file, checked against `CODESCENE_CLI_SHA256`, and only then
-executed. Piping `curl` into `bash` runs the script before anything can check
-it, and the digest comparison that used to follow compared against a file the
-pipe had never written, so it could not have passed. The digest variable is
-required, not optional: an unset variable must not quietly mean "run whatever
-the server sends". The contract asserts the absence of the pipe, the
-download-verify-execute order, and the refusal to proceed without a digest.
+### Coverage workflow ownership
+
+Pull-request CI runs the shared coverage generator with a serial Python test
+run and the local ratchet stored in `.coverage-baseline.python`. It does not
+upload coverage to CodeScene, reference the CodeScene project, or expose
+`CS_ACCESS_TOKEN`; the ordinary checkout therefore does not need full Git
+history for coverage.
+
+The `coverage-main.yml` workflow runs on pushes to `main`. It runs the same
+serial, ratcheted coverage generation and then publishes the resulting report
+through the pinned CodeScene upload action with `mode: upload`. Only that
+main-owned workflow receives the CodeScene access token, so the stored baseline
+and CodeScene's main-branch analysis advance with merged changes.
 
 ## Documentation updates
 
