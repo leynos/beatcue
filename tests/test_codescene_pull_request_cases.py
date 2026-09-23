@@ -73,6 +73,8 @@ def test_the_pull_request_rule_reports_what_it_should(
         "uses: ./.github/workflows/c.yml\nsecrets: inherit\n",
         "steps:\n  - run: echo ${{ secrets[format('CS_{0}', 'ACCESS_TOKEN')] }}\n",
         "steps:\n  - run: echo '${{ toJSON(secrets) }}'\n",
+        "steps:\n  - run: echo ${{ secrets.Cs_Access_Token }}\n",
+        "steps:\n  - run: echo ${{ SECRETS['CS_' + 'ACCESS_TOKEN'] }}\n",
     ],
     ids=[
         "run_body",
@@ -82,6 +84,8 @@ def test_the_pull_request_rule_reports_what_it_should(
         "inherit",
         "computed_name",
         "whole_context",
+        "name_in_another_case",
+        "context_in_another_case",
     ],
 )
 def test_every_route_to_the_token_is_reported(job: str) -> None:
@@ -89,6 +93,27 @@ def test_every_route_to_the_token_is_reported(job: str) -> None:
     indented = textwrap.indent(job, "    ")
     source = f"on: pull_request\njobs:\n  lane:\n{indented}"
     assert rules.pull_request_findings(parse(source)), source
+
+
+@pytest.mark.parametrize(
+    ("action", "expected"),
+    [
+        (
+            "Leynos/Shared-Actions/.github/actions/upload-codescene-coverage@abc",
+            "invokes",
+        ),
+        (
+            "LEYNOS/shared-actions/.github/actions/generate-coverage@abc",
+            "does not set with-ratchet",
+        ),
+    ],
+    ids=["uploader", "generator"],
+)
+def test_an_action_is_matched_whatever_the_case(action: str, expected: str) -> None:
+    """GitHub resolves the owner and repository case-insensitively."""
+    source = f"on: pull_request\njobs:\n  lane:\n    steps:\n      - uses: {action}\n"
+    findings = rules.pull_request_findings(parse(source))
+    assert any(expected in finding for finding in findings), findings
 
 
 def test_a_named_secret_and_prose_are_not_computed_references() -> None:

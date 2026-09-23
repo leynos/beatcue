@@ -8,11 +8,12 @@ so a rule failing for the wrong reason cannot pass as one that works.
 from __future__ import annotations
 
 from codescene_contract import reader
-from codescene_contract.text import computes_a_secret, rendered
+from codescene_contract.text import computes_a_secret, folded
 
 UPLOAD_ACTION = "leynos/shared-actions/.github/actions/upload-codescene-coverage"
 COVERAGE_ACTION = "leynos/shared-actions/.github/actions/generate-coverage"
 ACCESS_TOKEN = "CS_ACCESS_TOKEN"  # noqa: S105 - the secret's name, not its value
+ACCESS_TOKEN_FOLDED = ACCESS_TOKEN.lower()
 COVERAGE_CLI = "cs-coverage"
 CODESCENE_HOST = "codescene.io"
 
@@ -41,12 +42,12 @@ def input_is(step: reader.Mapping, key: str, *, expected: bool) -> bool:
 
 def is_coverage(step: reader.Mapping) -> bool:
     """Return whether a step runs the shared coverage action."""
-    return (reader.uses(step) or "").startswith(COVERAGE_ACTION)
+    return (reader.uses(step) or "").lower().startswith(COVERAGE_ACTION)
 
 
 def is_upload_action(step: reader.Mapping) -> bool:
     """Return whether a step runs the upload action, in any mode."""
-    return (reader.uses(step) or "").startswith(UPLOAD_ACTION)
+    return (reader.uses(step) or "").lower().startswith(UPLOAD_ACTION)
 
 
 def is_upload(step: reader.Mapping) -> bool:
@@ -70,13 +71,13 @@ def _document_findings(workflow: object) -> list[str]:
     ``defaults.run.shell``, a ``workflow_call`` secret declaration or any other
     place a value can sit is searched without a clause naming it.
     """
-    text = rendered(workflow)
+    text = folded(workflow)
     findings = []
-    if ACCESS_TOKEN in text:
+    if ACCESS_TOKEN_FOLDED in text:
         findings.append(f"a pull-request lane receives {ACCESS_TOKEN}")
     if computes_a_secret(text):
         findings.append("a pull-request lane reaches a secret by a computed name")
-    if CODESCENE_HOST in text.casefold():
+    if CODESCENE_HOST in text:
         findings.append(f"a pull-request lane contacts {CODESCENE_HOST}")
     return findings
 

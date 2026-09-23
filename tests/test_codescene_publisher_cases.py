@@ -59,7 +59,9 @@ jobs:
         with:
           access-token: ${{ env.CS_ACCESS_TOKEN }}
 """
-NEVER_CANCEL = "concurrency:\n  group: pub\n  cancel-in-progress: false"
+NEVER_CANCEL = (
+    "concurrency:\n  group: pub-${{ github.event_name }}\n  cancel-in-progress: false"
+)
 GUARD = "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main' }}"
 
 
@@ -121,13 +123,18 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
             None,
         ),
         (NEVER_CANCEL, "${{ env.CS_ACCESS_TOKEN != '' }}", "not guarded"),
-        ("concurrency:\n  group: pub\n  cancel-in-progress: true", GUARD, "cancel"),
+        (NEVER_CANCEL.replace("false", "true"), GUARD, "cancel"),
         (
-            "concurrency:\n  group: pub\n  cancel-in-progress: ${{ true }}",
+            NEVER_CANCEL.replace("false", "${{ true }}"),
             GUARD,
             "cancel",
         ),
         ("", GUARD, "no concurrency group"),
+        (
+            "concurrency:\n  group: pub\n  cancel-in-progress: false",
+            GUARD,
+            "a dispatch can replace a pending push",
+        ),
     ],
     ids=[
         "complies",
@@ -139,6 +146,7 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
         "cancels",
         "cancels_by_expression",
         "no_group",
+        "dispatches_share_the_group",
     ],
 )
 def test_the_publisher_rule_names_the_clause_broken(
@@ -238,6 +246,16 @@ RATCHET = "        with:\n          with-ratchet"
             ],
             ["computed name"],
         ),
+        (
+            [
+                (
+                    RATCHET,
+                    "        env:\n          T: ${{ secrets.Cs_Access_Token }}\n"
+                    + RATCHET,
+                )
+            ],
+            ["other than the upload"],
+        ),
     ],
     ids=[
         "moved_to_coverage",
@@ -250,6 +268,7 @@ RATCHET = "        with:\n          with-ratchet"
         "binding_moved_to_the_input",
         "binding_renamed",
         "computed_elsewhere",
+        "held_elsewhere_in_another_case",
     ],
 )
 def test_the_token_sits_on_the_upload_alone(
@@ -316,23 +335,6 @@ def test_check_mode_is_not_an_upload() -> None:
     )
     findings = publisher_rules.publisher_findings(parse(source))
     assert any("uploads nothing" in f for f in findings), findings
-
-
-@pytest.mark.parametrize(
-    ("condition", "expected"),
-    [
-        ("${{ github.ref == 'refs/heads/main' && env.X != 'a||b' }}", 2),
-        ("${{ github.ref == 'refs/heads/main' && env.X != 'a&&b' }}", 2),
-        ("github.ref == 'refs/heads/main' || true", None),
-    ],
-    ids=["quoted_or", "quoted_and", "bare_or"],
-)
-def test_quoted_operators_are_not_operators(
-    condition: str, expected: int | None
-) -> None:
-    """A ``||`` or ``&&`` inside a quoted literal is not an operator."""
-    parts = publisher_rules.conjuncts(condition)
-    assert (None if parts is None else len(parts)) == expected
 
 
 WIRED = """

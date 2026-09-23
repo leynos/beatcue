@@ -18,12 +18,12 @@ from codescene_contract.rules import (
     normalized,
     runs_the_cli,
 )
-from codescene_contract.text import computes_a_secret, rendered
+from codescene_contract.text import computes_a_secret, folded
 
 # The expression that hands a step the secret itself. Placement clauses look
 # for this rather than the bare name, because the upload's own guard names
 # `env.CS_ACCESS_TOKEN` without holding anything.
-SECRET_REFERENCE = "secrets.CS_ACCESS_TOKEN"  # noqa: S105 - a reference, not a value
+SECRET_REFERENCE = "secrets.cs_access_token"  # noqa: S105 - folded, as searched
 TOKEN_BINDING = "${{ secrets.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression
 TOKEN_INPUT = "${{ env.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression, not a value
 MAIN_REF_GUARD = "github.ref == 'refs/heads/main'"
@@ -105,18 +105,17 @@ def _forwards_the_token(job: reader.Mapping) -> bool:
     if reader.get(job, "uses") is None:
         return False
     return reader.get(job, "secrets") == "inherit" or any(
-        SECRET_REFERENCE in rendered(reader.get(job, key))
-        for key in ("with", "secrets")
+        SECRET_REFERENCE in folded(reader.get(job, key)) for key in ("with", "secrets")
     )
 
 
 def _wide_token_findings(workflow: object) -> list[str]:
     """Return the reasons the token is declared in a scope wider than a step."""
     findings = []
-    if SECRET_REFERENCE in rendered(reader.get(reader.as_mapping(workflow), "env")):
+    if SECRET_REFERENCE in folded(reader.get(reader.as_mapping(workflow), "env")):
         findings.append(f"the publisher declares {ACCESS_TOKEN} for every job")
     for job_id, job in reader.jobs(workflow):
-        if SECRET_REFERENCE in rendered(reader.get(job, "env")):
+        if SECRET_REFERENCE in folded(reader.get(job, "env")):
             findings.append(f"job {job_id} declares {ACCESS_TOKEN} for every step")
         if _forwards_the_token(job):
             findings.append(
@@ -133,30 +132,37 @@ def _token_findings(workflow: object) -> list[str]:
     it, no other step may hold it, and no wider scope may declare it.
     """
     findings = _wide_token_findings(workflow)
-    if computes_a_secret(rendered(workflow)):
+    if computes_a_secret(folded(workflow)):
         findings.append("the publisher reaches a secret by a computed name")
     for step in reader.steps(workflow):
         if is_upload(step) and not _binds_the_token(step):
             findings.append(f"the upload step does not bind {ACCESS_TOKEN} in its env")
-        if not is_upload(step) and SECRET_REFERENCE in rendered(step):
+        if not is_upload(step) and SECRET_REFERENCE in folded(step):
             findings.append(f"a step other than the upload receives {ACCESS_TOKEN}")
     return findings
 
 
 def _concurrency_findings(workflow: object) -> list[str]:
-    """Return the reasons the publisher's runs could cancel one another.
+    """Return the reasons the publisher's runs could cancel or displace one another.
 
     A cancelled publisher abandons both its upload and its baseline write. Any
     ``cancel-in-progress`` other than an absent key or a literal ``false`` is
-    refused, an expression included.
+    refused, an expression included. GitHub also keeps one pending run per
+    group and a newer arrival replaces it, so a dispatch sharing the pushes'
+    group could replace a pending push, and a dispatch never advances the
+    baseline: a dispatchable publisher's group must name the event.
     """
     group = reader.get(reader.as_mapping(workflow), "concurrency")
     findings = (
         [] if group is not None else ["the publisher declares no concurrency group"]
     )
     blocks = [
-        group,
-        *(reader.get(job, "concurrency") for _, job in reader.jobs(workflow)),
+        block
+        for block in (
+            group,
+            *(reader.get(job, "concurrency") for _, job in reader.jobs(workflow)),
+        )
+        if block is not None
     ]
     findings.extend(
         "the publisher may cancel a run in progress"
@@ -164,7 +170,28 @@ def _concurrency_findings(workflow: object) -> list[str]:
         if reader.get(reader.as_mapping(block), "cancel-in-progress")
         not in {None, False}
     )
+    if _is_dispatchable(workflow):
+        findings.extend(
+            "a dispatch can replace a pending push in the publisher's group"
+            for block in blocks
+            if not _separates_events(block)
+        )
     return findings
+
+
+def _is_dispatchable(workflow: object) -> bool:
+    """Return whether anything other than a push can start the workflow."""
+    return any(name != "push" for name in reader.trigger_names(workflow))
+
+
+def _separates_events(block: object) -> bool:
+    """Return whether a concurrency block's group names the triggering event."""
+    group = (
+        block
+        if isinstance(block, str)
+        else reader.get_str(reader.as_mapping(block), "group")
+    )
+    return group is not None and "github.event_name" in group
 
 
 def _reachability_findings(workflow: object) -> list[str]:

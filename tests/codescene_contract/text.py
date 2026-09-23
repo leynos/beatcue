@@ -41,6 +41,17 @@ def rendered(value: object) -> str:
     return "".join(f"{line}\n" for line in _lines(value))
 
 
+def folded(value: object) -> str:
+    """Return ``rendered`` case-folded, for the clauses that search for a name.
+
+    Secret names, context names and a DNS host are all case-insensitive, so
+    ``secrets.cs_access_token`` and ``SECRETS[...]`` reach the same token as the
+    spelling the clauses name. Folding the text, rather than the needle, is what
+    lets every clause read each spelling.
+    """
+    return rendered(value).lower()
+
+
 _SECRETS_WORD = re.compile(r"(?<![A-Za-z0-9_.])secrets(?![A-Za-z0-9_])")
 
 
