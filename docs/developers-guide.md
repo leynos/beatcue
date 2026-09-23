@@ -506,15 +506,16 @@ Coverage has two workflows, and the split is a contract (concordat's CV-005,
   `ci.yml` also runs on pushes to `main`, so its coverage step carries
   `if: github.event_name == 'pull_request'`: on a push it would race the
   publisher to write the baseline.
-- `coverage-main.yml` runs on every push to `main` (and on dispatch). It
-  measures the same source with the same action and inputs, which writes the
-  ratchet baseline every pull request compares against, then uploads the report
-  to CodeScene in explicit upload mode. The upload step alone binds
-  `CS_ACCESS_TOKEN`, its `if:` carries `github.ref == 'refs/heads/main'` as its
-  own conjunct (a dispatch can name any branch), and the workflow's concurrency
-  group never cancels a run in progress, so a burst of merges cannot abandon a
-  baseline write; dispatches queue in a group of their own, so one cannot
-  replace a pending push.
+- `coverage-main.yml` runs on every push to `main` and on dispatch. It measures
+  the same source with the same action and inputs. A push to `main` writes the
+  ratchet baseline every pull request compares against; a dispatch reads it
+  without advancing it. The lane then uploads the report to CodeScene in
+  explicit upload mode. The upload step alone binds `CS_ACCESS_TOKEN`, its
+  `if:` carries `github.ref == 'refs/heads/main'` as its own conjunct (a
+  dispatch can name any branch), and the workflow's concurrency group never
+  cancels a run in progress, so a burst of merges cannot abandon a baseline
+  write; dispatches queue in a group of their own, so one cannot replace a
+  pending push.
 
 The reasons are both quiet failures: a pull request from a fork cannot read the
 secret, so an upload there is silently skipped, and CodeScene accepts an upload
