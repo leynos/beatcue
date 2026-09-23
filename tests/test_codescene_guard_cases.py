@@ -9,19 +9,26 @@ from __future__ import annotations
 
 import pytest
 from codescene_contract import publisher_rules
-from test_codescene_publisher_cases import GUARD, NEVER_CANCEL, parse, publisher
+from codescene_contract.token_check import CHECK_COMMAND
+from test_codescene_publisher_cases import (
+    AVAILABLE,
+    GUARD,
+    NEVER_CANCEL,
+    parse,
+    publisher,
+)
 
 
 @pytest.mark.parametrize(
     "upload_if",
     [
-        "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main' && false }}",
+        f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main' && false }}}}",
         (
-            "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'"
+            f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main'"
             " && github.ref == 'refs/heads/develop' }}"
         ),
         (
-            "${{ env.CS_ACCESS_TOKEN != '' && !(github.actor == 'x'"
+            f"${{{{ {AVAILABLE} && !(github.actor == 'x'"
             " && github.ref == 'refs/heads/main' && true) }}"
         ),
     ],
@@ -80,3 +87,46 @@ def test_the_job_group_and_triggers_are_pinned(
     findings = publisher_rules.publisher_findings(parse(source.replace(old, new)))
     assert len(findings) == 1, findings
     assert expected in findings[0], findings
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        (
+            "      - id: codescene-token\n",
+            "      - id: codescene-token\n        if: always()\n",
+            "carries an `if:`",
+        ),
+        ("      - id: codescene-token\n        run:", "      - run:", "has no id"),
+        ("secrets.CS_ACCESS_TOKEN != ''", "true", "exactly one token check step"),
+        (
+            f"      - id: codescene-token\n        run: {CHECK_COMMAND}\n",
+            "",
+            "exactly one token check step",
+        ),
+        (
+            AVAILABLE,
+            "env.CS_ACCESS_TOKEN != ''",
+            "not guarded",
+        ),
+        (
+            AVAILABLE,
+            "steps.other.outputs.available == 'true'",
+            "not guarded",
+        ),
+    ],
+    ids=[
+        "check_behind_an_if",
+        "check_without_an_id",
+        "check_command_changed",
+        "check_deleted",
+        "guard_on_the_environment",
+        "guard_on_another_step",
+    ],
+)
+def test_the_token_check_is_exact(old: str, new: str, expected: str) -> None:
+    """A skippable, unreadable or altered check, or a guard off it, is named."""
+    source = publisher()
+    assert old in source, old
+    findings = publisher_rules.publisher_findings(parse(source.replace(old, new, 1)))
+    assert any(expected in finding for finding in findings), findings

@@ -21,16 +21,18 @@ from codescene_contract.rules import (
     runs_the_cli,
 )
 from codescene_contract.text import computes_a_secret, folded
+from codescene_contract.token_check import check_findings, check_id, check_steps
 
 # The expression that hands a step the secret itself. Placement clauses look
-# for this rather than the bare name, because the upload's own guard names
-# `env.CS_ACCESS_TOKEN` without holding anything.
+# for this rather than the bare name, because the check step's command names
+# the variable `CS_ACCESS_TOKEN` without holding the secret.
 SECRET_REFERENCE = "secrets.cs_access_token"  # noqa: S105 - folded, as searched
-TOKEN_BINDING = "${{ secrets.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression
-TOKEN_INPUT = "${{ env.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression, not a value
+# The upload's `access-token` input: the secret itself, not through the step's
+# `env`. The action is composite and hands its step `env` to its nested
+# artefact-upload and cache steps, while it binds the token from its input.
+TOKEN_INPUT = "${{ secrets.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression
 MAIN_REF_GUARD = "github.ref == 'refs/heads/main'"
 PULL_REQUEST_GUARD = "github.event_name == 'pull_request'"
-TOKEN_GUARD = "env.CS_ACCESS_TOKEN != ''"  # noqa: S105 - an expression, not a value
 # The triggers the publisher answers, exactly: a push to `main` writes the
 # baseline and uploads, and a dispatch measures without advancing it.
 PUBLISHER_TRIGGERS = frozenset({"push", "workflow_dispatch"})
@@ -106,17 +108,6 @@ def _guarded_exactly(step: reader.Mapping, guards: frozenset[str]) -> bool:
     return parts is not None and frozenset(parts) == guards
 
 
-def _binds_the_token(step: reader.Mapping) -> bool:
-    """Return whether a step binds the token in its own ``env``, as the secret.
-
-    Asserted positively because the guard ``env.CS_ACCESS_TOKEN != ''`` reads a
-    missing binding as empty: with the binding deleted the upload skips forever
-    and nothing fails.
-    """
-    value = reader.get(reader.as_mapping(reader.get(step, "env")), ACCESS_TOKEN)
-    return isinstance(value, str) and normalized(value) == TOKEN_BINDING
-
-
 def _forwards_the_token(job: reader.Mapping) -> bool:
     """Return whether a job calling a reusable workflow hands it the token."""
     if reader.get(job, "uses") is None:
@@ -144,18 +135,26 @@ def _wide_token_findings(workflow: object) -> list[str]:
 def _token_findings(workflow: object) -> list[str]:
     """Return the reasons the token reaches somewhere other than the upload.
 
-    "Some step has the token" proves nothing: moving it to the coverage step
-    satisfies that while the upload's guard goes false. So the upload must bind
-    it, no other step may hold it, and no wider scope may declare it.
+    Only the upload's ``access-token`` input and the check step's expression
+    may name the secret, and no step may hold it in its ``env``: the upload
+    action is composite and hands a step ``env`` to its nested steps, and a
+    wider scope reaches every step at once.
     """
-    findings = _wide_token_findings(workflow)
+    findings = [*_wide_token_findings(workflow), *check_findings(workflow)]
     if computes_a_secret(folded(workflow)):
         findings.append("the publisher reaches a secret by a computed name")
+    checks = check_steps(workflow)
     for step in reader.steps(workflow):
-        if is_upload(step) and not _binds_the_token(step):
-            findings.append(f"the upload step does not bind {ACCESS_TOKEN} in its env")
-        if not is_upload(step) and SECRET_REFERENCE in folded(step):
-            findings.append(f"a step other than the upload receives {ACCESS_TOKEN}")
+        if "cs_access_token" in folded(reader.get(step, "env")):
+            findings.append(
+                f"a publisher step holds {ACCESS_TOKEN} in its env, "
+                "which the upload's nested steps would inherit"
+            )
+        is_exempt = is_upload(step) or any(step is check for check in checks)
+        if not is_exempt and SECRET_REFERENCE in folded(step):
+            findings.append(
+                f"a step other than the upload and its check receives {ACCESS_TOKEN}"
+            )
     return findings
 
 
@@ -257,13 +256,15 @@ def publisher_findings(workflow: object) -> list[str]:
     uploads = [step for step in reader.steps(workflow) if is_upload(step)]
     if not uploads:
         findings.append("the main publisher uploads nothing to CodeScene")
-    if any(
-        not _guarded_exactly(step, frozenset({TOKEN_GUARD, MAIN_REF_GUARD}))
-        for step in uploads
-    ):
+    check = check_id(workflow)
+    guards = frozenset({
+        f"steps.{check}.outputs.available == 'true'",
+        MAIN_REF_GUARD,
+    })
+    if any(check is None or not _guarded_exactly(step, guards) for step in uploads):
         findings.append(
-            f"an upload step is not guarded by exactly "
-            f"`{TOKEN_GUARD} && {MAIN_REF_GUARD}`"
+            "an upload step is not guarded by exactly the token check's answer "
+            f"and `{MAIN_REF_GUARD}`"
         )
     findings.extend(_token_findings(workflow))
     findings.extend(_concurrency_findings(workflow))
@@ -274,8 +275,8 @@ def wiring_findings(workflow: object) -> list[str]:
     """Return the reasons the publisher's upload would not send what it measured.
 
     Each upload must read the file, in the format, that a coverage step writes,
-    and pass the token its step binds as its ``access-token``, or its guard
-    holds while the action runs unauthenticated.
+    and pass the secret itself as its ``access-token``, or its guard holds
+    while the action runs unauthenticated.
     """
     all_steps = reader.steps(workflow)
     written = [
@@ -294,7 +295,7 @@ def wiring_findings(workflow: object) -> list[str]:
         token = input_str(upload, "access-token")
         if token is None or normalized(token) != TOKEN_INPUT:
             findings.append(
-                f"the upload's access-token is {token!r}, not the token its step binds"
+                f"the upload's access-token is {token!r}, not the secret itself"
             )
     return findings
 

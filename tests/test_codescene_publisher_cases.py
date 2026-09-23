@@ -52,18 +52,20 @@ jobs:
         with:
           with-ratchet: 'true'
 @EXTRA_STEP@
-      - env:
-          CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-        if: "@UPLOAD_IF@"
+      - id: codescene-token
+        run: echo "available=${{ secrets.CS_ACCESS_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - if: "@UPLOAD_IF@"
         uses: leynos/shared-actions/.github/actions/upload-codescene-coverage@abc
         with:
-          access-token: ${{ env.CS_ACCESS_TOKEN }}
+          access-token: ${{ secrets.CS_ACCESS_TOKEN }}
 """
+# The upload guard's token conjunct: the check step's answer.
+AVAILABLE = "steps.codescene-token.outputs.available == 'true'"
 NEVER_CANCEL = (
     "concurrency:\n  group: pub-${{ github.ref }}-${{ github.event_name }}\n"
     "  cancel-in-progress: false"
 )
-GUARD = "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main' }}"
+GUARD = f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main' }}}}"
 
 
 def publisher(
@@ -94,7 +96,7 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
         (
             NEVER_CANCEL,
             (
-                "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'"
+                f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main'"
                 " || github.event_name == 'workflow_dispatch' }}"
             ),
             "not guarded",
@@ -103,14 +105,14 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
             NEVER_CANCEL,
             (
                 "${{ github.event_name == 'workflow_dispatch'"
-                " || env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main' }}"
+                f" || {AVAILABLE} && github.ref == 'refs/heads/main' }}}}"
             ),
             "not guarded",
         ),
         (
             NEVER_CANCEL,
             (
-                "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'"
+                f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main'"
                 " && github.actor != 'x' || github.event_name == 'workflow_dispatch' }}"
             ),
             "not guarded",
@@ -118,12 +120,16 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
         (
             NEVER_CANCEL,
             (
-                "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'"
+                f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main'"
                 " && github.actor != 'x' }}"
             ),
             "not guarded",
         ),
-        (NEVER_CANCEL, "${{ env.CS_ACCESS_TOKEN != '' }}", "not guarded"),
+        (
+            NEVER_CANCEL,
+            f"${{{{ {AVAILABLE} }}}}",
+            "not guarded",
+        ),
         (NEVER_CANCEL.replace("false", "true"), GUARD, "cancel"),
         (
             NEVER_CANCEL.replace("false", "${{ true }}"),
@@ -166,7 +172,8 @@ def test_the_publisher_rule_names_the_clause_broken(
 
 
 SECRET = "${{ secrets.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression
-UPLOAD_TOKEN = f"      - env:\n          CS_ACCESS_TOKEN: {SECRET}\n"
+CHECK_STEP = "      - id: codescene-token\n"
+STEP_BINDING = f"        env:\n          CS_ACCESS_TOKEN: {SECRET}\n"
 WIDE_TOKEN = f"env:\n  CS_ACCESS_TOKEN: {SECRET}\n"
 REUSABLE = "  forward:\n    uses: ./.github/workflows/elsewhere.yml\n"
 RATCHET = "        with:\n          with-ratchet"
@@ -176,14 +183,8 @@ RATCHET = "        with:\n          with-ratchet"
     ("replacements", "expected"),
     [
         (
-            [
-                (UPLOAD_TOKEN, "      - env: {}\n"),
-                (
-                    RATCHET,
-                    f"        env:\n          CS_ACCESS_TOKEN: {SECRET}\n" + RATCHET,
-                ),
-            ],
-            ["does not bind", "other than the upload"],
+            [(RATCHET, STEP_BINDING + RATCHET)],
+            ["in its env", "other than the upload and its check"],
         ),
         ([("jobs:\n", WIDE_TOKEN + "jobs:\n")], ["for every job"]),
         (
@@ -216,25 +217,15 @@ RATCHET = "        with:\n          with-ratchet"
             [("jobs:\n", "jobs:\n" + REUSABLE + "    secrets: inherit\n")],
             ["to a reusable workflow"],
         ),
-        ([(UPLOAD_TOKEN, "      - env: {}\n")], ["does not bind"]),
-        (
-            [
-                (UPLOAD_TOKEN, "      - env: {}\n"),
-                (
-                    "access-token: ${{ env.CS_ACCESS_TOKEN }}",
-                    "access-token: ${{ secrets.CS_ACCESS_TOKEN }}",
-                ),
-            ],
-            ["does not bind"],
-        ),
+        ([(CHECK_STEP, CHECK_STEP + STEP_BINDING)], ["in its env"]),
         (
             [
                 (
-                    UPLOAD_TOKEN,
-                    f"      - env:\n          CS_TOKEN: {SECRET}\n",
+                    '      - if: "',
+                    f'      - env:\n          CS_ACCESS_TOKEN: {SECRET}\n        if: "',
                 )
             ],
-            ["does not bind"],
+            ["holds CS_ACCESS_TOKEN in its env"],
         ),
         (
             [
@@ -244,7 +235,7 @@ RATCHET = "        with:\n          with-ratchet"
                     + RATCHET,
                 )
             ],
-            ["computed name"],
+            ["computed name", "in its env"],
         ),
         (
             [
@@ -254,7 +245,7 @@ RATCHET = "        with:\n          with-ratchet"
                     + RATCHET,
                 )
             ],
-            ["other than the upload"],
+            ["in its env", "other than the upload"],
         ),
     ],
     ids=[
@@ -264,9 +255,8 @@ RATCHET = "        with:\n          with-ratchet"
         "forwarded_as_an_input",
         "forwarded_by_name",
         "forwarded_by_inheritance",
-        "binding_deleted",
-        "binding_moved_to_the_input",
-        "binding_renamed",
+        "bound_in_the_check",
+        "token_in_the_upload_env",
         "computed_elsewhere",
         "held_elsewhere_in_another_case",
     ],
@@ -274,10 +264,11 @@ RATCHET = "        with:\n          with-ratchet"
 def test_the_token_sits_on_the_upload_alone(
     replacements: list[tuple[str, str]], expected: list[str]
 ) -> None:
-    """Each placement off the upload step's own binding is named.
+    """Each placement other than the upload's input and the check is named.
 
-    The guard ``env.CS_ACCESS_TOKEN != ''`` reads a missing binding as empty
-    and skips the upload forever, so the binding is asserted, not inferred.
+    No step may hold the token in its ``env``: in the upload step's own it
+    reaches the composite action's nested steps, and anywhere else it hands a
+    step the secret the upload alone needs.
     """
     source = publisher()
     for old, new in replacements:
@@ -335,59 +326,3 @@ def test_check_mode_is_not_an_upload() -> None:
     )
     findings = publisher_rules.publisher_findings(parse(source))
     assert any("uploads nothing" in f for f in findings), findings
-
-
-WIRED = """
-on:
-  push:
-    branches: [main]
-jobs:
-  coverage:
-    steps:
-      - uses: leynos/shared-actions/.github/actions/generate-coverage@abc
-        with:
-          output-path: coverage.xml
-          format: cobertura
-      - env:
-          CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-        uses: leynos/shared-actions/.github/actions/upload-codescene-coverage@abc
-        with:
-          path: coverage.xml
-          format: cobertura
-          access-token: ${{ env.CS_ACCESS_TOKEN }}
-"""
-
-
-@pytest.mark.parametrize(
-    ("old", "new", "expected"),
-    [
-        ("", "", None),
-        (
-            "          path: coverage.xml",
-            "          path: other.xml",
-            "which no coverage step writes",
-        ),
-        (
-            "          format: cobertura\n          access",
-            "          format: lcov\n          access",
-            "which no coverage step writes",
-        ),
-        ("          access-token: ${{ env.CS_ACCESS_TOKEN }}\n", "", "its step binds"),
-        ("${{ env.CS_ACCESS_TOKEN }}", "${{ env.OTHER }}", "its step binds"),
-        (
-            "${{ env.CS_ACCESS_TOKEN }}",
-            "${{ secrets.CS_ACCESS_TOKEN }}",
-            "its step binds",
-        ),
-    ],
-    ids=["wired", "other_path", "other_format", "no_token", "other_token", "secret"],
-)
-def test_the_upload_sends_what_was_measured(
-    old: str, new: str, expected: str | None
-) -> None:
-    """The upload reads what was written and passes the token its step binds."""
-    source = WIRED
-    if old:
-        assert WIRED.count(old) == 1, old
-        source = WIRED.replace(old, new)
-    assert_one_finding(publisher_rules.wiring_findings(parse(source)), expected)
