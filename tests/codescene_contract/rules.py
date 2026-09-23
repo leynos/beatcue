@@ -16,6 +16,8 @@ ACCESS_TOKEN = "CS_ACCESS_TOKEN"  # noqa: S105 - the secret's name, not its valu
 ACCESS_TOKEN_FOLDED = ACCESS_TOKEN.lower()
 COVERAGE_CLI = "cs-coverage"
 CODESCENE_HOST = "codescene.io"
+# The variable the retired installer-digest refresher wrote, case-folded.
+CLI_DIGEST_VARIABLE = "codescene_cli_sha256"
 
 
 def normalized(text: str) -> str:
@@ -116,4 +118,30 @@ def pull_request_findings(workflow: object) -> list[str]:
     )
     for step in reader.steps(workflow):
         findings.extend(_step_findings(step))
+    return findings
+
+
+def stray_findings(workflow: object) -> list[str]:
+    """Return the reasons a workflow other than the publisher reaches CodeScene.
+
+    The pull-request clauses read only what a pull request can reach, and the
+    publisher clauses only the publisher, so a dispatch-only or tag-triggered
+    workflow would escape both. Only the publisher may hold the token, name the
+    host, run the CLI or the uploader, or touch the retired installer digest.
+    """
+    text = folded(workflow)
+    findings = [
+        f"a workflow other than the publisher {reason}"
+        for needle, reason in (
+            (ACCESS_TOKEN_FOLDED, f"receives {ACCESS_TOKEN}"),
+            (CODESCENE_HOST, f"contacts {CODESCENE_HOST}"),
+            (CLI_DIGEST_VARIABLE, "reads or writes CODESCENE_CLI_SHA256"),
+        )
+        if needle in text
+    ]
+    all_steps = reader.steps(workflow)
+    if any(is_upload_action(step) for step in all_steps):
+        findings.append(f"a workflow other than the publisher invokes {UPLOAD_ACTION}")
+    if any(runs_the_cli(step) for step in all_steps):
+        findings.append(f"a workflow other than the publisher runs {COVERAGE_CLI}")
     return findings

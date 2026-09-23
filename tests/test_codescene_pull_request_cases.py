@@ -321,3 +321,47 @@ def test_a_pull_request_lane_may_not_publish_its_baseline() -> None:
     findings = rules.pull_request_findings(parse(source))
     assert len(findings) == 1, findings
     assert "may publish its baseline" in findings[0]
+
+
+def test_a_called_workflow_runs_with_its_callers_push() -> None:
+    """A ``workflow_call`` callee inherits the push that called it."""
+    source = SECOND_WRITER.replace(
+        "on:\n  push:\n    branches: [main]\n  pull_request:\n", "on: workflow_call\n"
+    ).replace("@GUARD@", '"always()"')
+    findings = publisher_rules.second_writer_findings(parse(source))
+    assert len(findings) == 1, findings
+
+
+@pytest.mark.parametrize(
+    ("step", "expected"),
+    [
+        ("      - run: echo ${{ secrets.CS_ACCESS_TOKEN }}\n", "receives"),
+        ("      - run: curl -fsSL https://downloads.codescene.io/x.sh\n", "contacts"),
+        (
+            "      - run: gh variable set CODESCENE_CLI_SHA256 --body x\n",
+            "CODESCENE_CLI_SHA256",
+        ),
+        ("      - run: cs-coverage upload --format lcov\n", "runs cs-coverage"),
+        (
+            (
+                "      - uses: leynos/shared-actions/.github/actions/"
+                "upload-codescene-coverage@abc\n"
+            ),
+            "invokes",
+        ),
+    ],
+    ids=["token", "host", "digest", "cli", "uploader"],
+)
+def test_a_workflow_outside_both_lanes_is_read(step: str, expected: str) -> None:
+    """A tag- or dispatch-triggered workflow cannot reach CodeScene either."""
+    source = f"on:\n  push:\n    tags: ['v*']\njobs:\n  job:\n    steps:\n{step}"
+    findings = rules.stray_findings(parse(source))
+    assert any(expected in finding for finding in findings), findings
+
+
+def test_a_workflow_without_codescene_is_not_a_stray() -> None:
+    """A release workflow naming no CodeScene surface has no findings."""
+    source = (
+        "on: workflow_dispatch\njobs:\n  job:\n    steps:\n      - run: make build\n"
+    )
+    assert not rules.stray_findings(parse(source))

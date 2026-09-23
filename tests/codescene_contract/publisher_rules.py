@@ -272,9 +272,12 @@ def second_writer_findings(workflow: object) -> list[str]:
     runs a ratcheted coverage step, so a pull-request workflow that also runs
     on push would race the publisher for the baseline every pull request is
     measured against. Its coverage steps must carry the pull-request guard as a
-    conjunct. A workflow without a push trigger cannot write at all.
+    conjunct. A workflow that neither runs on push nor can be called cannot
+    write at all.
     """
-    if "push" not in reader.trigger_names(workflow):
+    # A reusable workflow inherits its caller's event, so a call made on a push
+    # to `main` runs its coverage step as a push.
+    if not {"push", "workflow_call"} & set(reader.trigger_names(workflow)):
         return []
     return [
         "a ratcheted coverage step can run on push without "

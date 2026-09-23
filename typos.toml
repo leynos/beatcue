@@ -31,8 +31,6 @@ extend-exclude = [
 locale = "en-gb"
 extend-ignore-re = [
     "(?s)```.*?```",
-    "Azure\\s+Architecture\\s+Center\\s*\\|\\s*Microsoft\\s+Learn\\b",
-    "GitHub\\s+Flavored\\s+Markdown\\b(?:\\s\\(GFM\\))?",
     "\\brust-analyzer\\b",
     "`behavior`",
     "`color`",
@@ -695,10 +693,6 @@ extend-ignore-re = [
 "equalizers" = "equalizers"
 "equalizes" = "equalizes"
 "equalizing" = "equalizing"
-"exercize" = "exercise"
-"exercized" = "exercised"
-"exercizes" = "exercises"
-"exercizing" = "exercising"
 "externalisable" = "externalizable"
 "externalisation" = "externalization"
 "externalisations" = "externalizations"
@@ -1548,7 +1542,6 @@ extend-ignore-re = [
 "organizers" = "organizers"
 "organizes" = "organizes"
 "organizing" = "organizing"
-"otherwize" = "otherwise"
 "oxendict" = "oxendict"
 "oxidisable" = "oxidizable"
 "oxidisation" = "oxidization"
@@ -1838,10 +1831,6 @@ extend-ignore-re = [
 "quantizers" = "quantizers"
 "quantizes" = "quantizes"
 "quantizing" = "quantizing"
-"raize" = "raise"
-"raized" = "raised"
-"raizes" = "raises"
-"raizing" = "raising"
 "randomisable" = "randomizable"
 "randomisation" = "randomization"
 "randomisations" = "randomizations"

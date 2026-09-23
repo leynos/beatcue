@@ -94,6 +94,26 @@ def test_exactly_one_main_publisher_uploads_ratcheted_coverage() -> None:
     assert not findings, findings
 
 
+def test_only_the_publisher_reaches_codescene() -> None:
+    """Scenario: every workflow other than the publisher is examined.
+
+    Invariant: none holds the token, names the host, runs the CLI or the
+    uploader, or touches the retired installer digest. The pull-request and
+    publisher clauses between them leave a dispatch-only or tag-triggered
+    workflow unread; this one reads every file.
+    """
+    all_workflows = reader.workflows()
+    publishers = set(_publishers(all_workflows))
+    others = sorted(set(all_workflows) - publishers)
+    assert others, "no workflow besides the publisher was read"
+    breaches = [
+        f"{name}: {finding}"
+        for name in others
+        for finding in rules.stray_findings(all_workflows[name])
+    ]
+    assert not breaches, breaches
+
+
 def test_every_pull_request_lane_reads_the_publisher_baseline() -> None:
     """Scenario: the publisher and each pull-request lane are compared.
 

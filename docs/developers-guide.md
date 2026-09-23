@@ -521,8 +521,11 @@ secret, so an upload there is silently skipped, and CodeScene accepts an upload
 only for a branch it analyses, which a pull request head is not.
 
 `tests/test_codescene_contract.py` enforces the split over every workflow a
-pull request can reach, following local reusable-workflow calls transitively.
-The readers and rules live in `tests/codescene_contract/`, and the
+pull request can reach, following local reusable-workflow calls transitively,
+and over every other workflow too: only the publisher may hold the token, name
+the CodeScene host, run the CLI or the uploader, or touch the retired
+`CODESCENE_CLI_SHA256` variable, whose refresher workflow is gone. The readers
+and rules live in `tests/codescene_contract/`, and the
 `tests/test_codescene_*_cases.py` files drive each rule against breaching
 fixtures. When adding a workflow, keep CodeScene, `cs-coverage` and the token
 out of it unless it is the publisher; the contract names the clause a change
