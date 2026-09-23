@@ -49,6 +49,9 @@ right source of truth for use, maintenance, design, and planning work.
 - [ADR 009: Dependency extras and Python 3.14 markers](adr-009-dependency-extras-and-python-314-markers.md)
   - Accepted dependency-extra layout, headless media stack, and temporary
     Python 3.14 markers for optional packages.
+- [ADR 010: `main` owns coverage publication](adr-010-main-owns-coverage-publication.md)
+  - Accepted split between the pull-request coverage ratchet and the
+    CodeScene publisher on `main`.
 
 ## Plans
 

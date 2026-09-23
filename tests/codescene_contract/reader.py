@@ -91,15 +91,29 @@ def workflows(directory: Path = WORKFLOW_DIR) -> Workflows:
     An empty or missing directory is an error, since every contract ranging
     over an empty set would pass.
     """
+    try:
+        paths = sorted(directory.iterdir())
+    except OSError as error:
+        msg = f"cannot list {directory}: {error}"
+        raise WorkflowError(msg) from error
     found = {
-        path.name: parse(path.name, path.read_text(encoding="utf-8"))
-        for path in sorted(directory.iterdir())
+        path.name: parse(path.name, _read(path))
+        for path in paths
         if path.suffix.lower() in WORKFLOW_SUFFIXES
     }
     if not found:
         msg = f"no workflows found under {directory}"
         raise WorkflowError(msg)
     return found
+
+
+def _read(path: Path) -> str:
+    """Read one workflow as UTF-8, naming the file on any failure."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        msg = f"cannot read {path}: {error}"
+        raise WorkflowError(msg) from error
 
 
 def as_mapping(value: object) -> Mapping | None:
@@ -153,6 +167,7 @@ def trigger(workflow: object, event: str) -> object:
 # `workflow_run` workflow runs with secrets after whatever it names, which may
 # be a pull-request workflow.
 PULL_REQUEST_EVENTS = frozenset({
+    "issue_comment",
     "merge_group",
     "pull_request",
     "pull_request_review",
@@ -164,7 +179,26 @@ PULL_REQUEST_EVENTS = frozenset({
 
 def starts_on_pull_request(workflow: object) -> bool:
     """Return whether an event run for a pull request starts the workflow."""
-    return any(name in PULL_REQUEST_EVENTS for name in trigger_names(workflow))
+    return any(
+        name in PULL_REQUEST_EVENTS for name in trigger_names(workflow)
+    ) or _pushes_beyond_main(workflow)
+
+
+def _pushes_beyond_main(workflow: object) -> bool:
+    """Return whether a workflow answers a push to a branch other than ``main``.
+
+    A same-repository pull request's head branch is pushed to, and a push runs
+    with the repository's secrets, so a push trigger is on the pull-request
+    surface unless it is limited to exactly ``branches: [main]`` or to tags.
+    """
+    if "push" not in trigger_names(workflow):
+        return False
+    push = as_mapping(trigger(workflow, "push"))
+    if push is None:
+        return True
+    if "branches" in push:
+        return push["branches"] != ["main"]
+    return "tags" not in push
 
 
 def jobs(workflow: object) -> list[tuple[str, Mapping]]:

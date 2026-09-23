@@ -60,7 +60,8 @@ jobs:
           access-token: ${{ env.CS_ACCESS_TOKEN }}
 """
 NEVER_CANCEL = (
-    "concurrency:\n  group: pub-${{ github.event_name }}\n  cancel-in-progress: false"
+    "concurrency:\n  group: pub-${{ github.ref }}-${{ github.event_name }}\n"
+    "  cancel-in-progress: false"
 )
 GUARD = "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main' }}"
 
@@ -120,7 +121,7 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
                 "${{ env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'"
                 " && github.actor != 'x' }}"
             ),
-            None,
+            "not guarded",
         ),
         (NEVER_CANCEL, "${{ env.CS_ACCESS_TOKEN != '' }}", "not guarded"),
         (NEVER_CANCEL.replace("false", "true"), GUARD, "cancel"),
@@ -154,12 +155,11 @@ def test_the_publisher_rule_names_the_clause_broken(
 ) -> None:
     """Each variation is reported by the clause it breaks.
 
-    The appended disjunction is the mutation a substring check passes, but it
-    already fails the whole-conjunct comparison, so it does not prove the
-    refusal of ``||``. The prepended one and the extra-conjunct one do: each
-    leaves the ref check whole as a conjunct, and the second hides the
-    disjunction inside a narrowing conjunct the rule otherwise permits, so only
-    the explicit refusal catches them.
+    The upload guard must be exactly the token and ref conjuncts, so every
+    disjunction fails the set comparison whether or not ``||`` is refused: the
+    refusal is defence in depth here, proved on the splitter's own cases. An
+    extra conjunct fails too; ``test_codescene_guard_cases.py`` holds the ones
+    that silently stop the upload.
     """
     source = publisher(concurrency, upload_if)
     assert_one_finding(publisher_rules.publisher_findings(parse(source)), expected)

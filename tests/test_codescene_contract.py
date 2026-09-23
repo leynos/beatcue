@@ -142,3 +142,51 @@ def test_every_pull_request_lane_reads_the_publisher_baseline() -> None:
     assert any(lanes.values()), "no pull-request lane measures coverage"
     for name, read in lanes.items():
         assert all(baseline == written[0] for baseline in read), (name, read, written)
+
+
+# The coverage selection the publisher and every pull-request lane run, pinned
+# as this repository's own value: "each lane equals the publisher" passes when
+# both change together. `publish-artefact` is lane-local and left out.
+COVERAGE_SELECTION = {
+    "language": "python",
+    "python-source": "./beatcue",
+    "output-path": "coverage.xml",
+    "format": "cobertura",
+    "pytest-workers": "",
+    "with-ratchet": "true",
+}
+
+
+def _selection(step: dict[object, object]) -> tuple[dict[str, str], object]:
+    """Return a coverage step's inputs, less the lane-local ones, and its env."""
+    inputs = reader.as_mapping(step.get("with")) or {}
+    return (
+        {
+            str(key): str(value).strip()
+            for key, value in inputs.items()
+            if key != "publish-artefact"
+        },
+        step.get("env"),
+    )
+
+
+def test_the_coverage_selection_is_pinned() -> None:
+    """Scenario: the publisher and each lane's coverage steps are compared.
+
+    Invariant: the publisher measures exactly ``COVERAGE_SELECTION`` and every
+    lane measures what the publisher does, with the same step environment.
+    """
+    all_workflows = reader.workflows()
+    published = [
+        _selection(step)
+        for name in _publishers(all_workflows)
+        for step in reader.steps(all_workflows[name])
+        if rules.is_coverage(step)
+    ]
+    assert len(published) == 1, published
+    inputs, env = published[0]
+    assert inputs == COVERAGE_SELECTION, inputs
+    for name in sorted(reader.pull_request_closure(all_workflows)):
+        for step in reader.steps(all_workflows[name]):
+            if rules.is_coverage(step):
+                assert _selection(step) == (inputs, env), (name, _selection(step))

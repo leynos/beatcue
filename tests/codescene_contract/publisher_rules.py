@@ -6,6 +6,8 @@ fixture case can assert which clause fired.
 
 from __future__ import annotations
 
+import re
+
 from codescene_contract import reader
 from codescene_contract.rules import (
     ACCESS_TOKEN,
@@ -28,6 +30,14 @@ TOKEN_BINDING = "${{ secrets.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression
 TOKEN_INPUT = "${{ env.CS_ACCESS_TOKEN }}"  # noqa: S105 - an expression, not a value
 MAIN_REF_GUARD = "github.ref == 'refs/heads/main'"
 PULL_REQUEST_GUARD = "github.event_name == 'pull_request'"
+TOKEN_GUARD = "env.CS_ACCESS_TOKEN != ''"  # noqa: S105 - an expression, not a value
+# The triggers the publisher answers, exactly: a push to `main` writes the
+# baseline and uploads, and a dispatch measures without advancing it.
+PUBLISHER_TRIGGERS = frozenset({"push", "workflow_dispatch"})
+# A group key must be the evaluated expression; a literal `github.ref` in the
+# group names the word and keys nothing.
+_REF_KEY = re.compile(r"\$\{\{\s*github\.ref\s*\}\}")
+_EVENT_KEY = re.compile(r"\$\{\{\s*github\.event_name\s*\}\}")
 
 
 def publishes_from_main(workflow: object) -> bool:
@@ -60,18 +70,20 @@ def _unquoted(body: str) -> str:
 
 
 def conjuncts(condition: str) -> list[str] | None:
-    """Return the conjuncts of an ``if:`` condition, or ``None`` if it has ``||``.
+    """Return an ``if:`` condition's conjuncts, or ``None`` for ``||`` or brackets.
 
     Quoted literals are blanked before the operators are looked for, so a
     ``||`` inside a string does not count and an ``&&`` inside one does not
     split. A disjunction anywhere makes every conjunct optional, which is why
-    it is refused rather than parsed.
+    it is refused rather than parsed. A parenthesis can group or negate
+    conjuncts, as in ``!(a && ref == main)``, so a flat split would report a
+    conjunct the expression does not require; it is refused too.
     """
     body = condition.strip()
     if body.startswith("${{") and body.endswith("}}"):
         body = body[3:-2]
     blanked = _unquoted(body)
-    if "||" in blanked:
+    if any(token in blanked for token in ("||", "(", ")")):
         return None
     parts, start = [], 0
     index = blanked.find("&&")
@@ -83,10 +95,15 @@ def conjuncts(condition: str) -> list[str] | None:
     return [normalized(part) for part in parts]
 
 
-def _guarded_by(step: reader.Mapping, guard: str) -> bool:
-    """Return whether a step's condition carries ``guard`` as a conjunct."""
+def _guarded_exactly(step: reader.Mapping, guards: frozenset[str]) -> bool:
+    """Return whether a step's condition is exactly the conjuncts ``guards``.
+
+    Exact set equality, not "contains the guard": an extra conjunct can only
+    narrow or defeat the step (``&& false``, a second ref), so nothing a
+    lane needs is lost by refusing every one.
+    """
     parts = conjuncts(reader.get_str(step, "if") or "")
-    return parts is not None and guard in parts
+    return parts is not None and frozenset(parts) == guards
 
 
 def _binds_the_token(step: reader.Mapping) -> bool:
@@ -170,28 +187,33 @@ def _concurrency_findings(workflow: object) -> list[str]:
         if reader.get(reader.as_mapping(block), "cancel-in-progress")
         not in {None, False}
     )
-    if _is_dispatchable(workflow):
-        findings.extend(
-            "a dispatch can replace a pending push in the publisher's group"
-            for block in blocks
-            if not _separates_events(block)
-        )
+    findings.extend(
+        "a dispatch can replace a pending push in the publisher's group"
+        for block in blocks
+        if not _separates_events(block)
+    )
     return findings
 
 
-def _is_dispatchable(workflow: object) -> bool:
-    """Return whether anything other than a push can start the workflow."""
-    return any(name != "push" for name in reader.trigger_names(workflow))
-
-
 def _separates_events(block: object) -> bool:
-    """Return whether a concurrency block's group names the triggering event."""
+    """Return whether a concurrency group is keyed on the evaluated ref and event.
+
+    GitHub keeps one pending run per group and a newer arrival replaces it.
+    With a constant group a branch dispatch replaces main's pending push; with
+    a ref-only group a dispatch on main does, and only a push writes the
+    baseline. Every level is read, since a constant job group serializes the
+    upload job across refs and events alike.
+    """
     group = (
         block
         if isinstance(block, str)
         else reader.get_str(reader.as_mapping(block), "group")
     )
-    return group is not None and "github.event_name" in group
+    return (
+        group is not None
+        and _REF_KEY.search(group) is not None
+        and _EVENT_KEY.search(group) is not None
+    )
 
 
 def _reachability_findings(workflow: object) -> list[str]:
@@ -226,11 +248,23 @@ def _reachability_findings(workflow: object) -> list[str]:
 def publisher_findings(workflow: object) -> list[str]:
     """Return the reasons a main publisher fails to publish what CV-005 requires."""
     findings = _reachability_findings(workflow)
+    triggers = frozenset(reader.trigger_names(workflow))
+    if triggers != PUBLISHER_TRIGGERS:
+        findings.append(
+            f"the publisher answers {sorted(triggers)}, "
+            f"not exactly {sorted(PUBLISHER_TRIGGERS)}"
+        )
     uploads = [step for step in reader.steps(workflow) if is_upload(step)]
     if not uploads:
         findings.append("the main publisher uploads nothing to CodeScene")
-    if any(not _guarded_by(step, MAIN_REF_GUARD) for step in uploads):
-        findings.append(f"an upload step is not guarded by `{MAIN_REF_GUARD}`")
+    if any(
+        not _guarded_exactly(step, frozenset({TOKEN_GUARD, MAIN_REF_GUARD}))
+        for step in uploads
+    ):
+        findings.append(
+            f"an upload step is not guarded by exactly "
+            f"`{TOKEN_GUARD} && {MAIN_REF_GUARD}`"
+        )
     findings.extend(_token_findings(workflow))
     findings.extend(_concurrency_findings(workflow))
     return findings
@@ -285,7 +319,7 @@ def second_writer_findings(workflow: object) -> list[str]:
         for step in reader.steps(workflow)
         if is_coverage(step)
         and input_is(step, "with-ratchet", expected=True)
-        and not _guarded_by(step, PULL_REQUEST_GUARD)
+        and not _guarded_exactly(step, frozenset({PULL_REQUEST_GUARD}))
     ]
 
 

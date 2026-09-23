@@ -497,6 +497,7 @@ themselves, not the surrounding comments, and carries its own mutation check.
 
 Coverage has two workflows, and the split is a contract (concordat's CV-005,
 `main-owned-codescene-coverage`), not a convention.
+[ADR 010](adr-010-main-owns-coverage-publication.md) records the decision.
 
 - `ci.yml` measures Cobertura coverage on every pull request with the shared
   `generate-coverage` action (`language: python`, `python-source: ./beatcue`, a
@@ -511,11 +512,15 @@ Coverage has two workflows, and the split is a contract (concordat's CV-005,
   ratchet baseline every pull request compares against; a dispatch reads it
   without advancing it. The lane then uploads the report to CodeScene in
   explicit upload mode. The upload step alone binds `CS_ACCESS_TOKEN`, its
-  `if:` carries `github.ref == 'refs/heads/main'` as its own conjunct (a
-  dispatch can name any branch), and the workflow's concurrency group never
-  cancels a run in progress, so a burst of merges cannot abandon a baseline
-  write; dispatches queue in a group of their own, so one cannot replace a
-  pending push.
+  `if:` is exactly
+  `env.CS_ACCESS_TOKEN != '' && github.ref == 'refs/heads/main'` (a dispatch
+  can name any branch, and any further conjunct could only narrow, defeat, or
+  invert the upload), and the workflow's concurrency group, keyed on the
+  evaluated `${{ github.ref }}` and `${{ github.event_name }}` at every level,
+  never cancels a run in progress, so a burst of merges cannot abandon a
+  baseline write and a dispatch cannot replace a pending push. The workflow
+  answers exactly a push to `main` and `workflow_dispatch`, and the coverage
+  selection both lanes run is pinned in the contract.
 
 The reasons are both quiet failures: a pull request from a fork cannot read the
 secret, so an upload there is silently skipped, and CodeScene accepts an upload
@@ -530,11 +535,12 @@ and rules live in `tests/codescene_contract/`, and the
 `tests/test_codescene_*_cases.py` files drive each rule against breaching
 fixtures. The pull-request surface is seeded by every event that runs a
 workflow for a pull request (`pull_request`, `pull_request_target`,
-`merge_group`, the two review events, and `workflow_run`), and the push side is
-followed the same way: a workflow a push starts, or one it calls, may run a
+`merge_group`, the two review events, `issue_comment`, `workflow_run`, and any
+push not limited to exactly `branches: [main]` or to tags), and the push side
+is followed the same way: a workflow a push starts, or one it calls, may run a
 ratcheted coverage step only behind `if: github.event_name == 'pull_request'`,
 so the publisher stays the baseline's only writer. When adding a workflow, keep
-CodeScene, `cs-coverage` and the token out of it unless it is the publisher;
+CodeScene, `cs-coverage`, and the token out of it unless it is the publisher;
 the contract names the clause a change breaks.
 
 ## Documentation updates

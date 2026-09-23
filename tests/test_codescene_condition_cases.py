@@ -17,8 +17,10 @@ from codescene_contract import publisher_rules
         ("${{ github.ref == 'refs/heads/main' && env.X != 'a||b' }}", 2),
         ("${{ github.ref == 'refs/heads/main' && env.X != 'a&&b' }}", 2),
         ("github.ref == 'refs/heads/main' || true", None),
+        ("${{ !(env.X != '' && github.ref == 'refs/heads/main' && true) }}", None),
+        ("${{ github.ref == 'refs/heads/main' && env.X != '(a)' }}", 2),
     ],
-    ids=["quoted_or", "quoted_and", "bare_or"],
+    ids=["quoted_or", "quoted_and", "bare_or", "negated_group", "quoted_parenthesis"],
 )
 def test_quoted_operators_are_not_operators(
     condition: str, expected: int | None
