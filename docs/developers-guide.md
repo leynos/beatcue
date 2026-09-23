@@ -495,17 +495,37 @@ themselves, not the surrounding comments, and carries its own mutation check.
 
 ### Coverage workflow ownership
 
-Pull-request CI runs the shared coverage generator with a serial Python test
-run and the local ratchet stored in `.coverage-baseline.python`. It does not
-upload coverage to CodeScene, reference the CodeScene project, or expose
-`CS_ACCESS_TOKEN`; the ordinary checkout therefore does not need full Git
-history for coverage.
+Coverage has two workflows, and the split is a contract (concordat's CV-005,
+`main-owned-codescene-coverage`), not a convention.
 
-The `coverage-main.yml` workflow runs on pushes to `main`. It runs the same
-serial, ratcheted coverage generation and then publishes the resulting report
-through the pinned CodeScene upload action with `mode: upload`. Only that
-main-owned workflow receives the CodeScene access token, so the stored baseline
-and CodeScene's main-branch analysis advance with merged changes.
+- `ci.yml` measures Cobertura coverage on every pull request with the shared
+  `generate-coverage` action (`language: python`, `python-source: ./beatcue`, a
+  serial run), `with-ratchet: 'true'` and `publish-artefact: 'false'`. A drop
+  against the ratchet baseline fails the pull request. The lane holds no
+  CodeScene credential, has no upload step, and never contacts CodeScene.
+  `ci.yml` also runs on pushes to `main`, so its coverage step carries
+  `if: github.event_name == 'pull_request'`: on a push it would race the
+  publisher to write the baseline.
+- `coverage-main.yml` runs on every push to `main` (and on dispatch). It
+  measures the same source with the same action and inputs, which writes the
+  ratchet baseline every pull request compares against, then uploads the report
+  to CodeScene in explicit upload mode. The upload step alone binds
+  `CS_ACCESS_TOKEN`, its `if:` carries `github.ref == 'refs/heads/main'` as its
+  own conjunct (a dispatch can name any branch), and the workflow's concurrency
+  group never cancels a run in progress, so a burst of merges cannot abandon a
+  baseline write.
+
+The reasons are both quiet failures: a pull request from a fork cannot read the
+secret, so an upload there is silently skipped, and CodeScene accepts an upload
+only for a branch it analyses, which a pull request head is not.
+
+`tests/test_codescene_contract.py` enforces the split over every workflow a
+pull request can reach, following local reusable-workflow calls transitively.
+The readers and rules live in `tests/codescene_contract/`, and the
+`tests/test_codescene_*_cases.py` files drive each rule against breaching
+fixtures. When adding a workflow, keep CodeScene, `cs-coverage` and the token
+out of it unless it is the publisher; the contract names the clause a change
+breaks.
 
 ## Documentation updates
 

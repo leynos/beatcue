@@ -1,15 +1,15 @@
-"""Tests that CI installs nothing without a version, and runs nothing unverified.
+"""Tests that CI installs nothing without a version.
 
 An unpinned linter is what turned `main` red on 2026-07-30 and kept it red:
 `uv tool install ty` and `uv tool install ruff` silently followed upstream, and
-the first release with a new rule failed a gate nobody had changed. The
-CodeScene installer had the mirror-image problem: it was piped straight into
-`bash`, so the digest comparison that followed guarded code that had already
-run, against a file the pipe had never written.
+the first release with a new rule failed a gate nobody had changed.
 
-Reviewing a workflow by eye does not catch the next one, so both are contracts.
+Reviewing a workflow by eye does not catch the next one, so this is a contract.
 Every assertion matches the command in the workflow rather than a comment or a
-step name near it, and each is mutation-tested by a sibling test.
+step name near it, and each is mutation-tested by a sibling test. The CodeScene
+CLI is no longer installed here: the shared upload action on `main` selects its
+archive from a committed manifest and verifies the digest itself, and
+`tests/test_codescene_contract.py` keeps it off the pull-request lane.
 """
 
 from __future__ import annotations

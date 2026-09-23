@@ -62,14 +62,28 @@ jobs:
       - name: Run typechecker
         run: make typecheck
 
-      - name: Generate coverage
+      - name: Test and Measure Coverage
+        # Coverage here is for the local ratchet and nothing else. The report
+        # is neither archived (`publish-artefact: 'false'`) nor sent to
+        # CodeScene: a pull request from a fork cannot read
+        # `secrets.CS_ACCESS_TOKEN`, so an upload here is silently inert for
+        # exactly the changes that most need reviewing, and CodeScene accepts
+        # an upload only for a branch it analyses, which a pull request head
+        # is not. `coverage-main.yml` owns both persistent outputs and runs
+        # this suite on every push to main, so this step is confined to pull
+        # requests: on a push it would race the publisher to write the
+        # ratchet baseline. The baseline paths are the action's defaults on
+        # both sides, so this ratchet reads the baseline that workflow writes.
+        #
+        # The source scope and the serial run match the invocation this step
+        # replaced, which measured the same files and lines.
         if: github.event_name == 'pull_request'
-        uses: leynos/shared-actions/.github/actions/generate-coverage@152d9c4784d0ae5877938a984fe6d1f04d718fd8
+        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
         with:
           language: python
           python-source: ./beatcue
           output-path: coverage.xml
           format: cobertura
-          baseline-python-file: .coverage-baseline.python
           pytest-workers: ''
           with-ratchet: 'true'
+          publish-artefact: 'false'
