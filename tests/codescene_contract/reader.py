@@ -147,12 +147,24 @@ def trigger(workflow: object, event: str) -> object:
     return get(as_mapping(_on_block(workflow)), event)
 
 
+# Events that start a workflow for a pull request, or straight after one.
+# Besides the two `pull_request` events, a queued merge and a review run with
+# the repository's secrets for a same-repository pull request, and a
+# `workflow_run` workflow runs with secrets after whatever it names, which may
+# be a pull-request workflow.
+PULL_REQUEST_EVENTS = frozenset({
+    "merge_group",
+    "pull_request",
+    "pull_request_review",
+    "pull_request_review_comment",
+    "pull_request_target",
+    "workflow_run",
+})
+
+
 def starts_on_pull_request(workflow: object) -> bool:
-    """Return whether a pull request of either kind starts the workflow."""
-    return any(
-        name in {"pull_request", "pull_request_target"}
-        for name in trigger_names(workflow)
-    )
+    """Return whether an event run for a pull request starts the workflow."""
+    return any(name in PULL_REQUEST_EVENTS for name in trigger_names(workflow))
 
 
 def jobs(workflow: object) -> list[tuple[str, Mapping]]:
@@ -238,11 +250,23 @@ def pull_request_closure(all_workflows: Workflows) -> set[str]:
     workflow never names a pull request, yet runs with whatever its caller
     hands it, including every secret under ``secrets: inherit``.
     """
-    reached = {
-        name
-        for name, workflow in all_workflows.items()
-        if starts_on_pull_request(workflow)
-    }
+    return closure_from(
+        all_workflows,
+        {
+            name
+            for name, workflow in all_workflows.items()
+            if starts_on_pull_request(workflow)
+        },
+    )
+
+
+def closure_from(all_workflows: Workflows, seeds: set[str]) -> set[str]:
+    """Return ``seeds`` and every local workflow they reach through job calls.
+
+    A called workflow runs with its caller's event and secrets, so whatever a
+    seed may do on its trigger, its callees may do too.
+    """
+    reached = set(seeds)
     pending = list(reached)
     while pending:
         for callee in _local_callees(all_workflows.get(pending.pop())):

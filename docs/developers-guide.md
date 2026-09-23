@@ -528,9 +528,14 @@ the CodeScene host, run the CLI or the uploader, or touch the retired
 `CODESCENE_CLI_SHA256` variable, whose refresher workflow is gone. The readers
 and rules live in `tests/codescene_contract/`, and the
 `tests/test_codescene_*_cases.py` files drive each rule against breaching
-fixtures. When adding a workflow, keep CodeScene, `cs-coverage` and the token
-out of it unless it is the publisher; the contract names the clause a change
-breaks.
+fixtures. The pull-request surface is seeded by every event that runs a
+workflow for a pull request (`pull_request`, `pull_request_target`,
+`merge_group`, the two review events, and `workflow_run`), and the push side is
+followed the same way: a workflow a push starts, or one it calls, may run a
+ratcheted coverage step only behind `if: github.event_name == 'pull_request'`,
+so the publisher stays the baseline's only writer. When adding a workflow, keep
+CodeScene, `cs-coverage` and the token out of it unless it is the publisher;
+the contract names the clause a change breaks.
 
 ## Documentation updates
 

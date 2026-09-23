@@ -67,13 +67,21 @@ def test_no_workflow_a_pull_request_reaches_touches_codescene() -> None:
     breaches = [
         f"{name}: {finding}"
         for name in sorted(closure)
-        for finding in (
-            *rules.pull_request_findings(all_workflows[name]),
-            *publisher_rules.second_writer_findings(all_workflows[name]),
-        )
+        for finding in rules.pull_request_findings(all_workflows[name])
     ]
     breaches.extend(reader.missing_callees(all_workflows, closure))
     assert not breaches, breaches
+
+
+def test_only_the_publisher_writes_the_baseline() -> None:
+    """Scenario: every workflow a push starts, and every one it calls.
+
+    Invariant: outside the publisher, none can run a ratcheted coverage step on
+    a push. A callee runs with its caller's event, so the push side is followed
+    as a closure too.
+    """
+    writers = publisher_rules.second_writers(reader.workflows())
+    assert not writers, writers
 
 
 def test_exactly_one_main_publisher_uploads_ratcheted_coverage() -> None:

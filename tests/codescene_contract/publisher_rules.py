@@ -287,3 +287,24 @@ def second_writer_findings(workflow: object) -> list[str]:
         and input_is(step, "with-ratchet", expected=True)
         and not _guarded_by(step, PULL_REQUEST_GUARD)
     ]
+
+
+def second_writers(all_workflows: reader.Workflows) -> list[str]:
+    """Return each ratcheted coverage step a push can run outside the publisher.
+
+    Seeds are the workflows a push starts, other than the publisher; the
+    closure then takes in every local workflow they call, since a callee runs
+    with its caller's push. Each entry names the workflow and the finding.
+    """
+    seeds = {
+        name
+        for name, workflow in all_workflows.items()
+        if "push" in reader.trigger_names(workflow)
+        and not publishes_from_main(workflow)
+    }
+    return [
+        f"{name}: {finding}"
+        for name in sorted(reader.closure_from(all_workflows, seeds))
+        if not publishes_from_main(all_workflows[name])
+        for finding in second_writer_findings(all_workflows[name])
+    ]
