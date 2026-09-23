@@ -217,7 +217,7 @@ RATCHET = "        with:\n          with-ratchet"
             [("jobs:\n", "jobs:\n" + REUSABLE + "    secrets: inherit\n")],
             ["to a reusable workflow"],
         ),
-        ([(CHECK_STEP, CHECK_STEP + STEP_BINDING)], ["in its env"]),
+        ([(CHECK_STEP, CHECK_STEP + STEP_BINDING)], ["in its env", "declares `env`"]),
         (
             [
                 (

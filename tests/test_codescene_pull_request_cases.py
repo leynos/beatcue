@@ -339,7 +339,7 @@ def test_a_called_workflow_runs_with_its_callers_push() -> None:
         ("      - run: curl -fsSL https://downloads.codescene.io/x.sh\n", "contacts"),
         (
             "      - run: gh variable set CODESCENE_CLI_SHA256 --body x\n",
-            "CODESCENE_CLI_SHA256",
+            "retired installer digest",
         ),
         ("      - run: cs-coverage upload --format lcov\n", "runs cs-coverage"),
         (

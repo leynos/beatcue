@@ -18,6 +18,19 @@ COVERAGE_CLI = "cs-coverage"
 CODESCENE_HOST = "codescene.io"
 # The variable the retired installer-digest refresher wrote, case-folded.
 CLI_DIGEST_VARIABLE = "codescene_cli_sha256"
+# The uploader's retired digest input, case-folded.
+INSTALLER_CHECKSUM = "installer-checksum"
+
+
+def names_the_retired_digest(workflow: object) -> bool:
+    """Return whether a workflow names the retired installer digest anywhere.
+
+    The uploader now verifies its archive against a committed manifest and
+    rejects a non-empty ``installer-checksum``, so either name is a relic; no
+    workflow may carry one, the publisher included.
+    """
+    text = folded(workflow)
+    return CLI_DIGEST_VARIABLE in text or INSTALLER_CHECKSUM in text
 
 
 def normalized(text: str) -> str:
@@ -135,10 +148,13 @@ def stray_findings(workflow: object) -> list[str]:
         for needle, reason in (
             (ACCESS_TOKEN_FOLDED, f"receives {ACCESS_TOKEN}"),
             (CODESCENE_HOST, f"contacts {CODESCENE_HOST}"),
-            (CLI_DIGEST_VARIABLE, "reads or writes CODESCENE_CLI_SHA256"),
         )
         if needle in text
     ]
+    if names_the_retired_digest(workflow):
+        findings.append(
+            "a workflow other than the publisher names the retired installer digest"
+        )
     all_steps = reader.steps(workflow)
     if any(is_upload_action(step) for step in all_steps):
         findings.append(f"a workflow other than the publisher invokes {UPLOAD_ACTION}")

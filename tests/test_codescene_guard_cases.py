@@ -52,7 +52,7 @@ def test_a_guard_that_stops_or_inverts_the_upload_is_refused(upload_if: str) -> 
     ids=["keyed_on_the_event_too", "keyed_on_the_event_only", "literal_ref", "renamed"],
 )
 def test_the_group_is_exactly_the_workflow_and_ref(group: str) -> None:
-    """Any other group lets uploads land out of commit order, or keys nothing."""
+    """Any other group lets triggered uploads land out of order, or keys nothing."""
     concurrency = f"concurrency:\n  group: {group}\n  cancel-in-progress: false"
     findings = publisher_rules.publisher_findings(
         parse(publisher(concurrency=concurrency))
@@ -109,6 +109,16 @@ def test_the_job_group_and_triggers_are_pinned(
             "carries an `if:`",
         ),
         ("      - id: codescene-token\n        run:", "      - run:", "has no id"),
+        (
+            "      - id: codescene-token\n",
+            "      - id: codescene-token\n        shell: bash -c 'exit 0; {0}'\n",
+            "declares `shell`",
+        ),
+        (
+            "      - id: codescene-token\n",
+            "      - id: codescene-token\n        continue-on-error: true\n",
+            "declares `continue-on-error`",
+        ),
         ("secrets.CS_ACCESS_TOKEN != ''", "true", "exactly one token check step"),
         (
             f"      - id: codescene-token\n        run: {CHECK_COMMAND}\n",
@@ -129,6 +139,8 @@ def test_the_job_group_and_triggers_are_pinned(
     ids=[
         "check_behind_an_if",
         "check_without_an_id",
+        "check_behind_a_shell",
+        "check_allowed_to_fail",
         "check_command_changed",
         "check_deleted",
         "guard_on_the_environment",
@@ -141,3 +153,21 @@ def test_the_token_check_is_exact(old: str, new: str, expected: str) -> None:
     assert old in source, old
     findings = publisher_rules.publisher_findings(parse(source.replace(old, new, 1)))
     assert any(expected in finding for finding in findings), findings
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "          installer-checksum: '0'\n",
+        "          installer-checksum: ${{ vars.CODESCENE_CLI_SHA256 }}\n",
+    ],
+    ids=["input", "variable"],
+)
+def test_the_retired_digest_is_refused_in_the_publisher(line: str) -> None:
+    """The retired digest on the upload step is named on the publisher too."""
+    source = publisher().replace(
+        "          access-token:", line + "          access-token:"
+    )
+    findings = publisher_rules.publisher_findings(parse(source))
+    assert len(findings) == 1, findings
+    assert "retired installer digest" in findings[0], findings

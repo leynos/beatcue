@@ -6,7 +6,7 @@ fixture case can assert which clause fired.
 
 from __future__ import annotations
 
-from codescene_contract import reader
+from codescene_contract import reader, rules
 from codescene_contract.rules import (
     ACCESS_TOKEN,
     COVERAGE_CLI,
@@ -195,7 +195,8 @@ def _is_keyed_on_the_ref(block: object) -> bool:
     """Return whether a concurrency group is exactly the workflow and the ref.
 
     One group per ref, never per event: runs never overlap, and the survivor of
-    any replacement is the newest trigger, so uploads land in commit order. A
+    any replacement is the newest trigger, so triggered runs upload in commit
+    order; a manual re-run of an older run is an operator action outside that. A
     group keyed on the event as well lets an earlier dispatch finish after a
     newer push and upload older coverage last. Every level is read, since a
     job-level group of another shape overrides the workflow's.
@@ -240,6 +241,8 @@ def _reachability_findings(workflow: object) -> list[str]:
 def publisher_findings(workflow: object) -> list[str]:
     """Return the reasons a main publisher fails to publish what CV-005 requires."""
     findings = _reachability_findings(workflow)
+    if rules.names_the_retired_digest(workflow):
+        findings.append("the publisher names the retired installer digest")
     triggers = frozenset(reader.trigger_names(workflow))
     if triggers != PUBLISHER_TRIGGERS:
         findings.append(

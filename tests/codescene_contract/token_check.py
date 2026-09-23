@@ -32,11 +32,19 @@ def check_id(workflow: object) -> str | None:
     return reader.get_str(checks[0], "id") if len(checks) == 1 else None
 
 
+# The keys the token check step may declare, besides its absent `if:`. Anything
+# else can stop it answering while it still reads as present: a `shell` of
+# `bash -c 'exit 0; {0}'` runs nothing, and `continue-on-error` lets a failed
+# write pass, so the upload skips forever either way.
+CHECK_STEP_KEYS = frozenset({"id", "name", "run"})
+
+
 def check_findings(workflow: object) -> list[str]:
     """Return the reasons the token check step is missing or cannot be trusted.
 
     The check must exist exactly once (deleted, the upload skips forever),
-    carry an id the upload can read, and run with no ``if:``.
+    carry an id the upload can read, run with no ``if:``, and declare nothing
+    beyond ``CHECK_STEP_KEYS``.
     """
     checks = check_steps(workflow)
     if len(checks) != 1:
@@ -47,6 +55,11 @@ def check_findings(workflow: object) -> list[str]:
             )
         ]
     check = checks[0]
+    extra_keys = [
+        f"the token check step declares `{key}`"
+        for key in check
+        if key != "if" and key not in CHECK_STEP_KEYS
+    ]
     return [
         f"the token check step {reason}"
         for is_broken, reason in (
@@ -54,4 +67,4 @@ def check_findings(workflow: object) -> list[str]:
             (reader.get(check, "if") is not None, "carries an `if:`"),
         )
         if is_broken
-    ]
+    ] + extra_keys
