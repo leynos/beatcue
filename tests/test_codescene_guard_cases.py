@@ -1,4 +1,4 @@
-"""Drive the publisher's exact guard, keyed group and pinned triggers.
+"""Drive the publisher's exact guard, pinned group and pinned triggers.
 
 Split from ``test_codescene_publisher_cases.py`` under the repository's
 400-line cap. Each case is a condition, group or trigger set that the looser
@@ -44,21 +44,32 @@ def test_a_guard_that_stops_or_inverts_the_upload_is_refused(upload_if: str) -> 
 @pytest.mark.parametrize(
     "group",
     [
+        "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}",
+        "${{ github.workflow }}-${{ github.event_name }}",
+        "${{ github.workflow }}-github.ref",
         "pub-${{ github.ref }}",
-        "pub-${{ github.event_name }}",
-        "coverage-main-github.ref-github.event_name",
-        "coverage-main-github.ref-${{ github.event_name }}",
     ],
-    ids=["ref_only", "event_only", "literal_keys", "literal_ref"],
+    ids=["keyed_on_the_event_too", "keyed_on_the_event_only", "literal_ref", "renamed"],
 )
-def test_the_group_is_keyed_on_the_evaluated_ref_and_event(group: str) -> None:
-    """A group missing either evaluated key lets a dispatch displace a push."""
+def test_the_group_is_exactly_the_workflow_and_ref(group: str) -> None:
+    """Any other group lets uploads land out of commit order, or keys nothing."""
     concurrency = f"concurrency:\n  group: {group}\n  cancel-in-progress: false"
     findings = publisher_rules.publisher_findings(
         parse(publisher(concurrency=concurrency))
     )
     assert len(findings) == 1, findings
-    assert "a dispatch can replace a pending push" in findings[0], findings
+    assert "not exactly" in findings[0], findings
+
+
+def test_spacing_inside_the_group_is_not_its_shape() -> None:
+    """The group is compared with its whitespace removed."""
+    concurrency = (
+        "concurrency:\n  group: ${{github.workflow}}-${{  github.ref  }}\n"
+        "  cancel-in-progress: false"
+    )
+    assert not publisher_rules.publisher_findings(
+        parse(publisher(concurrency=concurrency))
+    )
 
 
 @pytest.mark.parametrize(
@@ -67,7 +78,7 @@ def test_the_group_is_keyed_on_the_evaluated_ref_and_event(group: str) -> None:
         (
             "  coverage:\n",
             "  coverage:\n    concurrency:\n      group: upload\n",
-            "a dispatch can replace a pending push",
+            "not exactly",
         ),
         (
             "  workflow_dispatch:\n",

@@ -62,7 +62,7 @@ jobs:
 # The upload guard's token conjunct: the check step's answer.
 AVAILABLE = "steps.codescene-token.outputs.available == 'true'"
 NEVER_CANCEL = (
-    "concurrency:\n  group: pub-${{ github.ref }}-${{ github.event_name }}\n"
+    "concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n"
     "  cancel-in-progress: false"
 )
 GUARD = f"${{{{ {AVAILABLE} && github.ref == 'refs/heads/main' }}}}"
@@ -140,7 +140,7 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
         (
             "concurrency:\n  group: pub\n  cancel-in-progress: false",
             GUARD,
-            "a dispatch can replace a pending push",
+            "not exactly",
         ),
     ],
     ids=[
@@ -153,7 +153,7 @@ def assert_one_finding(findings: list[str], clause: str | None) -> None:
         "cancels",
         "cancels_by_expression",
         "no_group",
-        "dispatches_share_the_group",
+        "constant_group",
     ],
 )
 def test_the_publisher_rule_names_the_clause_broken(

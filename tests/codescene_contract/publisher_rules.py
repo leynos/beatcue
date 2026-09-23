@@ -6,8 +6,6 @@ fixture case can assert which clause fired.
 
 from __future__ import annotations
 
-import re
-
 from codescene_contract import reader
 from codescene_contract.rules import (
     ACCESS_TOKEN,
@@ -36,10 +34,8 @@ PULL_REQUEST_GUARD = "github.event_name == 'pull_request'"
 # The triggers the publisher answers, exactly: a push to `main` writes the
 # baseline and uploads, and a dispatch measures without advancing it.
 PUBLISHER_TRIGGERS = frozenset({"push", "workflow_dispatch"})
-# A group key must be the evaluated expression; a literal `github.ref` in the
-# group names the word and keys nothing.
-_REF_KEY = re.compile(r"\$\{\{\s*github\.ref\s*\}\}")
-_EVENT_KEY = re.compile(r"\$\{\{\s*github\.event_name\s*\}\}")
+# The publisher's concurrency group, exactly, whitespace removed.
+PUBLISHER_GROUP = "${{github.workflow}}-${{github.ref}}"
 
 
 def publishes_from_main(workflow: object) -> bool:
@@ -187,32 +183,29 @@ def _concurrency_findings(workflow: object) -> list[str]:
         not in {None, False}
     )
     findings.extend(
-        "a dispatch can replace a pending push in the publisher's group"
+        "the publisher's concurrency group is not exactly "
+        "`${{ github.workflow }}-${{ github.ref }}`"
         for block in blocks
-        if not _separates_events(block)
+        if not _is_keyed_on_the_ref(block)
     )
     return findings
 
 
-def _separates_events(block: object) -> bool:
-    """Return whether a concurrency group is keyed on the evaluated ref and event.
+def _is_keyed_on_the_ref(block: object) -> bool:
+    """Return whether a concurrency group is exactly the workflow and the ref.
 
-    GitHub keeps one pending run per group and a newer arrival replaces it.
-    With a constant group a branch dispatch replaces main's pending push; with
-    a ref-only group a dispatch on main does, and only a push writes the
-    baseline. Every level is read, since a constant job group serializes the
-    upload job across refs and events alike.
+    One group per ref, never per event: runs never overlap, and the survivor of
+    any replacement is the newest trigger, so uploads land in commit order. A
+    group keyed on the event as well lets an earlier dispatch finish after a
+    newer push and upload older coverage last. Every level is read, since a
+    job-level group of another shape overrides the workflow's.
     """
     group = (
         block
         if isinstance(block, str)
         else reader.get_str(reader.as_mapping(block), "group")
     )
-    return (
-        group is not None
-        and _REF_KEY.search(group) is not None
-        and _EVENT_KEY.search(group) is not None
-    )
+    return group is not None and "".join(group.split()) == PUBLISHER_GROUP
 
 
 def _reachability_findings(workflow: object) -> list[str]:
