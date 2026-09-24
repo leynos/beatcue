@@ -159,10 +159,8 @@ def _concurrency_findings(workflow: object) -> list[str]:
 
     A cancelled publisher abandons both its upload and its baseline write. Any
     ``cancel-in-progress`` other than an absent key or a literal ``false`` is
-    refused, an expression included. GitHub also keeps one pending run per
-    group and a newer arrival replaces it, so a dispatch sharing the pushes'
-    group could replace a pending push, and a dispatch never advances the
-    baseline: a dispatchable publisher's group must name the event.
+    refused, an expression included. The group is keyed on the ref alone, so
+    runs for ``main`` never overlap; see ``_is_keyed_on_the_ref``.
     """
     group = reader.get(reader.as_mapping(workflow), "concurrency")
     findings = (
@@ -194,12 +192,12 @@ def _concurrency_findings(workflow: object) -> list[str]:
 def _is_keyed_on_the_ref(block: object) -> bool:
     """Return whether a concurrency group is exactly the workflow and the ref.
 
-    One group per ref, never per event: runs never overlap, and the survivor of
-    any replacement is the newest trigger, so triggered runs upload in commit
-    order; a manual re-run of an older run is an operator action outside that. A
-    group keyed on the event as well lets an earlier dispatch finish after a
-    newer push and upload older coverage last. Every level is read, since a
-    job-level group of another shape overrides the workflow's.
+    One group per ref, never per event: runs never overlap, and a newer trigger
+    replaces an older pending run rather than queueing behind it. That is not a
+    promise of commit order, since GitHub does not promise to start runs in
+    trigger order. A group keyed on the event as well lets a dispatch and a
+    push for ``main`` run at once and upload in either order. Every level is
+    read, since a job-level group of another shape overrides the workflow's.
     """
     group = (
         block

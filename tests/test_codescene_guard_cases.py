@@ -171,3 +171,29 @@ def test_the_retired_digest_is_refused_in_the_publisher(line: str) -> None:
     findings = publisher_rules.publisher_findings(parse(source))
     assert len(findings) == 1, findings
     assert "retired installer digest" in findings[0], findings
+
+
+# The token check step as the publisher fixture writes it.
+TOKEN_CHECK = f"      - id: codescene-token\n        run: {CHECK_COMMAND}\n"
+
+
+@pytest.mark.parametrize(
+    "placed",
+    [
+        "@REST@" + TOKEN_CHECK,
+        "@REST@  token:\n    steps:\n" + TOKEN_CHECK,
+    ],
+    ids=["after_the_upload", "in_another_job"],
+)
+def test_the_token_check_precedes_the_upload_in_its_job(placed: str) -> None:
+    """A check the upload cannot read, later or in another job, is named alone.
+
+    A ``steps.<id>`` output resolves only later in the same job, so either
+    placement leaves the upload skipped on every push.
+    """
+    source = publisher()
+    assert TOKEN_CHECK in source
+    moved = placed.replace("@REST@", source.replace(TOKEN_CHECK, "", 1))
+    findings = publisher_rules.publisher_findings(parse(moved))
+    assert len(findings) == 1, findings
+    assert "before every upload" in findings[0], findings
