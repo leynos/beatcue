@@ -1,15 +1,15 @@
-"""Tests that CI installs nothing without a version, and runs nothing unverified.
+"""Tests that CI installs nothing without a version.
 
 An unpinned linter is what turned `main` red on 2026-07-30 and kept it red:
 `uv tool install ty` and `uv tool install ruff` silently followed upstream, and
-the first release with a new rule failed a gate nobody had changed. The
-CodeScene installer had the mirror-image problem: it was piped straight into
-`bash`, so the digest comparison that followed guarded code that had already
-run, against a file the pipe had never written.
+the first release with a new rule failed a gate nobody had changed.
 
-Reviewing a workflow by eye does not catch the next one, so both are contracts.
+Reviewing a workflow by eye does not catch the next one, so this is a contract.
 Every assertion matches the command in the workflow rather than a comment or a
-step name near it, and each is mutation-tested by a sibling test.
+step name near it, and each is mutation-tested by a sibling test. The CodeScene
+CLI is no longer installed here: the shared upload action on `main` selects its
+archive from a committed manifest and verifies the digest itself, and
+`tests/test_codescene_contract.py` keeps it off the pull-request lane.
 """
 
 from __future__ import annotations
@@ -43,18 +43,6 @@ EXACT_VERSION = r"\d+(?:\.\d+)+(?:[-.][0-9A-Za-z][0-9A-Za-z.]*)?"
 PINNED = re.compile(rf"^@?[A-Za-z0-9._/-]+(?:==|@){EXACT_VERSION}$")
 LINE_CONTINUATION = re.compile(r"\\\s*$")
 SHELL_VARIABLE = re.compile(r"\$\{(?P<name>[A-Za-z_][A-Za-z0-9_]*)\}")
-
-# The CodeScene installer, which is fetched rather than installed by a package
-# manager and so needs its own three assertions.
-INSTALLER_FILE = "install-cs-coverage-tool.sh"
-CURL_TO_BASH = re.compile(r"curl[^\n|]*\|\s*bash")
-CURL_TO_FILE = re.compile(rf"curl\b[^\n]*-o\s+{re.escape(INSTALLER_FILE)}")
-_QUOTED_FILE = re.escape(INSTALLER_FILE)
-DIGEST_CHECK = re.compile(
-    rf"\$\{{CODESCENE_CLI_SHA256\}}\s+{_QUOTED_FILE}\"?\s*\|\s*sha256sum -c"
-)
-DIGEST_REQUIRED = re.compile(r'if \[ -z "\$\{CODESCENE_CLI_SHA256:-\}" \]')
-RUN_INSTALLER = re.compile(rf"^\s*bash {re.escape(INSTALLER_FILE)}\b", re.MULTILINE)
 
 
 def _installed_arguments(text: str) -> cabc.Iterator[tuple[str, str]]:
@@ -261,36 +249,3 @@ class TestToolPins:
             A package selector naming exactly one version.
         """
         assert _is_pinned(selector)
-
-
-class TestCodeSceneInstaller:
-    """The CodeScene installer is verified before it is executed."""
-
-    def test_the_installer_is_never_piped_into_a_shell(self) -> None:
-        """`curl ... | bash` runs the script before anything can check it."""
-        assert not CURL_TO_BASH.search(WORKFLOW_TEXT)
-
-    def test_the_installer_is_downloaded_verified_then_run(self) -> None:
-        """The three steps appear, in that order, in the workflow."""
-        download = CURL_TO_FILE.search(WORKFLOW_TEXT)
-        verify = DIGEST_CHECK.search(WORKFLOW_TEXT)
-        execute = RUN_INSTALLER.search(WORKFLOW_TEXT)
-
-        assert download is not None, "the installer is not downloaded to a file"
-        assert verify is not None, "the downloaded installer's digest is not checked"
-        assert execute is not None, "the downloaded installer is never executed"
-        assert download.start() < verify.start() < execute.start(), (
-            "the digest must be checked after the download and before the run"
-        )
-
-    def test_a_missing_digest_fails_the_step(self) -> None:
-        """An absent `CODESCENE_CLI_SHA256` must not mean "skip the check"."""
-        assert DIGEST_REQUIRED.search(WORKFLOW_TEXT), (
-            "the step must refuse to run when CODESCENE_CLI_SHA256 is unset"
-        )
-
-    def test_the_pipe_assertion_rejects_the_shape_it_guards(self) -> None:
-        """Mutation check for the pipe assertion."""
-        assert CURL_TO_BASH.search(
-            "curl -fsSL https://example.test/x.sh | bash -s -- -y"
-        )

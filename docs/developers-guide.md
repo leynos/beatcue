@@ -472,15 +472,15 @@ what turned `main` red on 2026-07-30 and kept it red for six weeks:
 `uv tool install ty` and `uv tool install ruff` followed upstream, and the
 first release carrying a new rule failed a gate nobody had touched.
 
-| Tool                         | Where the version lives                                     |
-| ---------------------------- | ----------------------------------------------------------- |
-| `ruff`                       | the `dev` dependency group, resolved in `uv.lock`           |
-| `ty`                         | the `dev` dependency group, resolved in `uv.lock`           |
-| `mbake`                      | `MBAKE_VERSION` in `ci.yml`                                 |
-| `markdownlint-cli2`          | the pinned markdownlint-cli2 action SHA in `ci.yml`         |
-| `mdtablefix`                 | the `version` input of the install step in `ci.yml`         |
-| `slipcover`, `pytest-forked` | `SLIPCOVER_VERSION` and `PYTEST_FORKED_VERSION` in `ci.yml` |
-| `typos`                      | `TYPOS_VERSION` in the Makefile                             |
+| Tool                | Where the version lives                                |
+| ------------------- | ------------------------------------------------------ |
+| `ruff`              | the `dev` dependency group, resolved in `uv.lock`      |
+| `ty`                | the `dev` dependency group, resolved in `uv.lock`      |
+| `mbake`             | `MBAKE_VERSION` in `ci.yml`                            |
+| `markdownlint-cli2` | the pinned markdownlint-cli2 action SHA in `ci.yml`    |
+| `mdtablefix`        | the `version` input of the install step in `ci.yml`    |
+| coverage tooling    | the pinned shared coverage action revision in `ci.yml` |
+| `typos`             | `TYPOS_VERSION` in the Makefile                        |
 
 `ruff` and `ty` are development dependencies rather than workflow installs, so
 one lockfile governs the local gate and the CI gate and dependabot moves both
@@ -493,15 +493,71 @@ range is not a pin either: `@latest`, `^0.23`, `~0.23.0`, `1.*` and `>=1.1.0`
 are each rejected by name in the test. It matches the install commands
 themselves, not the surrounding comments, and carries its own mutation check.
 
-The same file holds the CodeScene installer's contract. That installer is
-fetched from the network rather than from a package manager, so it is
-downloaded to a file, checked against `CODESCENE_CLI_SHA256`, and only then
-executed. Piping `curl` into `bash` runs the script before anything can check
-it, and the digest comparison that used to follow compared against a file the
-pipe had never written, so it could not have passed. The digest variable is
-required, not optional: an unset variable must not quietly mean "run whatever
-the server sends". The contract asserts the absence of the pipe, the
-download-verify-execute order, and the refusal to proceed without a digest.
+### Coverage workflow ownership
+
+Coverage has two workflows, and the split is a contract (concordat's CV-005,
+`main-owned-codescene-coverage`), not a convention.
+[ADR 010](adr-010-main-owns-coverage-publication.md) records the decision.
+
+- `ci.yml` measures Cobertura coverage on every pull request with the shared
+  `generate-coverage` action (`language: python`, `python-source: ./beatcue`, a
+  serial run), `with-ratchet: 'true'` and `publish-artefact: 'false'`. A drop
+  against the ratchet baseline fails the pull request. The lane holds no
+  CodeScene credential, has no upload step, and never contacts CodeScene.
+  `ci.yml` also runs on pushes to `main`, so its coverage step carries
+  `if: github.event_name == 'pull_request'`: on a push it would race the
+  publisher to write the baseline.
+- `coverage-main.yml` runs on every push to `main` and on dispatch. It measures
+  the same source with the same action and inputs. A push to `main` writes the
+  ratchet baseline every pull request compares against; a dispatch reads it
+  without advancing it. The lane then uploads the report to CodeScene in
+  explicit upload mode. A check step reports whether the secret is set by
+  evaluating `${{ secrets.CS_ACCESS_TOKEN != '' }}` into its output, and no
+  step holds the token in its `env`, because the composite upload action would
+  hand a step `env` to its nested artefact-upload and cache steps; the upload
+  step passes the secret as its `access-token` input. The upload's `if:` is
+  exactly
+  `steps.codescene-token.outputs.available == 'true' && github.ref == 'refs/heads/main'`
+  (a dispatch can name any branch, and any further conjunct could only narrow,
+  defeat, or invert the upload), and the workflow's concurrency group, exactly
+  `${{ github.workflow }}-${{ github.ref }}` at every level, never cancels a
+  run in progress, so a burst of merges cannot abandon a baseline write. Runs
+  for `main` never overlap, and a newer trigger replaces an older pending run
+  rather than queueing behind it. GitHub does not promise to start runs in
+  trigger order, so this does not guarantee commit order. A manual re-run of an
+  older run keeps its SHA and its run id: it republishes that commit's coverage
+  to CodeScene, but replaces no ratchet baseline unless the original run saved
+  none. The workflow answers exactly a push to `main` and `workflow_dispatch`,
+  and the coverage selection both lanes run is pinned in the contract.
+
+One known exception: a Dependabot pull request merged by the automerge workflow
+with `GITHUB_TOKEN` fires no push event, so that merge is neither measured nor
+uploaded until the next push to `main`; shared-actions #518 tracks the fix.
+There is deliberately no `schedule` trigger to paper over it. Likewise, a
+dispatch that replaces a pending push uploads the same or a newer commit, but
+the ratchet baseline is saved only on a push, so it stays one commit behind
+until the next push; shared-actions #518 covers that too.
+
+The reasons are both quiet failures: a pull request from a fork cannot read the
+secret, so an upload there is silently skipped, and CodeScene accepts an upload
+only for a branch it analyses, which a pull request head is not.
+
+`tests/test_codescene_contract.py` enforces the split over every workflow a
+pull request can reach, following local reusable-workflow calls transitively,
+and over every other workflow too: only the publisher may hold the token, name
+the CodeScene host, run the CLI or the uploader, or touch the retired
+`CODESCENE_CLI_SHA256` variable, whose refresher workflow is gone. The readers
+and rules live in `tests/codescene_contract/`, and the
+`tests/test_codescene_*_cases.py` files drive each rule against breaching
+fixtures. The pull-request surface is seeded by every event that runs a
+workflow for a pull request (`pull_request`, `pull_request_target`,
+`merge_group`, the two review events, `issue_comment`, `workflow_run`, and any
+push not limited to exactly `branches: [main]` or to tags), and the push side
+is followed the same way: a workflow a push starts, or one it calls, may run a
+ratcheted coverage step only behind `if: github.event_name == 'pull_request'`,
+so the publisher stays the baseline's only writer. When adding a workflow, keep
+CodeScene, `cs-coverage`, and the token out of it unless it is the publisher;
+the contract names the clause a change breaks.
 
 ## Documentation updates
 

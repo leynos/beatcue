@@ -8,9 +8,6 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
-    env:
-      CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-      CODESCENE_CLI_SHA256: ${{ vars.CODESCENE_CLI_SHA256 }}
     steps:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
@@ -65,55 +62,28 @@ jobs:
       - name: Run typechecker
         run: make typecheck
 
-      - name: Run tests with coverage
-        env:
-          SLIPCOVER_VERSION: '1.1.0'
-          PYTEST_FORKED_VERSION: '1.7.5'
-        run: |
-          uv pip install \
-            "slipcover==${SLIPCOVER_VERSION}" \
-            "pytest-forked==${PYTEST_FORKED_VERSION}"
-          uv run python -m slipcover \
-            --source=./beatcue \
-            --omit="*/unittests/*,*/.venv/*" \
-            --branch \
-            --out coverage.xml \
-            -m pytest --forked -v
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v7
+      - name: Test and Measure Coverage
+        # Coverage here is for the local ratchet and nothing else. The report
+        # is neither archived (`publish-artefact: 'false'`) nor sent to
+        # CodeScene: a pull request from a fork cannot read
+        # `secrets.CS_ACCESS_TOKEN`, so an upload here is silently inert for
+        # exactly the changes that most need reviewing, and CodeScene accepts
+        # an upload only for a branch it analyses, which a pull request head
+        # is not. `coverage-main.yml` owns both persistent outputs and runs
+        # this suite on every push to main, so this step is confined to pull
+        # requests: on a push it would race the publisher to write the
+        # ratchet baseline. The baseline paths are the action's defaults on
+        # both sides, so this ratchet reads the baseline that workflow writes.
+        #
+        # The source scope and the serial run match the invocation this step
+        # replaced, which measured the same files and lines.
+        if: github.event_name == 'pull_request'
+        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
         with:
-          name: coverage
-          path: coverage.xml
-
-      - name: Install CodeScene Coverage CLI
-        if: env.CS_ACCESS_TOKEN != ''
-        env:
-          CODESCENE_INSTALLER_URL: https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
-        run: |
-          set -euo pipefail
-          # Download, verify, then execute. Piping curl into bash executes the
-          # script before anything can check it, which made the digest
-          # comparison that used to follow decorative; it also compared against
-          # a file the pipe never wrote, so it could not have passed. The digest
-          # is required rather than optional for the same reason: an absent
-          # variable must not silently mean "run whatever the server sends".
-          if [ -z "${CODESCENE_CLI_SHA256:-}" ]; then
-            echo "::error::CODESCENE_CLI_SHA256 must name the installer digest" >&2
-            exit 1
-          fi
-          curl -fsSL "${CODESCENE_INSTALLER_URL}" -o install-cs-coverage-tool.sh
-          echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
-          bash install-cs-coverage-tool.sh -y
-
-      - name: Upload coverage to CodeScene
-        if: env.CS_ACCESS_TOKEN != ''
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "coverage.xml not found!"
-            exit 1
-          fi
-          cs-coverage upload \
-            --format "cobertura" \
-            --metric "line-coverage" \
-            coverage.xml
+          language: python
+          python-source: ./beatcue
+          output-path: coverage.xml
+          format: cobertura
+          pytest-workers: ''
+          with-ratchet: 'true'
+          publish-artefact: 'false'
