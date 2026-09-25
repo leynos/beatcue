@@ -12,11 +12,10 @@ UV ?= uv
 TOOLS = $(MDLINT)
 VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
-PYLINT_PYTHON ?= pypy
+PYLINT_PYTHON ?= pypy@3.12
+PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
-PYLINT_PYPY_SHIM_REF ?= 726d09f968b4d729ee4b29c71fc732e744854f3b
-PYLINT_PYPY_SHIM = git+https://github.com/leynos/pylint-pypy-shim.git@$(PYLINT_PYPY_SHIM_REF)
-PYLINT = $(UV_ENV) $(UV) tool run --python $(PYLINT_PYTHON) --from '$(PYLINT_PYPY_SHIM)' pylint-pypy
+PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' pylint
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
 
