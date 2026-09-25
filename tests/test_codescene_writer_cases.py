@@ -58,6 +58,7 @@ def test_a_callee_of_a_push_lane_is_a_second_writer() -> None:
         "on: push\njobs: {}\n",
         "on:\n  push:\n    branches: ['**']\njobs: {}\n",
         "on:\n  push:\n    branches-ignore: [gh-pages]\njobs: {}\n",
+        "on:\n  push:\n    tags: ['v*']\n    branches-ignore: [gh-pages]\njobs: {}\n",
         "on:\n  push:\n    branches: [main, 'feature/*']\njobs: {}\n",
     ],
     ids=[
@@ -69,6 +70,7 @@ def test_a_callee_of_a_push_lane_is_a_second_writer() -> None:
         "push_every_branch",
         "push_glob",
         "push_ignoring",
+        "push_tags_and_ignoring",
         "push_main_and_more",
     ],
 )
@@ -82,9 +84,10 @@ def test_every_pull_request_event_seeds_the_closure(source: str) -> None:
     [
         "on:\n  push:\n    branches: [main]\njobs: {}\n",
         "on:\n  push:\n    tags: ['v*']\njobs: {}\n",
+        "on:\n  push:\n    tags: ['v*']\n    branches-ignore: ['**']\njobs: {}\n",
         "on:\n  schedule:\n    - cron: '0 0 * * *'\njobs: {}\n",
     ],
-    ids=["push_main", "push_tags", "schedule"],
+    ids=["push_main", "push_tags", "push_tags_ignoring_every_branch", "schedule"],
 )
 def test_trunk_tag_and_scheduled_runs_stay_off_the_surface(source: str) -> None:
     """A trunk push, a tag push and a schedule do not seed the surface.

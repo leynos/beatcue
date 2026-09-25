@@ -190,6 +190,8 @@ def _pushes_beyond_main(workflow: object) -> bool:
     A same-repository pull request's head branch is pushed to, and a push runs
     with the repository's secrets, so a push trigger is on the pull-request
     surface unless it is limited to exactly ``branches: [main]`` or to tags.
+    A ``branches-ignore`` beside ``tags`` still admits other branches unless
+    it lists ``**``.
     """
     if "push" not in trigger_names(workflow):
         return False
@@ -198,7 +200,20 @@ def _pushes_beyond_main(workflow: object) -> bool:
         return True
     if "branches" in push:
         return push["branches"] != ["main"]
-    return "tags" not in push
+    return "tags" not in push or _ignores_some_branches_only(push)
+
+
+def _ignores_some_branches_only(push: Mapping) -> bool:
+    """Return whether a push's ``branches-ignore`` still admits some branch.
+
+    ``**`` matches every branch name, so a list naming it admits none and a
+    ``tags`` beside it makes the trigger tags-only. Any other list admits the
+    branches it does not match.
+    """
+    if "branches-ignore" not in push:
+        return False
+    ignored = push["branches-ignore"]
+    return not (isinstance(ignored, list) and "**" in ignored)
 
 
 def jobs(workflow: object) -> list[tuple[str, Mapping]]:
