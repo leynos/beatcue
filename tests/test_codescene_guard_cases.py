@@ -239,3 +239,25 @@ def test_the_token_check_runs_under_no_inherited_shell(
         assert "defaults.run.shell" in findings[0], findings
     else:
         assert not findings, findings
+
+
+def test_a_check_between_two_uploads_is_refused() -> None:
+    """A check after the first of two uploads is named.
+
+    With one upload only, a rule that read just the last upload would pass.
+    """
+    head, upload = publisher().split(TOKEN_CHECK)
+    findings = publisher_rules.publisher_findings(
+        parse(head + upload + TOKEN_CHECK + upload)
+    )
+    assert len(findings) == 1, findings
+    assert "before every upload" in findings[0], findings
+
+
+def test_a_check_before_two_uploads_is_accepted() -> None:
+    """A check before both of two uploads is not named: the rule stays narrow."""
+    head, upload = publisher().split(TOKEN_CHECK)
+    findings = publisher_rules.publisher_findings(
+        parse(head + TOKEN_CHECK + upload + upload)
+    )
+    assert not findings, findings

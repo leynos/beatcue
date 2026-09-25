@@ -84,9 +84,10 @@ def test_every_pull_request_event_seeds_the_closure(source: str) -> None:
     [
         "on:\n  push:\n    branches: [main]\njobs: {}\n",
         "on:\n  push:\n    tags: ['v*']\njobs: {}\n",
+        "on:\n  push:\n    tags: ['v*']\n    branches-ignore: ['**']\njobs: {}\n",
         "on:\n  schedule:\n    - cron: '0 0 * * *'\njobs: {}\n",
     ],
-    ids=["push_main", "push_tags", "schedule"],
+    ids=["push_main", "push_tags", "push_tags_ignoring_every_branch", "schedule"],
 )
 def test_trunk_tag_and_scheduled_runs_stay_off_the_surface(source: str) -> None:
     """A trunk push, a tag push and a schedule do not seed the surface.
