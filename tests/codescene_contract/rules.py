@@ -141,6 +141,8 @@ def stray_findings(workflow: object) -> list[str]:
     publisher clauses only the publisher, so a dispatch-only or tag-triggered
     workflow would escape both. Only the publisher may hold the token, name the
     host, run the CLI or the uploader, or touch the retired installer digest.
+    A computed secret name is refused here too, since
+    ``secrets[format('CS_{0}', 'ACCESS_TOKEN')]`` names none of them.
     """
     text = folded(workflow)
     findings = [
@@ -151,6 +153,10 @@ def stray_findings(workflow: object) -> list[str]:
         )
         if needle in text
     ]
+    if computes_a_secret(text):
+        findings.append(
+            "a workflow other than the publisher reaches a secret by a computed name"
+        )
     if names_the_retired_digest(workflow):
         findings.append(
             "a workflow other than the publisher names the retired installer digest"

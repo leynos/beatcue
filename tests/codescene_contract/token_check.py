@@ -60,6 +60,29 @@ def _check_precedes_every_upload(workflow: object, check: reader.Mapping) -> boo
     return True
 
 
+def _sets_a_default_shell(scope: reader.Mapping | None) -> bool:
+    """Return whether a workflow or job sets a default shell for ``run`` steps."""
+    defaults = reader.as_mapping(reader.get(scope, "defaults"))
+    run = reader.as_mapping(reader.get(defaults, "run"))
+    return reader.get(run, "shell") is not None
+
+
+def _check_inherits_a_shell(workflow: object, check: reader.Mapping) -> bool:
+    """Return whether the token check runs under an inherited default shell.
+
+    A workflow's or the check's own job's ``defaults.run.shell`` wraps the
+    command exactly as a step ``shell`` would, so it is refused for the same
+    reason; a default on another job does not reach the check.
+    """
+    if _sets_a_default_shell(reader.as_mapping(workflow)):
+        return True
+    return any(
+        _sets_a_default_shell(job)
+        and any(step is check for step in reader.job_steps(job))
+        for _, job in reader.jobs(workflow)
+    )
+
+
 def check_findings(workflow: object) -> list[str]:
     """Return the reasons the token check step is missing or cannot be trusted.
 
@@ -87,6 +110,10 @@ def check_findings(workflow: object) -> list[str]:
         for is_broken, reason in (
             (reader.get_str(check, "id") is None, "has no id"),
             (reader.get(check, "if") is not None, "carries an `if:`"),
+            (
+                _check_inherits_a_shell(workflow, check),
+                "runs under a `defaults.run.shell`",
+            ),
             (
                 not _check_precedes_every_upload(workflow, check),
                 "does not run before every upload in the upload's job",

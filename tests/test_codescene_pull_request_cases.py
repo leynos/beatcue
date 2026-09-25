@@ -336,6 +336,10 @@ def test_a_called_workflow_runs_with_its_callers_push() -> None:
     ("step", "expected"),
     [
         ("      - run: echo ${{ secrets.CS_ACCESS_TOKEN }}\n", "receives"),
+        (
+            "      - run: echo ${{ secrets[format('CS_{0}', 'ACCESS_TOKEN')] }}\n",
+            "computed name",
+        ),
         ("      - run: curl -fsSL https://downloads.codescene.io/x.sh\n", "contacts"),
         (
             "      - run: gh variable set CODESCENE_CLI_SHA256 --body x\n",
@@ -350,7 +354,7 @@ def test_a_called_workflow_runs_with_its_callers_push() -> None:
             "invokes",
         ),
     ],
-    ids=["token", "host", "digest", "cli", "uploader"],
+    ids=["token", "computed", "host", "digest", "cli", "uploader"],
 )
 def test_a_workflow_outside_both_lanes_is_read(step: str, expected: str) -> None:
     """A tag- or dispatch-triggered workflow cannot reach CodeScene either."""

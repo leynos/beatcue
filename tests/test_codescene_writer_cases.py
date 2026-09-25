@@ -58,6 +58,7 @@ def test_a_callee_of_a_push_lane_is_a_second_writer() -> None:
         "on: push\njobs: {}\n",
         "on:\n  push:\n    branches: ['**']\njobs: {}\n",
         "on:\n  push:\n    branches-ignore: [gh-pages]\njobs: {}\n",
+        "on:\n  push:\n    tags: ['v*']\n    branches-ignore: [gh-pages]\njobs: {}\n",
         "on:\n  push:\n    branches: [main, 'feature/*']\njobs: {}\n",
     ],
     ids=[
@@ -69,6 +70,7 @@ def test_a_callee_of_a_push_lane_is_a_second_writer() -> None:
         "push_every_branch",
         "push_glob",
         "push_ignoring",
+        "push_tags_and_ignoring",
         "push_main_and_more",
     ],
 )

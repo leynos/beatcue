@@ -197,3 +197,45 @@ def test_the_token_check_precedes_the_upload_in_its_job(placed: str) -> None:
     findings = publisher_rules.publisher_findings(parse(moved))
     assert len(findings) == 1, findings
     assert "before every upload" in findings[0], findings
+
+
+# A shell that runs nothing, so a step under it never writes its output.
+SILENT_SHELL = "shell: bash -c 'exit 0; {0}'"
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        ("jobs:\n", f"defaults:\n  run:\n    {SILENT_SHELL}\njobs:\n", True),
+        (
+            "  coverage:\n",
+            f"  coverage:\n    defaults:\n      run:\n        {SILENT_SHELL}\n",
+            True,
+        ),
+        (
+            "jobs:\n",
+            (
+                f"jobs:\n  other:\n    defaults:\n      run:\n        {SILENT_SHELL}\n"
+                "    steps:\n      - run: 'true'\n"
+            ),
+            False,
+        ),
+    ],
+    ids=["workflow_default_shell", "job_default_shell", "other_job_default_shell"],
+)
+def test_the_token_check_runs_under_no_inherited_shell(
+    old: str, new: str, *, expected: bool
+) -> None:
+    """A default shell over the check is named; one on another job is not.
+
+    A workflow or job ``defaults.run.shell`` wraps the check as a step
+    ``shell`` would, so the check never answers and the upload skips.
+    """
+    source = publisher()
+    assert old in source, old
+    findings = publisher_rules.publisher_findings(parse(source.replace(old, new, 1)))
+    if expected:
+        assert len(findings) == 1, findings
+        assert "defaults.run.shell" in findings[0], findings
+    else:
+        assert not findings, findings
