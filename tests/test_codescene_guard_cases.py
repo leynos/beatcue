@@ -52,7 +52,7 @@ def test_a_guard_that_stops_or_inverts_the_upload_is_refused(upload_if: str) -> 
     ids=["keyed_on_the_event_too", "keyed_on_the_event_only", "literal_ref", "renamed"],
 )
 def test_the_group_is_exactly_the_workflow_and_ref(group: str) -> None:
-    """Any other group lets triggered uploads land out of order, or keys nothing."""
+    """Any other group lets a push and a dispatch overlap, or keys nothing."""
     concurrency = f"concurrency:\n  group: {group}\n  cancel-in-progress: false"
     findings = publisher_rules.publisher_findings(
         parse(publisher(concurrency=concurrency))
