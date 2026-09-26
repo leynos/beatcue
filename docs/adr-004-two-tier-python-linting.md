@@ -3,7 +3,8 @@
 ## Status
 
 Accepted. BeatCue runs Ruff as the first lint tier and a focused Pylint pass
-through the PyPy-backed `pylint-pypy-shim` as the second lint tier.
+under PyPy as the second lint tier. See the amendment below for the current
+mechanism.
 
 ## Date
 
@@ -85,8 +86,8 @@ _Table 1: Lint architecture trade-offs._
 BeatCue chooses option C. The `lint` target depends on the `.deps` stamp, which
 runs `uv sync --group dev` only when the project environment or
 `pyproject.toml` is stale. The lint command then runs `ruff check` before
-running Pylint through the pinned `pylint-pypy-shim` tool against `beatcue` and
-`tests`.
+running Pylint through `uv tool run` against `beatcue` and `tests`. See the
+amendment below for how the second tier is currently pinned.
 
 The Pylint pass disables all messages by default and enables a curated message
 set imported from Episodic. Ruff remains responsible for the broad lint
@@ -94,10 +95,9 @@ baseline, including the shared target Python version, import policy, docstring
 style, banned deprecated `typing.*` APIs, annotation checks, and local
 complexity thresholds.
 
-The Makefile variables `PYLINT_PYTHON`, `PYLINT_TARGETS`,
-`PYLINT_PYPY_SHIM_REF`, `PYLINT_PYPY_SHIM`, and `PYLINT` document how the
-second tier is assembled. Overrides are for toolchain diagnosis, not for
-routine pull-request validation.
+The Makefile variables `PYLINT_PYTHON`, `PYLINT_VERSION`, `PYLINT_TARGETS`, and
+`PYLINT` document how the second tier is assembled. Overrides are for toolchain
+diagnosis, not for routine pull-request validation.
 
 The `UV` variable defaults to `uv`; the Makefile checks that executable before
 creating the virtual environment, syncing dependencies, or querying tools
@@ -135,17 +135,17 @@ Non-goals:
 
 ## Known risks and limitations
 
-- Managed PyPy may lag the project's target Python version. The Pylint
-  configuration disables `syntax-error` so the second tier remains useful on
-  files it can parse, while Ruff and the project type checker continue to cover
-  the Python target.
+- Managed PyPy may lag the project's target Python version. The original
+  position disabled `syntax-error` so the second tier remained useful on files
+  it could not parse, while Ruff and the project type checker continued to
+  cover the Python target; see the amendment below for the current position.
 - The second lint tier is slower than Ruff alone. Running Ruff first preserves
   fast failure for the common case.
 - The policy inherits Episodic's assumptions. BeatCue may need documented local
   exceptions as the package grows into media adapters, command execution,
   inference services, and CLI surfaces.
-- The shim pin must be advanced intentionally when upstream shim behaviour or
-  Pylint compatibility changes.
+- The Pylint version and interpreter pin must be advanced intentionally when
+  Pylint compatibility or the target Python version changes.
 
 ## Architectural rationale
 
@@ -154,3 +154,26 @@ dependency. It supports BeatCue's hexagonal architecture indirectly by making
 complexity, import discipline, logging behaviour, and resource handling visible
 before code review. It also keeps the contributor workflow simple: the Makefile
 owns tool execution, while `pyproject.toml` owns rule configuration.
+
+## Amendment (2026-09-25): plain Pylint on PyPy 3.12
+
+The Makefile no longer runs Pylint through the `pylint-pypy-shim`. It now runs
+plain Pylint under a managed PyPy interpreter:
+
+```makefile
+PYLINT_PYTHON ?= pypy@3.12
+PYLINT_VERSION ?= 4.0.9
+PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) \
+  --from 'pylint==$(PYLINT_VERSION)' pylint
+```
+
+The variables `PYLINT_PYPY_SHIM_REF` and `PYLINT_PYPY_SHIM` are gone. PyPy 8
+implements Python 3.12, and uv 0.12.19 (2026-09-25) ships it as a managed
+interpreter, so Pylint runs on it without the shim's object-build patch. The
+interpreter is pinned to `pypy@3.12`, not bare `pypy`, so a new PyPy release
+cannot change the parsed grammar without a commit.
+
+`pyproject.toml` no longer disables `syntax-error`. While it was disabled, a
+module the PyPy runtime could not parse produced no messages at all and the
+lint passed without linting it. A parse failure now fails the lint. No module
+in this repository was skipped under the previous PyPy 3.11 pin.

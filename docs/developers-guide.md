@@ -359,9 +359,8 @@ BeatCue uses the linting architecture recorded in
 two-tier:
 
 1. Ruff runs first from the project virtual environment.
-2. Pylint runs second through the pinned
-   [`pylint-pypy-shim`](https://github.com/leynos/pylint-pypy-shim) tool under
-   PyPy.
+2. Pylint runs second through `uv tool run`, pinned to a PyPy 3.12 interpreter
+   and a pinned Pylint release.
 
 Ruff is the fast, broad gate for style, import hygiene, annotation discipline,
 bug patterns, performance hints, docstring policy, and Ruff's own Pylint-style
@@ -386,7 +385,7 @@ $(PYLINT) $(PYLINT_TARGETS)
 ```
 
 Use the Makefile target rather than invoking `ruff` or `pylint` directly. This
-keeps the selected interpreter, cache directories, shim revision, and target
+keeps the selected interpreter, cache directories, Pylint version, and target
 set consistent between local development and review.
 
 ### Lint Makefile variables
@@ -401,18 +400,19 @@ The lint target is configured by these Makefile variables:
 - `.deps`: records that `uv sync --group dev` has run for the current
   `pyproject.toml` and `.venv`, avoiding an unconditional sync on every
   formatting or lint invocation.
-- `PYLINT_PYTHON`: defaults to `pypy`. This selects the interpreter used for
-  the shimmed Pylint run.
+- `PYLINT_PYTHON`: defaults to `pypy@3.12`. This pins the interpreter used for
+  the Pylint run to PyPy's Python 3.12 implementation, so a new PyPy release
+  cannot change the parsed grammar without a commit.
+- `PYLINT_VERSION`: defaults to `4.0.9`. This pins the Pylint release run by
+  `uv tool run`.
 - `PYLINT_TARGETS`: defaults to `beatcue tests`. This defines the directories
   linted by the Pylint tier.
-- `PYLINT_PYPY_SHIM_REF`: defaults to
-  `726d09f968b4d729ee4b29c71fc732e744854f3b`. This pins the shim repository
-  revision for reproducible Pylint behaviour.
-- `PYLINT_PYPY_SHIM`: defaults to the pinned
-  `git+https://github.com/leynos/pylint-pypy-shim.git` source assembled from
-  `PYLINT_PYPY_SHIM_REF`. This defines the install source used by `uv tool run`.
-- `PYLINT`: assembles the complete `uv tool run --python ... pylint-pypy`
-  command used by `make lint`.
+- `PYLINT`: assembles the complete command used by `make lint`:
+
+  ```sh
+  uv tool run --managed-python --python $(PYLINT_PYTHON) \
+    --from 'pylint==$(PYLINT_VERSION)' pylint
+  ```
 
 Override these variables only when diagnosing the lint toolchain itself. Pull
 requests should not depend on local overrides to pass.
