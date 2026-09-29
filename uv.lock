@@ -75,7 +75,7 @@ dev = [
     { name = "pytest-bdd", specifier = ">=8.1.0" },
     { name = "pytest-timeout" },
     { name = "pytest-xdist" },
-    { name = "pyyaml" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "ruff" },
     { name = "syrupy", specifier = ">=5.3" },
     { name = "ty" },

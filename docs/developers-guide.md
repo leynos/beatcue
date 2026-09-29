@@ -352,9 +352,9 @@ make typecheck
 make test
 ```
 
-The `typecheck` target adds `scripts/` as a first-party module search path. This
-matches Python's runtime path when the spelling-policy script imports its peer
-modules.
+The `typecheck` target adds `scripts/` as a first-party module search path.
+This matches Python's runtime path when the spelling-policy script imports its
+peer modules.
 
 ### Linting architecture
 
@@ -396,8 +396,8 @@ $(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) \\
 ```
 
 Use the Makefile target rather than invoking its tools directly. This keeps the
-selected interpreter, cache directories, and pinned tool versions
-consistent between local development, CI, and review.
+selected interpreter, cache directories, and pinned tool versions consistent
+between local development, CI, and review.
 
 Skylos is separately provisioned at exact release `4.33.2` with Python 3.14.
 Skylos parses source with its own runtime abstract syntax tree (AST), so the
@@ -463,6 +463,7 @@ The lint target is configured by these Makefile variables:
   uv tool run --managed-python --python $(PYLINT_PYTHON) \
     --from 'pylint==$(PYLINT_VERSION)' pylint
   ```
+
 - `SKYLOS_VERSION`: pins the separately provisioned Skylos release.
 - `SKYLOS_CLI`: assembles the command-only Python 3.14 Skylos invocation.
 - `SKYLOS`: adds the reviewed `pyproject.toml` scan configuration to

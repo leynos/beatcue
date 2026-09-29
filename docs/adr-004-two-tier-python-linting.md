@@ -2,9 +2,9 @@
 
 ## Status
 
-Accepted. BeatCue runs Ruff as the first lint tier, a focused Pylint pass
-under managed PyPy 3.12 as the second, Hecate as the third, and Skylos as the
-fourth. See the dated amendments below for the current tool mechanisms.
+Accepted. BeatCue runs Ruff as the first lint tier, a focused Pylint pass under
+managed PyPy 3.12 as the second, Hecate as the third, and Skylos as the fourth.
+See the dated amendments below for the current tool mechanisms.
 
 ## Date
 
@@ -106,12 +106,12 @@ tooling error instead of a shell-level "file not found" message.
 
 ### Amendment: blocking Skylos dead-code detection
 
-BeatCue additionally provisions Skylos as a pinned, isolated `uv tool` and
-runs it at the end of `make lint` against the production `beatcue/` package.
-The command selects only dead-code analysis, uses strict gate behaviour, and
+BeatCue additionally provisions Skylos as a pinned, isolated `uv tool` and runs
+it at the end of `make lint` against the production `beatcue/` package. The
+command selects only dead-code analysis, uses strict gate behaviour, and
 disables uploads, provenance collection, and repository-wide grep verification.
-This keeps the scan deterministic and prevents test-only references from
-making production symbols appear live.
+This keeps the scan deterministic and prevents test-only references from making
+production symbols appear live.
 
 Every finding is investigated and genuine dead code is removed. A confirmed
 false positive is recorded through `make skylos-allow` with the symbol name and
@@ -130,9 +130,9 @@ Python lint order is now:
 
 Skylos runs as an isolated, pinned tool with Python 3.14. It parses source with
 its own runtime abstract syntax tree (AST), so pinning that runtime prevents
-newer project syntax from producing phantom dead-code findings. The command-only
-Skylos macro remains separate from the scan-options macro, which lets
-`skylos-allow` dispatch `whitelist` immediately after `skylos`.
+newer project syntax from producing phantom dead-code findings. The
+command-only Skylos macro remains separate from the scan-options macro, which
+lets `skylos-allow` dispatch `whitelist` immediately after `skylos`.
 
 Skylos scans only `beatcue/` and explicitly excludes `tests/`. For verified
 dynamic callers, use a typed `[tool.skylos.dead_code.entrypoints]` rule first.

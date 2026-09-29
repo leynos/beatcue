@@ -14,6 +14,13 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 _MAKEUTIL_COMMAND: typ.Final = ("makeutil", "parse", "Makefile")
 _MAKEUTIL_REVISION: typ.Final = "29fc5a1634ffbaa18a773eed9dff1b2838a45d9c"
 _MAKEUTIL_TOOLCHAIN: typ.Final = "nightly-2026-05-28"
+_FULL_SUITE_WORKFLOWS: typ.Final = (
+    (".github/workflows/ci.yml", "lint-test"),
+    (".github/workflows/coverage-main.yml", "coverage-upload"),
+)
+_EXPECTED_LINT_STEP_NAME: typ.Final = "Run lint gates"
+_EXPECTED_MAKEUTIL_PREREQUISITE: typ.Final = "makeutil"
+_EXPECTED_MAKEUTIL_GUARD: typ.Final = "$(call ensure_tool,$@)"
 _EXPECTED_SKYLOS_VERSION: typ.Final = ("4.33.2",)
 _EXPECTED_SKYLOS_CLI: typ.Final = (
     "$(UV_ENV)",
@@ -146,15 +153,57 @@ def _recipe_commands(target: str, command: str) -> list[tuple[str, ...]]:
     return [tokens for tokens in recipe_tokens if tokens[:1] == (command,)]
 
 
-def _workflow_job(job_name: str) -> dict[str, object]:
-    """Return the named CI job from the committed workflow."""
+def _rule_for(target: str) -> dict[str, object]:
+    """Return the sole parsed Makefile rule that declares a target."""
+    rules = _objects(_makefile_report().get("rules"), subject="rules")
+    matches = [
+        rule
+        for rule in rules
+        if target in _text_sequence(rule.get("targets"), subject="rule targets")
+    ]
+    assert len(matches) == 1, (
+        f"expected one parsed Makefile rule for {target!r}, found {len(matches)}"
+    )
+    return matches[0]
+
+
+def _workflow_job(workflow_path: str, job_name: str) -> dict[str, object]:
+    """Return the named job from a committed workflow."""
     workflow = yaml.safe_load(
-        (REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        (REPOSITORY_ROOT / workflow_path).read_text(encoding="utf-8")
     )
     jobs = _mapping(
-        _mapping(workflow, subject="CI workflow").get("jobs"), subject="CI jobs"
+        _mapping(workflow, subject=f"{workflow_path} workflow").get("jobs"),
+        subject=f"{workflow_path} jobs",
     )
-    return _mapping(jobs.get(job_name), subject=f"CI job {job_name!r}")
+    return _mapping(jobs.get(job_name), subject=f"{workflow_path} job {job_name!r}")
+
+
+def _assert_makeutil_installation(workflow_path: str, job_name: str) -> None:
+    """Assert that a full-suite job independently installs pinned Makeutil."""
+    contract = f"{workflow_path} full-suite Makeutil"
+    job = _workflow_job(workflow_path, job_name)
+    environment = _mapping(job.get("env"), subject=f"{contract} environment")
+    assert environment.get("MAKEUTIL_REVISION") == _MAKEUTIL_REVISION, (
+        f"{contract} revision contract must stay pinned"
+    )
+    assert environment.get("MAKEUTIL_TOOLCHAIN") == _MAKEUTIL_TOOLCHAIN, (
+        f"{contract} toolchain contract must stay pinned"
+    )
+    steps = _objects(job.get("steps"), subject=f"{contract} steps")
+    parser_steps = [
+        step for step in steps if step.get("name") == "Install Makefile parser"
+    ]
+    assert len(parser_steps) == 1, (
+        f"{contract} must contain one Makeutil installation step"
+    )
+    command = parser_steps[0].get("run")
+    assert isinstance(command, str), (
+        f"{contract} installation step must provide a shell command"
+    )
+    assert (
+        tuple(shlex.split(command.replace("\\\n", ""))) == _MAKEUTIL_INSTALL_TOKENS
+    ), f"{contract} must pin the Makeutil installation command"
 
 
 def test_makefile_preserves_the_strict_production_skylos_contract() -> None:
@@ -185,34 +234,39 @@ def test_makefile_preserves_the_strict_production_skylos_contract() -> None:
     )
 
 
-def test_ci_installs_the_pinned_makefile_parser_for_the_full_suite() -> None:
-    """The full-suite CI job must run lint and install the pinned parser."""
-    job = _workflow_job("lint-test")
-    environment = _mapping(job.get("env"), subject="CI full-suite Makeutil environment")
-    assert environment.get("MAKEUTIL_REVISION") == _MAKEUTIL_REVISION, (
-        "CI full-suite Makeutil revision contract must stay pinned"
+def test_make_test_requires_a_present_makefile_parser() -> None:
+    """The full pytest target must verify Makeutil before running tests."""
+    test_rule = _rule_for("test")
+    prerequisites = _text_sequence(
+        test_rule.get("prerequisites"), subject="test prerequisites"
     )
-    assert environment.get("MAKEUTIL_TOOLCHAIN") == _MAKEUTIL_TOOLCHAIN, (
-        "CI full-suite Makeutil toolchain contract must stay pinned"
+    assert _EXPECTED_MAKEUTIL_PREREQUISITE in prerequisites, (
+        "make test must require the Makeutil binary"
     )
+
+    makeutil_rule = _rule_for(_EXPECTED_MAKEUTIL_PREREQUISITE)
+    recipes = _objects(makeutil_rule.get("recipes"), subject="makeutil recipes")
+    assert tuple(recipe.get("text") for recipe in recipes) == (
+        _EXPECTED_MAKEUTIL_GUARD,
+    ), "makeutil target must use the shared binary-presence check"
+
+
+def test_each_full_suite_workflow_installs_the_pinned_makefile_parser() -> None:
+    """Every full-suite CI lane provisions its own Makeutil binary."""
+    for workflow_path, job_name in _FULL_SUITE_WORKFLOWS:
+        _assert_makeutil_installation(workflow_path, job_name)
+
+
+def test_ci_runs_the_shared_lint_target() -> None:
+    """The pull-request CI job runs the shared lint target."""
+    job = _workflow_job(".github/workflows/ci.yml", "lint-test")
     steps = _objects(job.get("steps"), subject="CI full-suite steps")
     lint_steps = [
-        step
-        for step in steps
-        if step.get("name") == "Run lint, including Skylos dead-code detection"
+        step for step in steps if step.get("name") == _EXPECTED_LINT_STEP_NAME
     ]
     assert len(lint_steps) == 1, (
-        "CI must contain one lint step that names Skylos dead-code detection"
+        "pull-request CI must contain one shared lint-gate step"
     )
     assert lint_steps[0].get("run") == "make lint", (
-        "CI lint-step contract must invoke the shared make lint target"
+        "pull-request CI lint-step contract must invoke the shared make lint target"
     )
-    parser_steps = [
-        step for step in steps if step.get("name") == "Install Makefile parser"
-    ]
-    assert len(parser_steps) == 1, "CI must contain one Makeutil installation step"
-    command = parser_steps[0].get("run")
-    assert isinstance(command, str), "CI Makeutil installation must be a shell command"
-    assert (
-        tuple(shlex.split(command.replace("\\\n", ""))) == _MAKEUTIL_INSTALL_TOKENS
-    ), "CI Makeutil installation contract must pin the parser command"
