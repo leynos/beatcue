@@ -560,11 +560,11 @@ every event that runs a workflow for a pull request (`pull_request`,
 `workflow_run`, and any push not limited to exactly `branches: [main]` or to
 tags, where a `branches-ignore` beside `tags` still counts unless it lists
 `'**'`), and the push side is followed the same way: a workflow a push starts,
-or one it calls, may run a ratcheted coverage step only behind
-`if: github.event_name == 'pull_request'`, so the publisher stays the
-baseline's only writer. When adding a workflow, keep CodeScene, `cs-coverage`,
-and the token out of it unless it is the publisher; the contract names the
-clause a change breaks.
+or one it calls, other than the publisher, may run a ratcheted coverage step
+only behind `if: github.event_name == 'pull_request'`, so the publisher stays
+the baseline's only writer. When adding a workflow, keep CodeScene,
+`cs-coverage`, and the token out of it unless it is the publisher; the contract
+names the clause a change breaks.
 
 ## Documentation updates
 
