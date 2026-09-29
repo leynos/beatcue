@@ -551,18 +551,20 @@ workflow too, by running `cv005-contracts check`, the shared contract library in
 in the Makefile; a fix to the rules is a pin bump. Only the publisher may hold
 the token, reach a secret by a computed name, name the CodeScene host, run the
 CLI or the uploader, or touch the retired `CODESCENE_CLI_SHA256` variable. The
-repository's only parameter is `repository` in `.github/cv005.toml`, and the
-library's own suite drives each rule against breaching fixtures. The
-pull-request surface is seeded by every event that runs a workflow for a pull
-request (`pull_request`, `pull_request_target`, `merge_group`, the two review
-events, `issue_comment`, `workflow_run`, and any push not limited to exactly
-`branches: [main]` or to tags, where a `branches-ignore` beside `tags` still
-counts unless it lists `'**'`), and the push side is followed the same way: a
-workflow a push starts, or one it calls, may run a ratcheted coverage step only
-behind `if: github.event_name == 'pull_request'`, so the publisher stays the
-baseline's only writer. When adding a workflow, keep CodeScene, `cs-coverage`,
-and the token out of it unless it is the publisher; the contract names the
-clause a change breaks.
+repository's parameters are in `.github/cv005.toml`: `repository`, and the
+publisher's exact `[selection]`, so a change made to the generators and the
+uploader together is still a reviewed change. The library's own suite drives
+each rule against breaching fixtures. The pull-request surface is seeded by
+every event that runs a workflow for a pull request (`pull_request`,
+`pull_request_target`, `merge_group`, the two review events, `issue_comment`,
+`workflow_run`, and any push not limited to exactly `branches: [main]` or to
+tags, where a `branches-ignore` beside `tags` still counts unless it lists
+`'**'`), and the push side is followed the same way: a workflow a push starts,
+or one it calls, other than the publisher, may run a ratcheted coverage step
+only behind `if: github.event_name == 'pull_request'`, so the publisher stays
+the baseline's only writer. When adding a workflow, keep CodeScene,
+`cs-coverage`, and the token out of it unless it is the publisher; the contract
+names the clause a change breaks.
 
 ## Documentation updates
 
