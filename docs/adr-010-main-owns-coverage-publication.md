@@ -71,3 +71,11 @@ fixtures.
   pending push leaves the baseline a commit behind until the next push.
 - Adding a workflow that touches CodeScene, runs ratcheted coverage on a push,
   or changes the coverage selection fails the contract, which names the clause.
+
+## Addendum (2026-09-29): where the contract runs
+
+The contract this record names, `tests/test_codescene_contract.py`, has moved
+out of this repository. `make test-workflow-contracts` now runs the shared
+`cv005-contracts` library from `leynos/shared-actions`, pinned by full commit
+in the Makefile, and the `ci.yml` job runs that target. The decision above is
+unchanged.
