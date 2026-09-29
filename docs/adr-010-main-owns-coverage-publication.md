@@ -45,11 +45,11 @@ commit order is not guaranteed; a manual re-run of an older run republishes
 that commit's coverage but, its baseline cache key being run-keyed, replaces no
 baseline unless the original run saved none.
 
-`make test` enforces the split by running the shared `cv005-contracts` library
-from shared-actions: it reads every workflow a pull request can reach as a
-closure through local reusable-workflow calls, every workflow a push can start
-for second baseline writers, and every other workflow for stray CodeScene
-access. The library's own suite drives each rule against breaching fixtures.
+`tests/test_codescene_contract.py` enforces the split: it reads every workflow
+a pull request can reach as a closure through local reusable-workflow calls,
+every workflow a push can start for second baseline writers, and every other
+workflow for stray CodeScene access, and drives each rule against breaching
+fixtures.
 
 ## Options considered
 
@@ -71,3 +71,11 @@ access. The library's own suite drives each rule against breaching fixtures.
   pending push leaves the baseline a commit behind until the next push.
 - Adding a workflow that touches CodeScene, runs ratcheted coverage on a push,
   or changes the coverage selection fails the contract, which names the clause.
+
+## Addendum (2026-09-29): where the contract runs
+
+The contract this record names, `tests/test_codescene_contract.py`, has moved
+out of this repository. `make test-workflow-contracts` now runs the shared
+`cv005-contracts` library from `leynos/shared-actions`, pinned by full commit
+in the Makefile, and the `ci.yml` job runs that target. The decision above is
+unchanged.
