@@ -36,8 +36,8 @@ right source of truth for use, maintenance, design, and planning work.
   surface and integration boundary.
 - [ADR 003: Hexagonal architecture enforcement](adr-003-hexagonal-architecture-enforcement.md)
   - Architecture enforcement policy for the Python package.
-- [ADR 004: Two-tier Python linting](adr-004-two-tier-python-linting.md) -
-  Python linting policy and rationale.
+- [ADR 004: Four-tier Python linting and dead-code detection](adr-004-two-tier-python-linting.md)
+  - Four-tier Python linting and dead-code detection policy and rationale.
 - [ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md)
   - Hecate-based enforcement decision for architecture boundaries.
 - [ADR 006: V1 local-only model and privacy policy](adr-006-v1-local-only-model-and-privacy-policy.md)

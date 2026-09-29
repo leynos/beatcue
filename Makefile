@@ -16,12 +16,20 @@ PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
 PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' pylint
+SKYLOS_VERSION = 4.33.2
+# Skylos parses source with its own runtime AST; pinning Python 3.14 prevents
+# phantom findings when newer project syntax exceeds older runtime grammars.
+SKYLOS_CLI = $(UV_ENV) $(UV) tool run --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' skylos
+SKYLOS = $(SKYLOS_CLI) --config-file pyproject.toml
+SKYLOS_PRODUCTION_TARGETS ?= beatcue
+SKYLOS_EXCLUDE_FOLDERS ?= tests
+SKYLOS_ALLOW_LOCK ?= .skylos/skylos-allow.lock
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        check-architecture markdownlint nixie spelling test typecheck $(TOOLS) \
-        $(VENV_TOOLS)
+        check-architecture markdownlint makeutil nixie skylos-allow spelling test \
+        typecheck $(TOOLS) $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
 
@@ -100,6 +108,15 @@ lint: .deps ## Run linters
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
 	+$(MAKE) spelling
+	$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) --category dead_code --gate --format concise --no-upload --no-provenance --no-grep-verify
+
+skylos-allow: export SKYLOS_SYMBOL = $(value SYMBOL)
+skylos-allow: export SKYLOS_REASON = $(value REASON)
+skylos-allow: ## Document one named Skylos exception, not an entry point
+	@case "$${SKYLOS_SYMBOL}" in *[![:space:]]*) ;; *) printf "Error: SYMBOL is required for a named whitelist exception\\n" >&2; exit 2;; esac
+	@case "$${SKYLOS_REASON}" in *[![:space:]]*) ;; *) printf "Error: REASON is required for a named whitelist exception\\n" >&2; exit 2;; esac
+	@mkdir -p "$(dir $(SKYLOS_ALLOW_LOCK))"
+	flock "$(SKYLOS_ALLOW_LOCK)" env $(SKYLOS_CLI) whitelist "$${SKYLOS_SYMBOL}" --reason "$${SKYLOS_REASON}"
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
@@ -127,7 +144,10 @@ nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,nixie)
 	$(NIXIE) --no-sandbox
 
-test: .deps $(VENV_TOOLS) ## Run tests
+makeutil: ## Verify the Makefile parser used by contract tests
+	$(call ensure_tool,$@)
+
+test: .deps $(VENV_TOOLS) makeutil ## Run tests
 	$(call ensure_uv)
 	$(UV_ENV) $(UV) run pytest -v -n auto
 

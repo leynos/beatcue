@@ -31,11 +31,26 @@ extend-exclude = [
 locale = "en-gb"
 extend-ignore-re = [
     "(?s)```.*?```",
+    "--[a-zA-Z0-9-]*color[a-zA-Z0-9*-]*",
+    "Azure\\s+Architecture\\s+Center\\s*\\|\\s*Microsoft\\s+Learn\\b",
+    "GitHub\\s+Flavored\\s+Markdown\\b(?:\\s\\(GFM\\))?",
+    "HashiCorp",
+    "How to organise your Rust tests",
+    "\\b(?:background|theme)_color\\b",
+    "\\b(?:carousel|dropdown|footer|indicator|items|navbar|toast)-center\\b",
+    "\\bAppFactory<Ser\\b",
+    "\\bartifact-(?:name|server-path)\\b",
+    "\\bcolor-(?:mix|contrast)\\b",
+    "\\bflavor = ",
     "\\brust-analyzer\\b",
+    "\\{COLOR\\}",
+    "\\{color\\}",
     "`behavior`",
     "`color`",
     "`fe0ba04`",
     "`grep -R \"behavior\" \\.\\.\\.`",
+    "`var\\.iamge_id` instead of `var\\.image_id`",
+    "currentColor",
     "nl -ba",
 ]
 
@@ -693,6 +708,10 @@ extend-ignore-re = [
 "equalizers" = "equalizers"
 "equalizes" = "equalizes"
 "equalizing" = "equalizing"
+"exercize" = "exercise"
+"exercized" = "exercised"
+"exercizes" = "exercises"
+"exercizing" = "exercising"
 "externalisable" = "externalizable"
 "externalisation" = "externalization"
 "externalisations" = "externalizations"
@@ -1542,6 +1561,7 @@ extend-ignore-re = [
 "organizers" = "organizers"
 "organizes" = "organizes"
 "organizing" = "organizing"
+"otherwize" = "otherwise"
 "oxendict" = "oxendict"
 "oxidisable" = "oxidizable"
 "oxidisation" = "oxidization"
@@ -1831,6 +1851,10 @@ extend-ignore-re = [
 "quantizers" = "quantizers"
 "quantizes" = "quantizes"
 "quantizing" = "quantizing"
+"raize" = "raise"
+"raized" = "raised"
+"raizes" = "raises"
+"raizing" = "raising"
 "randomisable" = "randomizable"
 "randomisation" = "randomization"
 "randomisations" = "randomizations"
