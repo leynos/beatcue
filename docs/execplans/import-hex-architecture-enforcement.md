@@ -277,10 +277,9 @@ the conflict in `Decision Log`, and ask for direction.
 
 - Observation: A repeat CodeRabbit pass reported three Markdown blank-line
   concerns that were already satisfied and one valid Oxford-comma concern in
-  ADR 003. Evidence:
-  `docs/adr-003-hexagonal-architecture-enforcement.md` showed blank lines
-  around the code fence, table, and `## Goals and non-goals` heading. The
-  table row for `adapter` did omit the Oxford comma before
+  ADR 003. Evidence: `docs/adr-003-hexagonal-architecture-enforcement.md`
+  showed blank lines around the code fence, table, and `## Goals and non-goals`
+  heading. The table row for `adapter` did omit the Oxford comma before
   `and infrastructure`. Impact: the stale blank-line findings were skipped
   after verification, and the table wording was changed to
   `adapter groups, and infrastructure`.

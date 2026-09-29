@@ -19,15 +19,16 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 _EXPECTED_WHITELIST_NAMES: typ.Final = frozenset[str]()
 _EXPECTED_DOCUMENTED_WHITELIST_NAMES: typ.Final = frozenset[str]()
 _EXPECTED_ENTRYPOINT_NAMES: typ.Final = frozenset[str]()
+_WHITESPACE_CHARACTERS: typ.Final = " \t\n\r\f\v"
 _SHELL_ARGUMENT_TEXT: typ.Final = st.builds(
     lambda prefix, content, suffix: prefix + content + suffix,
-    st.text(alphabet=" \t", max_size=4),
+    st.text(alphabet=_WHITESPACE_CHARACTERS, max_size=4),
     st.text(
         alphabet=string.ascii_letters + string.digits + "_$;|&'\"()[]{}*?!\\`",
         min_size=1,
         max_size=40,
     ),
-    st.text(alphabet=" \t", max_size=4),
+    st.text(alphabet=_WHITESPACE_CHARACTERS, max_size=4),
 )
 
 
@@ -58,7 +59,8 @@ def _run_skylos_allow(
     reason: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run an invalid whitelist boundary with WSL's injected ``NAME`` value."""
-    environment = {**os.environ, "NAME": "wsl-hostname"}
+    environment: dict[str, str] = dict(os.environ)
+    environment["NAME"] = "wsl-hostname"
     environment.pop("REASON", None)
     environment.pop("SYMBOL", None)
     if symbol is not None:
@@ -83,7 +85,13 @@ def _make_executable() -> str:
 
 
 @hyp.settings(max_examples=20, deadline=None)
-@hyp.given(whitespace=st.text(alphabet=" \t", min_size=1, max_size=8))
+@hyp.given(
+    whitespace=st.text(
+        alphabet=_WHITESPACE_CHARACTERS,
+        min_size=1,
+        max_size=8,
+    )
+)
 def test_skylos_allow_rejects_missing_and_whitespace_arguments(
     whitespace: str,
 ) -> None:
@@ -146,13 +154,15 @@ def test_skylos_allow_forwards_environment_values_without_mutating_configuration
             (
                 _make_executable(),
                 "--no-print-directory",
+                "-f",
+                str(REPOSITORY_ROOT / "Makefile"),
                 f"SKYLOS_CLI={recorder}",
                 f"SKYLOS_ALLOW_LOCK={allow_lock}",
                 "skylos-allow",
             ),
             capture_output=True,
             check=False,
-            cwd=REPOSITORY_ROOT,
+            cwd=temporary_path,
             env=environment,
             text=True,
         )

@@ -17,8 +17,8 @@ PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
 PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' pylint
 SKYLOS_VERSION = 4.33.2
-# Skylos parses source using its own Python AST, so Python 3.14 prevents
-# phantom dead-code findings from syntax older tool runtimes cannot parse.
+# Skylos parses source with its own runtime AST; pinning Python 3.14 prevents
+# phantom findings when newer project syntax exceeds older runtime grammars.
 SKYLOS_CLI = $(UV_ENV) $(UV) tool run --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' skylos
 SKYLOS = $(SKYLOS_CLI) --config-file pyproject.toml
 SKYLOS_PRODUCTION_TARGETS ?= beatcue
