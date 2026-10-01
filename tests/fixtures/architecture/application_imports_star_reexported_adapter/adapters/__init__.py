@@ -2,6 +2,6 @@
 
 from __future__ import annotations
 
-from .outbound import *  # noqa: F403 - intentional star re-export for public API
+from .outbound import *  # ruff: ignore[undefined-local-with-import-star] - intentional star re-export for public API
 
-__all__ = ["StorageAdapter"]  # noqa: F405 - explicit public API symbol
+__all__ = ["StorageAdapter"]  # ruff: ignore[undefined-local-with-import-star-usage] - explicit public API symbol
