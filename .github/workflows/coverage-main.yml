@@ -61,7 +61,7 @@ jobs:
         # pull-request lane, so the figure written here is the figure a pull
         # request is measured against. The action decides by the event whether
         # it writes the baseline or compares with it.
-        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
+        uses: leynos/shared-actions/.github/actions/generate-coverage@ff1dd759dfffc0db3459e30e833f52437ee62b57
         with:
           language: python
           python-source: ./beatcue
