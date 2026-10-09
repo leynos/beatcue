@@ -6,7 +6,7 @@ import json
 import os
 import shutil
 import string
-import subprocess  # noqa: S404 - contract tests invoke fixed local commands.
+import subprocess  # ruff: ignore[suspicious-subprocess-import] - fixed local commands.
 import tomllib
 import typing as typ
 from pathlib import Path
@@ -67,7 +67,7 @@ def _run_skylos_allow(
         environment["SYMBOL"] = symbol
     if reason is not None:
         environment["REASON"] = reason
-    return subprocess.run(  # noqa: S603 - fixed Make target and arguments.
+    return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - fixed Make target and arguments.
         (_make_executable(), "skylos-allow"),
         capture_output=True,
         check=False,
@@ -150,7 +150,7 @@ def test_skylos_allow_forwards_environment_values_without_mutating_configuration
             "SKYLOS_ARGUMENTS_PATH": str(arguments_path),
             "SYMBOL": symbol,
         }
-        completed = subprocess.run(  # noqa: S603 - fixed Make target and inputs.
+        completed = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - fixed Make target and inputs.
             (
                 _make_executable(),
                 "--no-print-directory",

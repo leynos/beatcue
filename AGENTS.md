@@ -73,7 +73,7 @@
   - **Linting:** Passes the complete `make lint` pipeline: Ruff, Pylint,
     Hecate, spelling, and the blocking Skylos dead-code scan. Investigate every
     finding and remove genuine dead code. For a verified runtime caller, first
-    model the boundary with a typed `[tool.skylos.dead_code.entrypoints]` rule.
+    model the boundary with a typed `[[tool.skylos.dead_code.entrypoints]]` rule.
     Only when that cannot model the boundary, record a reasoned named exception
     with `make skylos-allow SYMBOL=symbol REASON="Verified runtime caller"`.
     Both values must contain non-whitespace text; the helper serializes updates

@@ -191,6 +191,7 @@ select = [
     "TD",       # Be diligent with TODO comments
     "A",        # detect shadowed builtins
     "BLE",      # disallow catch-all exceptions
+    "EM",       # enforce exception-message rules
     "S",        # disallow things like "exec"; also restricts "assert" but I just NOQA it when I really need it
     "DTZ",      # require strict timezone manipulation with datetime
     "FBT",      # detect boolean traps

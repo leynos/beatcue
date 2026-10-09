@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import shlex
-import subprocess  # noqa: S404 - contract test invokes the fixed parser.
+import subprocess  # ruff: ignore[suspicious-subprocess-import] - fixed parser command.
 import typing as typ
 from pathlib import Path
 
@@ -21,6 +21,24 @@ _FULL_SUITE_WORKFLOWS: typ.Final = (
 _EXPECTED_LINT_STEP_NAME: typ.Final = "Run lint gates"
 _EXPECTED_MAKEUTIL_PREREQUISITE: typ.Final = "makeutil"
 _EXPECTED_MAKEUTIL_GUARD: typ.Final = "$(call ensure_tool,$@)"
+_EXPECTED_TYPECHECK_COMMAND: typ.Final = (
+    "$(UV_ENV)",
+    "$(UV)",
+    "run",
+    "ty",
+    "check",
+    "--extra-search-path",
+    "scripts",
+)
+_EXPECTED_PYTEST_COMMAND: typ.Final = (
+    "$(UV_ENV)",
+    "$(UV)",
+    "run",
+    "pytest",
+    "-v",
+    "-n",
+    "auto",
+)
 _EXPECTED_SKYLOS_VERSION: typ.Final = ("4.33.2",)
 _EXPECTED_SKYLOS_CLI: typ.Final = (
     "$(UV_ENV)",
@@ -109,7 +127,7 @@ def _text_sequence(value: object, *, subject: str) -> tuple[str, ...]:
 
 def _makefile_report() -> dict[str, object]:
     """Return Makeutil's complete parsed report without caching it between tests."""
-    completed = subprocess.run(  # noqa: S603 - fixed parser command.
+    completed = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - fixed parser command.
         _MAKEUTIL_COMMAND,
         capture_output=True,
         check=True,
@@ -243,12 +261,25 @@ def test_make_test_requires_a_present_makefile_parser() -> None:
     assert _EXPECTED_MAKEUTIL_PREREQUISITE in prerequisites, (
         "make test must require the Makeutil binary"
     )
+    assert "test-workflow-contracts" in prerequisites, (
+        "make test must retain the shared CV-005 workflow contract prerequisite"
+    )
 
     makeutil_rule = _rule_for(_EXPECTED_MAKEUTIL_PREREQUISITE)
     recipes = _objects(makeutil_rule.get("recipes"), subject="makeutil recipes")
     assert tuple(recipe.get("text") for recipe in recipes) == (
         _EXPECTED_MAKEUTIL_GUARD,
     ), "makeutil target must use the shared binary-presence check"
+
+
+def test_typecheck_and_test_targets_keep_their_checked_recipes() -> None:
+    """Makefile parsing must protect typecheck and full-suite test commands."""
+    assert _EXPECTED_TYPECHECK_COMMAND in _recipe_commands("typecheck", "$(UV_ENV)"), (
+        "typecheck must run ty with scripts on its module search path"
+    )
+    assert _EXPECTED_PYTEST_COMMAND in _recipe_commands("test", "$(UV_ENV)"), (
+        "make test must run the full pytest suite"
+    )
 
 
 def test_each_full_suite_workflow_installs_the_pinned_makefile_parser() -> None:

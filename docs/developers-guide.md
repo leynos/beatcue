@@ -407,7 +407,7 @@ uploads, provenance collection, and repository-wide grep verification. Test
 references therefore cannot keep production symbols live. Treat a finding as
 genuine dead code until a runtime caller is verified, then remove it. For an
 implicit runtime caller, first model the boundary with a typed
-`[tool.skylos.dead_code.entrypoints]` rule. Only when that cannot model the
+`[[tool.skylos.dead_code.entrypoints]]` rule. Only when that cannot model the
 boundary, record the named exception and its verified caller:
 
 ```bash
