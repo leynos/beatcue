@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import importlib
 import os
+import tomllib
 import typing as typ
 import urllib.error
 from pathlib import Path
@@ -94,10 +95,11 @@ def test_https_failure_reuses_valid_tracked_config(
     _, rollout, generator = rollout_modules
     tracked_config = tmp_path / "typos.toml"
     tracked_config.write_text('[default]\nlocale = "en-gb"\n', encoding="utf-8")
+    offline_message = "offline"
 
     def unavailable(*_args: object, **_kwargs: object) -> None:
         """Model an unavailable HTTPS authority."""
-        raise urllib.error.URLError("offline")
+        raise urllib.error.URLError(offline_message)
 
     monkeypatch.setattr(rollout, "refresh_base", unavailable)
 
@@ -105,3 +107,84 @@ def test_https_failure_reuses_valid_tracked_config(
 
     assert result.status == "tracked-config"
     assert result.cache == tracked_config
+
+
+def test_local_policy_preserves_committed_inline_code_exemptions(
+    rollout_modules: tuple[types.ModuleType, types.ModuleType, types.ModuleType],
+    tmp_path: Path,
+) -> None:
+    """The generated configuration retains the committed inline-code policy."""
+    _, _, generator = rollout_modules
+    (tmp_path / ".typos-oxendict-base.toml").write_text(
+        _dictionary_text(), encoding="utf-8"
+    )
+    committed_policy_path = SCRIPT_DIRECTORY.parent / "typos.local.toml"
+    committed_policy_text = committed_policy_path.read_text(encoding="utf-8")
+    committed_policy = tomllib.loads(committed_policy_text)
+    (tmp_path / "typos.local.toml").write_text(
+        committed_policy_text,
+        encoding="utf-8",
+    )
+
+    configuration = tomllib.loads(generator.render_config(tmp_path))
+    expected_patterns = committed_policy["patterns"]["ignore"]
+    generated_patterns = configuration["default"]["extend-ignore-re"]
+
+    assert set(expected_patterns) <= set(generated_patterns), (
+        "generated configuration must retain the committed spelling policy"
+    )
+    assert "`[^`\\n]+`" not in generated_patterns, (
+        "generated configuration must not restore a blanket inline-code exemption"
+    )
+
+
+def _render_committed_spelling_policy(
+    rollout: types.ModuleType,
+    committed_path: Path,
+) -> tuple[str, list[str], dict[str, str]]:
+    """Render the committed policy and return its exclusions and word entries."""
+    committed = tomllib.loads(committed_path.read_text(encoding="utf-8"))
+    committed_files = typ.cast("dict[str, object]", committed["files"])
+    committed_default = typ.cast("dict[str, object]", committed["default"])
+    committed_exclusions = typ.cast("list[str]", committed_files["extend-exclude"])
+    committed_patterns = typ.cast("list[str]", committed_default["extend-ignore-re"])
+    committed_words = typ.cast("dict[str, str]", committed_default["extend-words"])
+    dictionary = rollout.Dictionary(
+        accepted=tuple(
+            word for word, correction in committed_words.items() if word == correction
+        ),
+        corrections=tuple(
+            (word, correction)
+            for word, correction in committed_words.items()
+            if word != correction
+        ),
+        ignore_patterns=tuple(committed_patterns),
+        excluded_files=tuple(committed_exclusions),
+    )
+    return (
+        rollout.render_typos_config(dictionary),
+        committed_exclusions,
+        committed_words,
+    )
+
+
+def test_generated_exclusions_and_words_match_committed_policy(
+    rollout_modules: tuple[types.ModuleType, types.ModuleType, types.ModuleType],
+) -> None:
+    """The renderer must preserve committed exclusions and generated word entries."""
+    _, rollout, _ = rollout_modules
+    committed_path = SCRIPT_DIRECTORY.parent / "typos.toml"
+    rendered, committed_exclusions, committed_words = _render_committed_spelling_policy(
+        rollout,
+        committed_path,
+    )
+    generated = tomllib.loads(rendered)
+    generated_files = typ.cast("dict[str, object]", generated["files"])
+    generated_default = typ.cast("dict[str, object]", generated["default"])
+
+    assert generated_files["extend-exclude"] == committed_exclusions, (
+        "generated spelling configuration must retain committed file exclusions"
+    )
+    assert generated_default["extend-words"] == committed_words, (
+        "generated spelling configuration must retain committed word entries"
+    )

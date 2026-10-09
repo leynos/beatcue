@@ -58,7 +58,7 @@ models = [
 [dependency-groups]
 dev = [
     "hecate @ git+https://github.com/leynos/hecate.git@46f8c8798e7a80a3a1ab5a13c2a000a4423ffc12",
-    "hypothesis>=6.156.1",
+    "hypothesis>=6.156.1,<7",
     "pyright",
     "pytest",
     "pytest-bdd>=8.1.0",
@@ -68,8 +68,16 @@ dev = [
     "syrupy>=5.3",
     "cmd-mox>=0.2",        # import as `cmd_mox` (underscore)
     "ty",
-    "pyyaml",  # the workflow contract parses ci.yml
+    "pyyaml>=6.0.3",
 ]
+
+[tool.skylos.gate]
+strict = true
+
+[tool.skylos.whitelist]
+names = []
+
+[tool.skylos.whitelist.documented]
 
 [tool.hecate]
 root_packages = ["beatcue"]
@@ -183,6 +191,7 @@ select = [
     "TD",       # Be diligent with TODO comments
     "A",        # detect shadowed builtins
     "BLE",      # disallow catch-all exceptions
+    "EM",       # enforce exception-message rules
     "S",        # disallow things like "exec"; also restricts "assert" but I just NOQA it when I really need it
     "DTZ",      # require strict timezone manipulation with datetime
     "FBT",      # detect boolean traps

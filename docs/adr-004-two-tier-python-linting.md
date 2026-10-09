@@ -155,6 +155,26 @@ complexity, import discipline, logging behaviour, and resource handling visible
 before code review. It also keeps the contributor workflow simple: the Makefile
 owns tool execution, while `pyproject.toml` owns rule configuration.
 
+## Addendum (2026-08-23): Fourth lint tier and Skylos
+
+Later additions extend, rather than replace, this decision. The current Python
+lint sequence is Ruff, focused Pylint, Hecate architecture checks, and Skylos
+dead-code detection.
+
+Skylos is pinned as an isolated tool and runs only against production
+`beatcue/` modules, excluding tests, with strict dead-code gate behaviour. It
+runs under Python 3.14 because Skylos parses source with its own runtime
+abstract syntax tree; this pin prevents phantom findings when project syntax
+exceeds an older parser's grammar.
+
+Every finding is investigated, and genuine dead code is removed. For an
+implicit runtime caller, first use a typed
+`[[tool.skylos.dead_code.entrypoints]]` rule. Record a named allow-list
+exception with
+`make skylos-allow SYMBOL=symbol REASON="Verified runtime caller"` only when an
+entry-point rule cannot model the boundary, and only after verifying the false
+positive.
+
 ## Amendment (2026-09-25): plain Pylint on PyPy 3.12
 
 The Makefile no longer runs Pylint through the `pylint-pypy-shim`. It now runs
