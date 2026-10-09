@@ -83,7 +83,7 @@ jobs:
         # The source scope and the serial run match the invocation this step
         # replaced, which measured the same files and lines.
         if: github.event_name == 'pull_request'
-        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
+        uses: leynos/shared-actions/.github/actions/generate-coverage@0606ca899ce2995a0c4bc78e660e80832e6e8855
         with:
           language: python
           python-source: ./beatcue
