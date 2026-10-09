@@ -566,6 +566,17 @@ the baseline's only writer. When adding a workflow, keep CodeScene,
 `cs-coverage`, and the token out of it unless it is the publisher; the contract
 names the clause a change breaks.
 
+## Dependabot grouping
+
+`.github/dependabot.yml` lists a `shared-actions` group
+(`leynos/shared-actions*`) ahead of the wildcard group in the `github-actions`
+entry. Keep it first, because Dependabot assigns a dependency to the first
+group that matches it. Keep it free of `update-types`: a bump of a
+shared-actions pin moves one commit SHA to another and has no semver level, so
+a group limited to minor and patch never takes it, and each pinned action would
+arrive as its own pull request. The wildcard group keeps its `minor` and
+`patch` limit, so third-party action majors still arrive individually.
+
 ## Documentation updates
 
 Update documentation in the same change set when implementation changes user
