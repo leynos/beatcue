@@ -13,6 +13,9 @@ NIXIE ?= nixie
 # https://github.com/leynos/shared-actions/tree/main/uv_gate for the contract.
 UV_GATE ?= python3 scripts/uv_gate.py
 UV ?= uv
+# The helper finds uv on PATH, so a caller's UV=/path/to/uv is honoured by putting
+# that uv's directory first on PATH for every recipe.
+export PATH := $(if $(findstring /,$(UV)),$(patsubst %/,%,$(dir $(UV))):)$(PATH)
 TOOLS = $(MDLINT)
 VENV_TOOLS = pytest
 # The CV-005 CodeScene contracts live in shared-actions and run from a full
@@ -35,9 +38,11 @@ SKYLOS_ALLOW_LOCK ?= .skylos/skylos-allow.lock
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
-.PHONY: help all clean build build-release lint fmt check-fmt \
+.PHONY: prepare help all clean build build-release lint fmt check-fmt \
         check-architecture markdownlint makeutil nixie skylos-allow spelling test \
         test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
+
+prepare: .deps ## Install the locked development environment, offline first
 
 .DEFAULT_GOAL := all
 
@@ -93,7 +98,7 @@ endif
 
 ifneq ($(strip $(VENV_TOOLS)),)
 .PHONY: $(VENV_TOOLS)
-$(VENV_TOOLS): ## Verify required CLI tools in venv
+$(VENV_TOOLS): prepare ## Verify required CLI tools in venv
 	$(call ensure_tool_venv,$@)
 endif
 
@@ -142,7 +147,7 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'
 	+$(MAKE) spelling
 
-spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
+spelling: prepare ## Enforce en-GB-oxendict spelling in Markdown prose
 	@$(UV_GATE) run -- python scripts/generate_typos_config.py
 	@find . -type f -name '*.md' -not -path './.venv/*' -print0 | \
 		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
