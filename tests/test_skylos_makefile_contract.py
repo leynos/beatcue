@@ -22,18 +22,18 @@ _EXPECTED_LINT_STEP_NAME: typ.Final = "Run lint gates"
 _EXPECTED_MAKEUTIL_PREREQUISITE: typ.Final = "makeutil"
 _EXPECTED_MAKEUTIL_GUARD: typ.Final = "$(call ensure_tool,$@)"
 _EXPECTED_TYPECHECK_COMMAND: typ.Final = (
-    "$(UV_ENV)",
-    "$(UV)",
+    "$(UV_GATE)",
     "run",
+    "--",
     "ty",
     "check",
     "--extra-search-path",
     "scripts",
 )
 _EXPECTED_PYTEST_COMMAND: typ.Final = (
-    "$(UV_ENV)",
-    "$(UV)",
+    "$(UV_GATE)",
     "run",
+    "--",
     "pytest",
     "-v",
     "-n",
@@ -41,14 +41,13 @@ _EXPECTED_PYTEST_COMMAND: typ.Final = (
 )
 _EXPECTED_SKYLOS_VERSION: typ.Final = ("4.33.2",)
 _EXPECTED_SKYLOS_CLI: typ.Final = (
-    "$(UV_ENV)",
-    "$(UV)",
+    "$(UV_GATE)",
     "tool",
-    "run",
     "--python",
     "3.14",
     "--from",
     "skylos==$(SKYLOS_VERSION)",
+    "--",
     "skylos",
 )
 _EXPECTED_SKYLOS_SCAN: typ.Final = (
@@ -274,10 +273,10 @@ def test_make_test_requires_a_present_makefile_parser() -> None:
 
 def test_typecheck_and_test_targets_keep_their_checked_recipes() -> None:
     """Makefile parsing must protect typecheck and full-suite test commands."""
-    assert _EXPECTED_TYPECHECK_COMMAND in _recipe_commands("typecheck", "$(UV_ENV)"), (
+    assert _EXPECTED_TYPECHECK_COMMAND in _recipe_commands("typecheck", "$(UV_GATE)"), (
         "typecheck must run ty with scripts on its module search path"
     )
-    assert _EXPECTED_PYTEST_COMMAND in _recipe_commands("test", "$(UV_ENV)"), (
+    assert _EXPECTED_PYTEST_COMMAND in _recipe_commands("test", "$(UV_GATE)"), (
         "make test must run the full pytest suite"
     )
 

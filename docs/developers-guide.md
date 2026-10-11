@@ -654,3 +654,16 @@ or tooling. Relevant files:
 Follow `docs/documentation-style-guide.md`: British English with Oxford
 spelling, sentence-case headings, wrapped prose, language identifiers on fenced
 code blocks, and Mermaid validation where diagrams are present.
+
+## Running uv through the helper
+
+Every `uv` call in the Makefile goes through `scripts/uv_gate.py`, a copy of
+the helper in
+[shared-actions](https://github.com/leynos/shared-actions/tree/main/uv_gate).
+It cleans the environment, uses the global uv cache, runs offline first, and
+goes online at most once, only when uv proves a cache entry, a managed Python
+or a Git source is missing. Do not edit it: the concordat `uv-gate-baseline`
+rule audits its digest. `make prepare` installs the locked environment, and the
+gates that need it depend on it. A Git-sourced tool that is not cached yet
+needs uv 0.11.28 or newer; with an older uv, run the tool once with `uvx` to
+warm the cache. Run `uv lock` by hand to change `uv.lock`; the gates never do.

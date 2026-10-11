@@ -8,31 +8,32 @@ MDTABLEFIX ?= mdtablefix
 MDTABLEFIX_SELECT = --git --include-untracked
 MDTABLEFIX_RULES = --wrap --renumber --breaks --ellipsis --fences
 NIXIE ?= nixie
+# Every uv call goes through the vendored helper, which cleans the environment,
+# uses the global uv cache, runs offline first and goes online at most once. See
+# https://github.com/leynos/shared-actions/tree/main/uv_gate for the contract.
+UV_GATE ?= python3 scripts/uv_gate.py
 UV ?= uv
 TOOLS = $(MDLINT)
 VENV_TOOLS = pytest
-UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 # The CV-005 CodeScene contracts live in shared-actions and run from a full
 # commit, so a fix is a pin bump. `.github/cv005.toml` holds this repository's
 # only parameters.
 CV005_CONTRACTS_REF ?= a38feb9be25755c30eca5bda96bd3786a5b89c6b
-CV005_CONTRACTS = $(UV_ENV) $(UV) tool run --python 3.13 \
-	--from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' \
-	cv005-contracts
+CV005_CONTRACTS = $(UV_GATE) tool --python 3.13 --from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' -- cv005-contracts
 PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
-PYLINT = $(UV_ENV) $(UV) tool run --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' pylint
+PYLINT = $(UV_GATE) tool --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' -- pylint
 SKYLOS_VERSION = 4.33.2
 # Skylos parses source with its own runtime AST; pinning Python 3.14 prevents
 # phantom findings when newer project syntax exceeds older runtime grammars.
-SKYLOS_CLI = $(UV_ENV) $(UV) tool run --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' skylos
+SKYLOS_CLI = $(UV_GATE) tool --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' -- skylos
 SKYLOS = $(SKYLOS_CLI) --config-file pyproject.toml
 SKYLOS_PRODUCTION_TARGETS ?= beatcue
 SKYLOS_EXCLUDE_FOLDERS ?= tests
 SKYLOS_ALLOW_LOCK ?= .skylos/skylos-allow.lock
 TYPOS_VERSION ?= 1.48.0
-TYPOS := $(UV) tool run typos@$(TYPOS_VERSION)
+TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
         check-architecture markdownlint makeutil nixie skylos-allow spelling test \
@@ -51,11 +52,10 @@ endef
 
 .venv: pyproject.toml
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) venv --clear
 
 .deps: pyproject.toml uv.lock .venv
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) sync --group dev
+	$(UV_GATE) prepare --group dev
 	@touch $@
 
 build: .deps ## Build virtual-env and install deps
@@ -79,7 +79,7 @@ endef
 
 define ensure_tool_venv
 	$(call ensure_uv)
-	@$(UV_ENV) $(UV) run which $(1) >/dev/null 2>&1 || { \
+	@$(UV_GATE) run -- which $(1) >/dev/null 2>&1 || { \
 	  printf "Error: '%s' is required in the virtualenv, but is not installed\n" "$(1)" >&2; \
 	  exit 1; \
 	}
@@ -99,19 +99,19 @@ endif
 
 fmt: .deps ## Format sources
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run ruff format
-	$(UV_ENV) $(UV) run ruff check --select I --fix
+	$(UV_GATE) run -- ruff format
+	$(UV_GATE) run -- ruff check --select I --fix
 	$(MDTABLEFIX) --in-place $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 	$(MDLINT) --fix "**/*.md"
 
 check-fmt: .deps ## Verify formatting
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run ruff format --check
+	$(UV_GATE) run -- ruff format --check
 	$(MDTABLEFIX) --check $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 
 lint: .deps ## Run linters
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run ruff check
+	$(UV_GATE) run -- ruff check
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
 	+$(MAKE) spelling
@@ -127,23 +127,23 @@ skylos-allow: ## Document one named Skylos exception, not an entry point
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run hecate check
+	$(UV_GATE) run -- hecate check
 
 typecheck: .deps ## Run typechecking
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run ty --version
+	$(UV_GATE) run -- ty --version
 	# scripts/generate_typos_config.py imports its sibling helper by module
 	# name and scripts/ is not a package, so the directory goes on the search
 	# path. ty 0.0.78 accepts environment.extra-paths in pyproject.toml but
 	# does not apply it to resolution; the flag does work.
-	$(UV_ENV) $(UV) run ty check --extra-search-path scripts
+	$(UV_GATE) run -- ty check --extra-search-path scripts
 
 markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'
 	+$(MAKE) spelling
 
 spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
-	@$(UV) run scripts/generate_typos_config.py
+	@$(UV_GATE) run -- python scripts/generate_typos_config.py
 	@find . -type f -name '*.md' -not -path './.venv/*' -print0 | \
 		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
 
@@ -156,7 +156,7 @@ makeutil: ## Verify the Makefile parser used by contract tests
 
 test: .deps $(VENV_TOOLS) makeutil test-workflow-contracts ## Run tests
 	$(call ensure_uv)
-	$(UV_ENV) $(UV) run pytest -v -n auto
+	$(UV_GATE) run -- pytest -v -n auto
 
 test-workflow-contracts: ## Run the shared CV-005 CodeScene contracts
 	$(call ensure_uv)
