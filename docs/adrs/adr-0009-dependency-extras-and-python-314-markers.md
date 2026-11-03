@@ -71,5 +71,5 @@ Architecture policy must use importable module names. For example, the
 - Implement media, editorial, model, CLI, writer, or configuration adapters.
 - Downgrade BeatCue's Python requirement to satisfy optional packages.
 - Add remote model execution.
-  [ADR 006](adr-006-v1-local-only-model-and-privacy-policy.md) remains the
+  [ADR 006](adr-0006-v1-local-only-model-and-privacy-policy.md) remains the
   controlling local-only model policy.

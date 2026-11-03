@@ -270,14 +270,14 @@ the conflict in `Decision Log`, and ask for direction.
 - Observation: The final CodeRabbit pass reported a minor spelling concern in
   ADR 003, but the current file already uses `behavioural tests` and a search
   of the touched documentation found no US spelling. Evidence:
-  `docs/adr-003-hexagonal-architecture-enforcement.md` shows
+  `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` shows
   `behavioural tests` on line 81, and a repository search returned no matches.
   Impact: the finding was treated as stale after verification rather than
   edited as a no-op.
 
 - Observation: A repeat CodeRabbit pass reported three Markdown blank-line
   concerns that were already satisfied and one valid Oxford-comma concern in
-  ADR 003. Evidence: `docs/adr-003-hexagonal-architecture-enforcement.md`
+  ADR 003. Evidence: `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`
   showed blank lines around the code fence, table, and `## Goals and non-goals`
   heading. The table row for `adapter` did omit the Oxford comma before
   `and infrastructure`. Impact: the stale blank-line findings were skipped
@@ -588,7 +588,7 @@ check-architecture: build uv ## Verify hexagonal import boundaries
 Update `.PHONY` if needed. Keep `make lint` as the user-facing lint gate.
 
 Stage E updates documentation. Add a short ADR such as
-`docs/adr-003-hexagonal-architecture-enforcement.md`, because this is an
+`docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`, because this is an
 accepted architecture fitness function. Update `docs/developers-guide.md` to
 name `make check-architecture`, explain what it enforces, and clarify that
 fixtures model future package boundaries until the production tree exists. Only
