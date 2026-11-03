@@ -47,10 +47,10 @@ implementation contract, not remote model code.
   backend being available must not be inferred from a package name alone,
   because the same tool family can support both local and remote execution.
 - Use the next available ADR number at implementation time. The current
-  repository has `docs/adr-001-*.md` through `docs/adr-005-*.md`, with two
-  historical `adr-003` files, so the expected file is
-  `docs/adr-006-v1-local-only-model-and-privacy-policy.md` unless a new ADR
-  lands first.
+  repository has `docs/adrs/adr-0001-*.md` through `docs/adrs/adr-0005-*.md`,
+  with two historical `adr-003` files, so the expected file is
+  `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md` unless a new
+  ADR lands first.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code blocks with
   language identifiers, ADR naming conventions, table captions, and required
@@ -85,8 +85,9 @@ conflict in `Decision Log`, and ask for direction.
 - Capability contract: if implementation cannot express remote-backend failure
   without inventing new runtime code in this task, record the future contract
   in the ADR and defer code to the package-skeleton or model-adapter task.
-- ADR numbering: if another `docs/adr-006-*.md` appears before implementation,
-  use the next available ADR number and record the change in `Decision Log`.
+- ADR numbering: if another `docs/adrs/adr-0006-*.md` appears before
+  implementation, use the next available ADR number and record the change in
+  `Decision Log`.
 - Validation: if any required gate fails after two focused fix attempts, stop,
   record the failing command and log path, and ask for direction.
 - Review: if `coderabbit review --agent` raises concerns that require
@@ -163,7 +164,7 @@ conflict in `Decision Log`, and ask for direction.
 - [x] (2026-05-20 00:00Z) Received explicit user approval to implement this
   plan.
 - [x] (2026-05-20 00:08Z) Implemented milestone 1 by adding
-  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`.
+  `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md`.
 - [x] (2026-05-20 00:14Z) Ran `coderabbit review --agent` after milestone 1;
   it completed with zero findings.
 - [x] (2026-05-20 00:20Z) Implemented milestone 2 by signposting ADR 006 from
@@ -254,9 +255,9 @@ conflict in `Decision Log`, and ask for direction.
   implemented, and the `execplans` skill requires an approval gate.
 
 - Decision: Expected ADR path is
-  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`. Rationale: ADR 005
-  was the current highest unique ADR number. Two ADR 003 files existed, so
-  implementation should use the next available number instead of renumbering
+  `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md`. Rationale:
+  ADR 005 was the current highest unique ADR number. Two ADR 003 files existed,
+  so implementation should use the next available number instead of renumbering
   history.
 
 - Decision: Treat local-only policy as a capability contract rather than a
@@ -283,8 +284,8 @@ timestamp, and proceed milestone by milestone.
 
 ### Milestone 1: Ratify the policy in an ADR
 
-Create `docs/adr-006-v1-local-only-model-and-privacy-policy.md`, or the next
-available ADR number if ADR 006 is already taken. The ADR should follow
+Create `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md`, or the
+next available ADR number if ADR 006 is already taken. The ADR should follow
 `docs/documentation-style-guide.md` and include these decisions:
 
 - BeatCue v1 performs local analysis only.

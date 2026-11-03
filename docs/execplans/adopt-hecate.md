@@ -67,10 +67,11 @@ configuration that allows a previously forbidden domain-to-adapter,
 application-to-adapter, or direct infrastructure import is a failed migration.
 
 Documentation must stay aligned with the code. Update
-`docs/adr-003-hexagonal-architecture-enforcement.md` or create a superseding
-ADR if the decision is substantive; update `docs/beatcue-technical-design.md`,
-`docs/developers-guide.md`, and `docs/users-guide.md` where they describe
-behaviour, contributor practice, or CLI/library-visible effects.
+`docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` or create a
+superseding ADR if the decision is substantive; update
+`docs/beatcue-technical-design.md`, `docs/developers-guide.md`, and
+`docs/users-guide.md` where they describe behaviour, contributor practice, or
+CLI/library-visible effects.
 
 Use the requested and relevant skills when executing this plan:
 
@@ -178,7 +179,7 @@ The current tests are:
 
 The relevant documentation is:
 
-- `docs/adr-003-hexagonal-architecture-enforcement.md`, which currently
+- `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`, which currently
   accepts the local checker decision;
 - `docs/beatcue-technical-design.md`, especially section 5 on architecture and
   section 17 on verification;
@@ -405,9 +406,9 @@ still passes through the architecture gate.
 
 ### Milestone 5: Update documentation and decisions
 
-Update `docs/adr-003-hexagonal-architecture-enforcement.md` if the existing ADR
-can be amended cleanly. If the change is treated as a new decision, create the
-next numbered ADR in `docs/` and reference it from
+Update `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` if the
+existing ADR can be amended cleanly. If the change is treated as a new
+decision, create the next numbered ADR in `docs/adrs/` and reference it from
 `docs/beatcue-technical-design.md`. The ADR must explain that BeatCue replaces
 the local checker with pinned Hecate, why declarative TOML policy is preferred,
 and how `make check-architecture` remains the stable workflow.

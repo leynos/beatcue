@@ -486,9 +486,10 @@ tests/
   test_package_skeleton.py
 docs/
   beatcue-technical-design.md       # §§6.1, 14, 16, 17
-  adr-005-hecate-architecture-enforcement.md
-  adr-006-v1-local-only-model-and-privacy-policy.md
-  adr-007-v1-beatcue-json-schema.md
+  adrs/
+    adr-0005-hecate-architecture-enforcement.md
+    adr-0006-v1-local-only-model-and-privacy-policy.md
+    adr-0007-v1-beatcue-json-schema.md
   developers-guide.md
   users-guide.md
   roadmap.md
