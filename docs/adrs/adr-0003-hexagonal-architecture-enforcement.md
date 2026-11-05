@@ -3,7 +3,7 @@
 ## Status
 
 Superseded on 2026-05-20 by
-[ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md).
+[ADR 005: Hecate architecture enforcement](adr-0005-hecate-architecture-enforcement.md).
 BeatCue now enforces its documented package dependency direction with Hecate
 rather than the repository-local Python checker described here.
 

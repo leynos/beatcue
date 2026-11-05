@@ -7,7 +7,7 @@ phase validate or falsify the idea, answer sequencing questions, and deliver
 usable functionality instead of isolated layers.
 
 The roadmap cites the design document sections that define each task. Future
-architectural decision records (ADRs) should live in `docs/` and should be
+architectural decision records (ADRs) should live in `docs/adrs/` and should be
 linked from the tasks that create or depend on them.
 
 ## 1. Foundational contracts and build spine

@@ -359,8 +359,8 @@ peer modules.
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
-[ADR 004](adr-004-two-tier-python-linting.md). The lint gate has four Python
-tiers:
+[ADR 004](adrs/adr-0004-two-tier-python-linting.md). The lint gate has four
+Python tiers:
 
 1. Ruff runs first from the project virtual environment.
 2. Pylint runs second through `uv tool run`, pinned to a PyPy 3.12 interpreter
@@ -558,7 +558,7 @@ themselves, not the surrounding comments, and carries its own mutation check.
 
 Coverage has two workflows, and the split is a contract (concordat's CV-005,
 `main-owned-codescene-coverage`), not a convention.
-[ADR 010](adr-010-main-owns-coverage-publication.md) records the decision.
+[ADR 010](adrs/adr-0010-main-owns-coverage-publication.md) records the decision.
 
 - `ci.yml` measures Cobertura coverage on every pull request with the shared
   `generate-coverage` action (`language: python`, `python-source: ./beatcue`, a

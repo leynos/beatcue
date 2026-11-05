@@ -45,7 +45,7 @@ serializer and validation layer from this decision.
   structures rather than making adapters the source of truth.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code blocks with
-  language identifiers, ADR naming as `docs/adr-NNN-short-description.md`, and
+  language identifiers, ADR naming as `docs/adrs/adr-NNNN-title-slug.md`, and
   required ADR sections.
 - Keep the plan and all implementation edits self-contained. A future agent
   must be able to resume from this file without relying on chat history.
@@ -70,8 +70,9 @@ serializer and validation layer from this decision.
 - Interface: if the plan cannot preserve the existing distinction between
   immutable domain values and serialization-specific `msgspec` structures, stop
   and present design options.
-- ADR numbering: if another `docs/adr-003-*.md` appears before implementation,
-  use the next available ADR number and record the change in `Decision Log`.
+- ADR numbering: if another `docs/adrs/adr-0003-*.md` appears before
+  implementation, use the next available ADR number and record the change in
+  `Decision Log`.
 - Validation: if any required gate fails after two focused fix attempts, stop,
   record the failing command and log path, and ask for direction.
 - Ambiguity: if multiple valid documentation forms would materially change the
@@ -135,8 +136,8 @@ serializer and validation layer from this decision.
   JSON encoding and decoding, validation during decoding, performance, and no
   required dependencies.
 - [x] (2026-05-10 00:00Z) Created
-  `docs/adr-007-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for the
-  BeatCue JSON v1 serialization boundary.
+  `docs/adrs/adr-0007-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for
+  the BeatCue JSON v1 serialization boundary.
 - [x] (2026-05-10 00:00Z) Added design, user-guide, and developer-guide
   signposts so public and internal documentation point at ADR 007 without
   claiming the serializer exists.
@@ -171,10 +172,11 @@ serializer and validation layer from this decision.
   consistency gap with an ADR and roadmap update.
 
 - Observation: The repository already has ADR conventions and two accepted
-  ADRs. Evidence: `docs/adr-001-colourgram-domain-boundary.md` and
-  `docs/adr-002-v1-port-surface.md` are accepted ADRs dated 2026-05-09. Impact:
-  the new ADR should probably be `docs/adr-007-v1-beatcue-json-schema.md`
-  unless another ADR is added first.
+  ADRs. Evidence: `docs/adrs/adr-0001-colourgram-domain-boundary.md` and
+  `docs/adrs/adr-0002-v1-port-surface.md` are accepted ADRs dated 2026-05-09.
+  Impact: the new ADR should probably be
+  `docs/adrs/adr-0007-v1-beatcue-json-schema.md` unless another ADR is added
+  first.
 
 - Observation: The repository Makefile defines Markdown gates separately from
   Python gates, but the user explicitly requested `make check-fmt`,
@@ -233,7 +235,7 @@ serializer and validation layer from this decision.
   Starting or depending on Vidai Mock here would widen the task beyond schema
   ratification. Date/Author: 2026-05-10 / Codex.
 
-- Decision: Use `docs/adr-007-v1-beatcue-json-schema.md` as the ADR file.
+- Decision: Use `docs/adrs/adr-0007-v1-beatcue-json-schema.md` as the ADR file.
   Rationale: no newer ADR number appeared before implementation, and the
   existing repository sequence ends at ADR 002. Date/Author: 2026-05-10 / Codex.
 
@@ -246,7 +248,7 @@ serializer and validation layer from this decision.
 ## Outcomes & retrospective
 
 Implemented the schema ratification as documentation-only work. The change adds
-`docs/adr-007-v1-beatcue-json-schema.md`, signposts ADR 007 from
+`docs/adrs/adr-0007-v1-beatcue-json-schema.md`, signposts ADR 007 from
 `docs/beatcue-technical-design.md`, `docs/users-guide.md`, and
 `docs/developers-guide.md`, and marks roadmap item 1.1.1 done in
 `docs/roadmap.md`.
@@ -300,8 +302,8 @@ The relevant repository files are:
 - `docs/developers-guide.md`: contributor-facing architecture, writer, and
   testing guidance. It should point implementers at the ADR if it discusses
   BeatCue JSON schema work.
-- `docs/adr-001-colourgram-domain-boundary.md` and
-  `docs/adr-002-v1-port-surface.md`: existing ADR examples and numbering
+- `docs/adrs/adr-0001-colourgram-domain-boundary.md` and
+  `docs/adrs/adr-0002-v1-port-surface.md`: existing ADR examples and numbering
   precedent.
 
 Terms used in this plan:
@@ -354,9 +356,9 @@ Acceptance for this milestone:
 
 ### Milestone 2: Add the schema ADR
 
-Create `docs/adr-007-v1-beatcue-json-schema.md`, or the next available ADR
-number if `003` is taken. Use the documentation style guide's ADR structure.
-The ADR should be `Accepted` and dated with the implementation date.
+Create `docs/adrs/adr-0007-v1-beatcue-json-schema.md`, or the next available
+ADR number if `003` is taken. Use the documentation style guide's ADR
+structure. The ADR should be `Accepted` and dated with the implementation date.
 
 The ADR must cover:
 
