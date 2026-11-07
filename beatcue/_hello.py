@@ -13,6 +13,7 @@ MODULE_NAME: str = f"_{PACKAGE_NAME}_rs"
 
 
 def _pure_hello() -> cabc.Callable[[], str]:
+    """Import and return the pure-Python `hello`, the extension's fallback."""
     from .pure import hello as pure_hello
 
     return pure_hello

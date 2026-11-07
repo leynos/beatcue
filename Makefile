@@ -39,7 +39,7 @@ TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
 .PHONY: prepare help all clean build build-release lint fmt check-fmt \
-        check-architecture markdownlint makeutil nixie skylos-allow spelling test \
+        check-architecture interrogate markdownlint makeutil nixie skylos-allow spelling test \
         test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
 
 prepare: .deps ## Install the locked development environment, offline first
@@ -114,8 +114,33 @@ check-fmt: .deps ## Verify formatting
 	$(UV_GATE) run -- ruff format --check
 	$(MDTABLEFIX) --check $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 
+# Interrogate scans each target recursively, subject to its default exclusions.
+# Add a new Python directory to the targets.
+INTERROGATE_VERSION ?= 1.7.0
+INTERROGATE_TARGETS ?= beatcue scripts tests
+# Level 2 prints a MISSED row per undocumented definition, which the
+# `interrogate` recipe below looks for: the rounded percentage alone can pass a
+# lone gap.
+INTERROGATE_FLAGS ?= -vv --fail-under 100
+INTERROGATE ?= $(UV_GATE) tool --python 3.13 --from 'interrogate==$(INTERROGATE_VERSION)' -- interrogate
+
+# Interrogate rounds its percentage to one decimal, so `--fail-under 100` alone
+# can pass a lone gap in a large repository. This recipe also fails when `grep`
+# finds a MISSED row in the report on standard output, which `-vv` or higher
+# prints for each undocumented definition.
+interrogate: ## Enforce complete Python docstring coverage
+	@report="$$($(INTERROGATE) $(INTERROGATE_FLAGS) $(INTERROGATE_TARGETS))"; \
+	  status=$$?; \
+	  printf '%s\n' "$$report"; \
+	  test "$$status" -eq 0 || exit "$$status"; \
+	  if printf '%s\n' "$$report" | grep -q '| *MISSED *|'; then \
+	    printf '%s\n' 'interrogate: undocumented definitions remain; see the MISSED rows above' >&2; \
+	    exit 1; \
+	  fi
+
 lint: .deps ## Run linters
 	$(call ensure_uv)
+	$(MAKE) --no-print-directory interrogate
 	$(UV_GATE) run -- ruff check
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
