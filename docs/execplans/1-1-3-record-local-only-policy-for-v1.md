@@ -47,10 +47,10 @@ implementation contract, not remote model code.
   backend being available must not be inferred from a package name alone,
   because the same tool family can support both local and remote execution.
 - Use the next available ADR number at implementation time. The current
-  repository has `docs/adrs/adr-0001-*.md` through `docs/adrs/adr-0005-*.md`,
-  with two historical `adr-003` files, so the expected file is
-  `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md` unless a new
-  ADR lands first.
+  repository has `docs/adr-001-*.md` through `docs/adr-005-*.md`, with two
+  historical `adr-003` files, so the expected file is
+  `docs/adr-006-v1-local-only-model-and-privacy-policy.md` unless a new ADR
+  lands first.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code blocks with
   language identifiers, ADR naming conventions, table captions, and required
@@ -85,9 +85,8 @@ conflict in `Decision Log`, and ask for direction.
 - Capability contract: if implementation cannot express remote-backend failure
   without inventing new runtime code in this task, record the future contract
   in the ADR and defer code to the package-skeleton or model-adapter task.
-- ADR numbering: if another `docs/adrs/adr-0006-*.md` appears before
-  implementation, use the next available ADR number and record the change in
-  `Decision Log`.
+- ADR numbering: if another `docs/adr-006-*.md` appears before implementation,
+  use the next available ADR number and record the change in `Decision Log`.
 - Validation: if any required gate fails after two focused fix attempts, stop,
   record the failing command and log path, and ask for direction.
 - Review: if `coderabbit review --agent` raises concerns that require
@@ -122,12 +121,10 @@ conflict in `Decision Log`, and ask for direction.
   in this documentation-only task unless an approved implementation decision
   says otherwise.
 
-- Risk: ADR numbering was already imperfect because two
-  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) files
-  existed. Severity: low. Likelihood: medium. Mitigation: use the next
-  available number at implementation time, expected to be
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md), and
-  record the numbering decision in this plan.
+- Risk: ADR numbering was already imperfect because two ADR 003 files existed.
+  Severity: low. Likelihood: medium. Mitigation: use the next available number
+  at implementation time, expected to be ADR 006, and record the numbering
+  decision in this plan.
 
 - Risk: A local-only policy could be weakened by implicit model downloads,
   telemetry, or credential reuse from third-party libraries. Severity: high.
@@ -165,31 +162,23 @@ conflict in `Decision Log`, and ask for direction.
   11 for plan review.
 - [x] (2026-05-20 00:00Z) Received explicit user approval to implement this
   plan.
-- [x] (2026-05-20 00:08Z) Implemented milestone 1 by adding the historical
-  path `docs/adr-006-v1-local-only-model-and-privacy-policy.md`, now
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md).
+- [x] (2026-05-20 00:08Z) Implemented milestone 1 by adding
+  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`.
 - [x] (2026-05-20 00:14Z) Ran `coderabbit review --agent` after milestone 1;
   it completed with zero findings.
-- [x] (2026-05-20 00:20Z) Implemented milestone 2 by signposting
-      [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
-      from
+- [x] (2026-05-20 00:20Z) Implemented milestone 2 by signposting ADR 006 from
   the technical design, developers' guide, and users' guide.
 - [x] (2026-05-20 00:26Z) Ran `coderabbit review --agent` after milestone 2;
   it completed with zero findings.
 - [x] (2026-05-20 00:28Z) Implemented milestone 3 by marking roadmap item
-  1.1.3 done and citing
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) as the
-  durable decision record.
+  1.1.3 done and citing ADR 006 as the durable decision record.
 - [x] (2026-05-20 00:36Z) Ran final validation gates sequentially with logs
   under `/tmp`: `make markdownlint`, `make nixie`, `make check-fmt`,
   `make lint`, `make typecheck`, and `make test` all passed.
 - [x] (2026-05-20 00:42Z) Ran a final `coderabbit review --agent` on the
   complete implementation. It reported one trivial process finding to verify
-  Markdown formatting and linting for
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md).
-- [x] (2026-05-20 00:44Z) Verified
-      [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
-      table formatting and reran
+  Markdown formatting and linting for ADR 006.
+- [x] (2026-05-20 00:44Z) Verified ADR 006 table formatting and reran
   `make markdownlint`; the gate passed with zero errors.
 - [x] (2026-05-20 00:53Z) Reran `coderabbit review --agent`; the first rerun
   hit a recoverable rate limit, and the retry completed with zero findings.
@@ -234,13 +223,12 @@ conflict in `Decision Log`, and ask for direction.
   wording was corrected before running the validation gates.
 
 - Observation: The milestone 1 CodeRabbit review completed with zero findings
-  after [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
-  was added. Impact: implementation proceeded to documentation signposts.
+  after ADR 006 was added. Impact: implementation proceeded to documentation
+  signposts.
 
 - Observation: The milestone 2 CodeRabbit review completed with zero findings
   after the technical design, developers' guide, and users' guide signposted
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md).
-  Impact: implementation proceeded to the roadmap update.
+  ADR 006. Impact: implementation proceeded to the roadmap update.
 
 - Observation: `make fmt` returned non-zero after touching unrelated Markdown
   files because the repository-wide fixer surfaced existing long-table
@@ -250,11 +238,10 @@ conflict in `Decision Log`, and ask for direction.
   implementation.
 
 - Observation: The final CodeRabbit review reported a trivial process concern
-  asking for Markdown formatting and linting on
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). The
-  ADR rendered with the expected title and table, and `make markdownlint`
-  passed with zero errors. Impact: the concern was addressed through validation
-  evidence rather than a content change.
+  asking for Markdown formatting and linting on ADR 006. ADR 006 rendered with
+  the expected title and table, and `make markdownlint` passed with zero
+  errors. Impact: the concern was addressed through validation evidence rather
+  than a content change.
 
 - Observation: The first final CodeRabbit rerun was rate limited with a
   recoverable wait. A retry after the requested delay completed with zero
@@ -267,12 +254,10 @@ conflict in `Decision Log`, and ask for direction.
   implemented, and the `execplans` skill requires an approval gate.
 
 - Decision: Expected ADR path is
-  `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md`. Rationale:
-  [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md) was the
-  current highest unique ADR number. Two
-  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) files
-  existed, so implementation should use the next available number instead of
-  renumbering history.
+  `docs/adr-006-v1-local-only-model-and-privacy-policy.md`. Rationale: ADR 005
+  was the current highest unique ADR number. Two ADR 003 files existed, so
+  implementation should use the next available number instead of renumbering
+  history.
 
 - Decision: Treat local-only policy as a capability contract rather than a
   library blacklist. Rationale: prior art shows the same model tooling can
@@ -286,12 +271,9 @@ conflict in `Decision Log`, and ask for direction.
   this documentation change can be validated through Markdown, architecture,
   type, lint, and test gates.
 
-- Decision: Use
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) for
-  the local-only model and privacy policy. Rationale: no new
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
-  existed when implementation began, so the expected next available ADR number
-  remained valid.
+- Decision: Use ADR 006 for the local-only model and privacy policy.
+  Rationale: no new ADR 006 existed when implementation began, so the expected
+  next available ADR number remained valid.
 
 ## Implementation Plan
 
@@ -301,11 +283,9 @@ timestamp, and proceed milestone by milestone.
 
 ### Milestone 1: Ratify the policy in an ADR
 
-Create `docs/adrs/adr-0006-v1-local-only-model-and-privacy-policy.md`, or the
-next available ADR number if
-[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) is
-already taken. The ADR should follow `docs/documentation-style-guide.md` and
-include these decisions:
+Create `docs/adr-006-v1-local-only-model-and-privacy-policy.md`, or the next
+available ADR number if ADR 006 is already taken. The ADR should follow
+`docs/documentation-style-guide.md` and include these decisions:
 
 - BeatCue v1 performs local analysis only.
 - Remote model execution, hosted inference, network inference endpoints, and
@@ -498,24 +478,22 @@ wording issue on the first pass and zero findings on the rerun. The first
 validation pass succeeded for `make markdownlint`, `make nixie`,
 `make check-fmt`, `make typecheck`, `make lint`, and `make test`.
 
-The approved implementation added
-[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md),
-signposted it from the technical design, users' guide, developers' guide, and
-roadmap, and marked roadmap item 1.1.3 done. Both implementation CodeRabbit
-reviews completed with zero findings. Final validation passed for
-`make markdownlint`, `make nixie`, `make check-fmt`, `make lint`,
-`make typecheck`, and `make test`. The final complete-branch CodeRabbit review
-raised one trivial Markdown-validation process concern that was addressed by
-inspecting
-[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) and
-rerunning `make markdownlint` successfully. The clean CodeRabbit rerun
-completed with zero findings. The implementation is ready for the required
-commit and push.
+The approved implementation added ADR 006, signposted it from the technical
+design, users' guide, developers' guide, and roadmap, and marked roadmap item
+1.1.3 done. Both implementation CodeRabbit reviews completed with zero
+findings. Final validation passed for `make markdownlint`, `make nixie`,
+`make check-fmt`, `make lint`, `make typecheck`, and `make test`. The final
+complete-branch CodeRabbit review raised one trivial Markdown-validation
+process concern that was addressed by inspecting ADR 006 and rerunning
+`make markdownlint` successfully. The clean CodeRabbit rerun completed with
+zero findings. The implementation is ready for the required commit and push.
 
 ## Addendum (2026-11-12): ADR filename migration
 
-The implementation recorded ADR 0006 at its original
-`docs/adr-006-v1-local-only-model-and-privacy-policy.md` path. It now lives at
-[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). This
-addendum records the path migration; the plan's approval record, decisions,
-implementation outcomes, and status remain unchanged.
+The local-only policy was recorded at
+`docs/adr-006-v1-local-only-model-and-privacy-policy.md`. It now lives at
+[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). The
+related architecture decisions now live at
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md). The plan's
+approval record, status, decisions, and implementation outcomes are unchanged.

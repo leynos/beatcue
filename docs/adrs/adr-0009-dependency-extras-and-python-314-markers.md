@@ -76,6 +76,7 @@ Architecture policy must use importable module names. For example, the
 
 ## Addendum (2026-11-12): filename migration
 
-This ADR's filename and links were updated to follow the four-digit ADR naming
-convention in `docs/documentation-style-guide.md`. Its status and decision are
-unchanged.
+The title and filename now use the four-digit serial required by the imported
+style guide. The local-only policy reference points to
+[ADR 0006](adr-0006-v1-local-only-model-and-privacy-policy.md) at its canonical
+location. The status and decision are unchanged.

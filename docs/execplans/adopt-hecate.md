@@ -67,11 +67,10 @@ configuration that allows a previously forbidden domain-to-adapter,
 application-to-adapter, or direct infrastructure import is a failed migration.
 
 Documentation must stay aligned with the code. Update
-`docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` or create a
-superseding ADR if the decision is substantive; update
-`docs/beatcue-technical-design.md`, `docs/developers-guide.md`, and
-`docs/users-guide.md` where they describe behaviour, contributor practice, or
-CLI/library-visible effects.
+`docs/adr-003-hexagonal-architecture-enforcement.md` or create a superseding
+ADR if the decision is substantive; update `docs/beatcue-technical-design.md`,
+`docs/developers-guide.md`, and `docs/users-guide.md` where they describe
+behaviour, contributor practice, or CLI/library-visible effects.
 
 Use the requested and relevant skills when executing this plan:
 
@@ -179,7 +178,7 @@ The current tests are:
 
 The relevant documentation is:
 
-- `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`, which currently
+- `docs/adr-003-hexagonal-architecture-enforcement.md`, which currently
   accepts the local checker decision;
 - `docs/beatcue-technical-design.md`, especially section 5 on architecture and
   section 17 on verification;
@@ -406,9 +405,9 @@ still passes through the architecture gate.
 
 ### Milestone 5: Update documentation and decisions
 
-Update `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` if the
-existing ADR can be amended cleanly. If the change is treated as a new
-decision, create the next numbered ADR in `docs/adrs/` and reference it from
+Update `docs/adr-003-hexagonal-architecture-enforcement.md` if the existing ADR
+can be amended cleanly. If the change is treated as a new decision, create the
+next numbered ADR in `docs/` and reference it from
 `docs/beatcue-technical-design.md`. The ADR must explain that BeatCue replaces
 the local checker with pinned Hecate, why declarative TOML policy is preferred,
 and how `make check-architecture` remains the stable workflow.
@@ -553,13 +552,11 @@ pass, plus `make check-architecture` visibly runs Hecate.
   suite still reports 11 passing tests.
 - [x] 2026-05-20: Ran CodeRabbit for Milestone 4; it completed with zero
   findings.
-- [x] 2026-05-20: Updated documentation for the Hecate migration.
-      [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) is
-  superseded by
-  [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md), the
-  technical design and developers' guide name Hecate as the active fitness
-  function, the users' guide documents the contributor-facing architecture
-  check, and roadmap task 1.2.2 notes Hecate as the implementation.
+- [x] 2026-05-20: Updated documentation for the Hecate migration. ADR 003 is
+  superseded by ADR 005, the technical design and developers' guide name Hecate
+  as the active fitness function, the users' guide documents the
+  contributor-facing architecture check, and roadmap task 1.2.2 notes Hecate as
+  the implementation.
 - [x] 2026-05-20: Ran documentation gates for Milestone 5. `make markdownlint`
       and `make nixie` both passed after unrelated formatter churn
       from a failed repository-wide `make fmt` run was reversed.
@@ -620,11 +617,8 @@ pass, plus `make check-architecture` visibly runs Hecate.
   symbol-reference check and migrated tests confirmed it was an internal
   fitness-function implementation rather than a public BeatCue API.
 - The Hecate replacement is substantive enough to need a new ADR rather than
-  an in-place edit to
-  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md). That
-  record remains as historical context, while
-  [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md) records the
-  active decision.
+  an in-place edit to ADR 003. ADR 003 now remains as historical context and
+  ADR 005 records the active decision.
 
 ## Decision log
 
@@ -656,13 +650,9 @@ pass, plus `make check-architecture` visibly runs Hecate.
   wrapper. Rationale: no production code depends on it, the Makefile target is
   the documented contributor interface, and keeping a wrapper would preserve a
   second checker surface after Hecate becomes the enforcement engine.
-- 2026-05-20: Create
-  [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md) and supersede
-  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md).
-  Rationale: replacing the enforcement engine and moving policy into TOML is a
-  substantive architecture decision, while
-  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) is still
-  useful history for why the gate exists.
+- 2026-05-20: Create ADR 005 and supersede ADR 003. Rationale: replacing the
+  enforcement engine and moving policy into TOML is a substantive architecture
+  decision, while ADR 003 is still useful history for why the gate exists.
 
 ## Outcomes & retrospective
 
@@ -688,8 +678,7 @@ Final validation on 2026-05-20 passed:
 
 CodeRabbit reviews completed with zero findings for every implementation
 milestone after any recoverable rate-limit waits. Documentation now records
-Hecate as the active architecture fitness function in
-[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md), the technical
+Hecate as the active architecture fitness function in ADR 005, the technical
 design, the developers' guide, the users' guide, and the roadmap.
 
 Follow-up: repository-wide `make fmt` still reports pre-existing Markdown
@@ -698,6 +687,7 @@ ownership of that older documentation debt.
 
 ## Addendum (2026-11-12): ADR filename migration
 
-ADR links in this completed plan were updated to follow the four-digit naming
-convention in `docs/documentation-style-guide.md`. The recorded status,
-decisions, and outcomes are unchanged.
+The hexagonal-architecture and Hecate decisions referenced by this plan now
+live at [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md). Their status
+and decisions are unchanged.

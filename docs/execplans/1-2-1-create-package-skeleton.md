@@ -136,10 +136,10 @@ This plan depends on the following local documents:
 - `docs/developers-guide.md` for contributor-facing architecture rules.
 - `docs/users-guide.md` for current public behaviour. This task should update
   it only if the package skeleton changes a user-visible import contract.
-- `docs/adrs/adr-0002-v1-port-surface.md` for the required versus post-v1 port
+- `docs/adr-002-v1-port-surface.md` for the required versus post-v1 port
   distinction.
-- `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` for the local
-  checker and its fixture strategy.
+- `docs/adr-003-hexagonal-architecture-enforcement.md` for the local checker
+  and its fixture strategy.
 - `docs/complexity-antipatterns-and-refactoring-strategies.md` for keeping
   any new tests or checker changes small and readable.
 - `.rules/python-*.md` if Python implementation details become necessary.
@@ -567,6 +567,7 @@ scenario should be replaced with plain pytest (`#15`).
 
 ## Addendum (2026-11-12): ADR filename migration
 
-ADR links in this completed plan were updated to follow the four-digit naming
-convention in `docs/documentation-style-guide.md`. The recorded status,
-decisions, and outcomes are unchanged.
+The port-surface and architecture references in this plan now resolve to
+[ADR 0002](../adrs/adr-0002-v1-port-surface.md) and
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md). The plan's
+recorded scope and outcomes are unchanged.

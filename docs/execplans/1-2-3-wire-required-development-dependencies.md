@@ -12,10 +12,9 @@ Roadmap item 1.2.3 closes the gap between the BeatCue technical design and the
 project's dependency manifest. The design (`docs/beatcue-technical-design.md`,
 §§14, 16, and 17) declares five dependency groups — `core`, `media`,
 `editorial`, `models`, and `dev` — and treats missing optional dependencies as
-capability errors reported by `agent-context`, not as import-time crashes.
-[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) forbids
-running model code anywhere but the operator's machine, so the `models` extra
-remains a declared-but-not-default install.
+capability errors reported by `agent-context`, not as import-time crashes. ADR
+006 forbids running model code anywhere but the operator's machine, so the
+`models` extra remains a declared-but-not-default install.
 
 After this plan lands, a contributor on a fresh checkout can run
 `uv sync --group dev && make all` and end up with the development toolchain
@@ -127,8 +126,7 @@ the conflict in `Decision log`, and ask for direction.
 - Risk: the `models` extra ultimately depends on a working `torch` 3.14
   wheel set across the supported platforms. Severity: medium. Likelihood:
   medium. Mitigation: apply the `python_full_version < '3.14'` marker to every
-  entry in the `models` extra. The whole set is post-v1 per
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) and
+  entry in the `models` extra. The whole set is post-v1 per ADR 006 and
   declarative-only on 3.14 until torch publishes cp314 wheels. The marker
   approach also lets the future `models` → `models` + `models-torch` split
   (recorded in the Decision log) happen without breaking declared extras.
@@ -236,8 +234,7 @@ the conflict in `Decision log`, and ask for direction.
   and
   `/tmp/nixie-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
 - [x] (2026-06-14T04:52:03+02:00) Documentation updates landed:
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md)
-  records the dependency-extra and Python 3.14 marker policy;
+  ADR 009 records the dependency-extra and Python 3.14 marker policy;
   `docs/contents.md`, `docs/developers-guide.md`,
   `docs/beatcue-technical-design.md`, and `docs/roadmap.md` signpost the
   decision.
@@ -262,12 +259,10 @@ the conflict in `Decision log`, and ask for direction.
   and
   `/tmp/make-all-coderabbit-2-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`.
 - [x] (2026-06-14T04:52:03+02:00) Third CodeRabbit review found
-  three still-valid comments: link
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) from
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md),
-  parameterize the dependency smoke test, and assert on captured version/module
-  return values. All were fixed. Focused smoke tests passed with two cases, and
-  full `make all` passed with 40 tests. Logs:
+  three still-valid comments: link ADR 006 from ADR 009, parameterize the
+  dependency smoke test, and assert on captured version/module return values.
+  All were fixed. Focused smoke tests passed with two cases, and full
+  `make all` passed with 40 tests. Logs:
   `/tmp/coderabbit-3-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
   `/tmp/focused-coderabbit-3-fix-9bad8eaa-eff1-4139-86d3-65a4afddec5d-1-2-3-wire-required-development-dependencies.out`,
   and
@@ -344,10 +339,7 @@ the conflict in `Decision log`, and ask for direction.
 - Observation: the third CodeRabbit pass asked for a parameterized dependency
   smoke test with assertions on the captured version string and module object,
   and for ADR cross-references to be Markdown links. Impact: the smoke test now
-  has one case per dev dependency mapping, and
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md)
-  links to
-  [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md).
+  has one case per dev dependency mapping, and ADR 009 links to ADR 006.
 
 - Observation: the fourth CodeRabbit pass asked for assertion messages on the
   now-reachable smoke-test assertions. Impact: the test keeps explicit value
@@ -419,9 +411,7 @@ the conflict in `Decision log`, and ask for direction.
   guidance. Rationale: this milestone declares runtime extras that users can
   install directly, so the users' guide must show the supported
   `uv sync --extra` commands alongside the maintainer-facing dependency policy
-  recorded in
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md), the
-  technical design, and the developers' guide.
+  recorded in ADR 009, the technical design, and the developers' guide.
 
 - 2026-06-03 — Repair `inbound_adapter.allowed` in Stage B by adding
   `"infrastructure"`. Rationale: design §14 requires the CLI to import Cyclopts
@@ -438,10 +428,10 @@ the conflict in `Decision log`, and ask for direction.
 
 - 2026-06-03 — Treat the headless-OpenCV pairing AND the
   declared-but-not-installable extras policy as a single ADR question (proposed
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md)).
-  Rationale: both decisions outlive this plan and will be re-litigated whenever
-  a new dep is added. Recording them only here means they disappear when 1.2.3
-  closes. The ADR is drafted only after user approval of this plan.
+  ADR 009). Rationale: both decisions outlive this plan and will be
+  re-litigated whenever a new dep is added. Recording them only here means they
+  disappear when 1.2.3 closes. The ADR is drafted only after user approval of
+  this plan.
 
 - 2026-06-03 — Record a future option to split `models` into `models` (CPU
   contract) and `models-torch` (torch only). Rationale: the marker approach
@@ -496,10 +486,9 @@ tests/
   test_package_skeleton.py
 docs/
   beatcue-technical-design.md       # §§6.1, 14, 16, 17
-  adrs/
-    adr-0005-hecate-architecture-enforcement.md
-    adr-0006-v1-local-only-model-and-privacy-policy.md
-    adr-0007-v1-beatcue-json-schema.md
+  adr-005-hecate-architecture-enforcement.md
+  adr-006-v1-local-only-model-and-privacy-policy.md
+  adr-007-v1-beatcue-json-schema.md
   developers-guide.md
   users-guide.md
   roadmap.md
@@ -533,15 +522,14 @@ Makefile contract:
 
 Relevant ADRs:
 
-- [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md) — Hecate is
-  the enforcement mechanism; the project's architectural rules live in
-  `[tool.hecate]` and are checked in CI.
-- [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) — V1
-  model execution is strictly local; the `models` extra must remain optional
-  and is never installed by default in containerized or managed environments.
-- [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md) — BeatCue JSON uses
-  `msgspec.Struct` as its schema substrate, so `msgspec` belongs in `core` and
-  `msgspec.json` is already aliased by Ruff's import-conventions table.
+- ADR 005 — Hecate is the enforcement mechanism; the project's
+  architectural rules live in `[tool.hecate]` and are checked in CI.
+- ADR 006 — V1 model execution is strictly local; the `models` extra
+  must remain optional and is never installed by default in containerized or
+  managed environments.
+- ADR 007 — BeatCue JSON uses `msgspec.Struct` as its schema
+  substrate, so `msgspec` belongs in `core` and `msgspec.json` is already
+  aliased by Ruff's import-conventions table.
 
 Research-backed facts driving the pins (retrieval date 2026-06-03):
 
@@ -579,8 +567,7 @@ Research-backed facts driving the pins (retrieval date 2026-06-03):
    extras needed for BeatCue's CLI.
 10. **Rich** — v15.0.0 (2026-04-12), Python 3.14 classified.
 11. **msgspec** — v0.21.1 (2026-04-12), cp314 wheels published. Used
-    for BeatCue JSON serialization per
-    [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md). Belongs in `core`.
+    for BeatCue JSON serialization per ADR 007. Belongs in `core`.
 12. **PEP 735 vs PEP 621 under uv** — runtime extras go in
     `[project.optional-dependencies]`; dev-only groups go in
     `[dependency-groups]`. The canonical workflow is
@@ -686,7 +673,7 @@ editorial = [
     "OpenTimelineIO>=0.18; python_full_version < '3.14'",
 ]
 
-# Post-v1 local model adapters. ADR 0006 forbids remote execution; this
+# Post-v1 local model adapters. ADR 006 forbids remote execution; this
 # extra is declared but never installed by default. `torch` has no cp314
 # wheel yet and the rest of the stack pulls it in transitively, so the
 # whole `models` set is marker-gated to keep `uv lock` solvable today.
@@ -920,26 +907,26 @@ once it lands.
 
 ## Interfaces and dependencies
 
-| PyPI dist                | Import name      | Pin        | Group       | Notes                                                                                                    |
-| ------------------------ | ---------------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------- |
-| `cyclopts`               | `cyclopts`       | `>=4.16`   | `core`      | 3.14-classified (finding 9).                                                                             |
-| `rich`                   | `rich`           | `>=15`     | `core`      | 3.14-classified (finding 10).                                                                            |
-| `cuprum`                 | `cuprum`         | `>=0.1.0`  | `core`      | Pre-1.0; revisit on 1.0 (finding 1).                                                                     |
-| `msgspec`                | `msgspec`        | `>=0.21`   | `core`      | cp314 wheels published (finding 11); required by [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md). |
-| `opencv-python-headless` | `cv2`            | `>=4.13`   | `media`     | Headless, server-friendly (finding 7). Do not also list `opencv-python`.                                 |
-| `scenedetect-headless`   | `scenedetect`    | `>=0.7`    | `media`     | Pairs with headless OpenCV (finding 4).                                                                  |
-| `librosa`                | `librosa`        | `>=0.11`   | `media`     | Marker-gated `< 3.14` (finding 6); declared per design.                                                  |
-| `OpenTimelineIO`         | `opentimelineio` | `>=0.18`   | `editorial` | Marker-gated `< 3.14` (finding 5); post-v1.                                                              |
-| `transformers`           | `transformers`   | `>=5.9`    | `models`    | Marker-gated `< 3.14` to match the rest of the set (finding 8).                                          |
-| `torch`                  | `torch`          | (unpinned) | `models`    | Marker-gated `< 3.14`; no cp314 wheel yet (finding 8).                                                   |
-| `accelerate`             | `accelerate`     | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                                                 |
-| `timm`                   | `timm`           | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                                                 |
-| `einops`                 | `einops`         | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                                                 |
-| `pillow`                 | `PIL` (`pillow`) | (unpinned) | `models`    | Marker-gated `< 3.14`; imaging dep for Transformers (finding 8).                                         |
-| `sentencepiece`          | `sentencepiece`  | (unpinned) | `models`    | Marker-gated `< 3.14`; tokenizer dep (finding 8).                                                        |
-| `qwen-vl-utils`          | `qwen_vl_utils`  | (unpinned) | `models`    | Marker-gated `< 3.14`; Qwen helper (finding 8).                                                          |
-| `syrupy`                 | `syrupy`         | `>=5.3`    | `dev`       | Pure-Python wheel installs on 3.14 (finding 3); xdist caveat noted.                                      |
-| `cmd-mox`                | `cmd_mox`        | `>=0.2`    | `dev`       | Dist vs import-name mismatch — Hecate prefix MUST be `cmd_mox` (finding 2).                              |
+| PyPI dist                | Import name      | Pin        | Group       | Notes                                                                       |
+| ------------------------ | ---------------- | ---------- | ----------- | --------------------------------------------------------------------------- |
+| `cyclopts`               | `cyclopts`       | `>=4.16`   | `core`      | 3.14-classified (finding 9).                                                |
+| `rich`                   | `rich`           | `>=15`     | `core`      | 3.14-classified (finding 10).                                               |
+| `cuprum`                 | `cuprum`         | `>=0.1.0`  | `core`      | Pre-1.0; revisit on 1.0 (finding 1).                                        |
+| `msgspec`                | `msgspec`        | `>=0.21`   | `core`      | cp314 wheels published (finding 11); required by ADR 007.                   |
+| `opencv-python-headless` | `cv2`            | `>=4.13`   | `media`     | Headless, server-friendly (finding 7). Do not also list `opencv-python`.    |
+| `scenedetect-headless`   | `scenedetect`    | `>=0.7`    | `media`     | Pairs with headless OpenCV (finding 4).                                     |
+| `librosa`                | `librosa`        | `>=0.11`   | `media`     | Marker-gated `< 3.14` (finding 6); declared per design.                     |
+| `OpenTimelineIO`         | `opentimelineio` | `>=0.18`   | `editorial` | Marker-gated `< 3.14` (finding 5); post-v1.                                 |
+| `transformers`           | `transformers`   | `>=5.9`    | `models`    | Marker-gated `< 3.14` to match the rest of the set (finding 8).             |
+| `torch`                  | `torch`          | (unpinned) | `models`    | Marker-gated `< 3.14`; no cp314 wheel yet (finding 8).                      |
+| `accelerate`             | `accelerate`     | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                    |
+| `timm`                   | `timm`           | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                    |
+| `einops`                 | `einops`         | (unpinned) | `models`    | Marker-gated `< 3.14`; post-v1 `models` set (finding 8).                    |
+| `pillow`                 | `PIL` (`pillow`) | (unpinned) | `models`    | Marker-gated `< 3.14`; imaging dep for Transformers (finding 8).            |
+| `sentencepiece`          | `sentencepiece`  | (unpinned) | `models`    | Marker-gated `< 3.14`; tokenizer dep (finding 8).                           |
+| `qwen-vl-utils`          | `qwen_vl_utils`  | (unpinned) | `models`    | Marker-gated `< 3.14`; Qwen helper (finding 8).                             |
+| `syrupy`                 | `syrupy`         | `>=5.3`    | `dev`       | Pure-Python wheel installs on 3.14 (finding 3); xdist caveat noted.         |
+| `cmd-mox`                | `cmd_mox`        | `>=0.2`    | `dev`       | Dist vs import-name mismatch — Hecate prefix MUST be `cmd_mox` (finding 2). |
 
 _Table 1: Dependencies added by this plan, grouped by extra._
 
@@ -969,8 +956,7 @@ Hecate `infrastructure` group prefix changes: `cmdmox` → `cmd_mox`; add
 - ADR escalation: the logisphere review recommended lifting two coupled
   decisions to a single new ADR — the headless-OpenCV/scenedetect-headless
   pairing AND the "declared-but-not-installable extras during Python-version
-  transition windows" policy. After user approval of this plan, draft
-  [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md)
+  transition windows" policy. After user approval of this plan, draft ADR 009
   (proposed title: "Declared-but-not-installable extras and headless
   media-library coupling"), reference it from §6.1 of the design doc, and link
   to it from the Decision log. The ADR draft is out of scope for the
@@ -979,6 +965,11 @@ Hecate `infrastructure` group prefix changes: `cmdmox` → `cmd_mox`; add
 
 ## Addendum (2026-11-12): ADR filename migration
 
-ADR links in this completed plan were updated to follow the four-digit naming
-convention in `docs/documentation-style-guide.md`. The recorded status,
-decisions, and outcomes are unchanged.
+The current locations for ADRs referenced by this plan are:
+
+- [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md);
+- [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md);
+- [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md); and
+- [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md).
+
+The recorded dependency decisions, validation, and outcomes are unchanged.

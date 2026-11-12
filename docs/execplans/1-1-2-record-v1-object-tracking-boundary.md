@@ -47,10 +47,10 @@ developer and user guidance, and a roadmap update. Later implementation task
   `hexagonal-architecture` skill: the domain owns ports and object-tracking
   concepts, while Florence-2, OpenCV, or other infrastructure-specific types
   stay in adapters.
-- Use `docs/adrs/adr-0008-v1-object-tracking-boundary.md` for the decision
-  record. [ADR 0004](../adrs/adr-0004-two-tier-python-linting.md) now belongs
-  to the two-tier Python linting decision on `origin/main`; the object-tracking
-  decision was renumbered during rebase to preserve both branches' ADRs.
+- Use `docs/adr-008-v1-object-tracking-boundary.md` for the decision record.
+  ADR 004 now belongs to the two-tier Python linting decision on `origin/main`;
+  the object-tracking decision was renumbered during rebase to preserve both
+  branches' ADRs.
 - Follow `docs/documentation-style-guide.md`: British English with Oxford
   spelling, sentence-case headings, wrapped prose, fenced code blocks with
   language identifiers, ADR naming conventions, captions for tables, and
@@ -82,9 +82,8 @@ developer and user guidance, and a roadmap update. Later implementation task
 - Boundary: if the selected decision would move object tracking into the v1
   deterministic release rather than leaving it post-v1 behind ports, stop and
   present the release-scope trade-off.
-- ADR numbering: if another `docs/adrs/adr-0004-*.md` appears before
-  implementation, use the next available ADR number and record the change in
-  `Decision log`.
+- ADR numbering: if another `docs/adr-004-*.md` appears before implementation,
+  use the next available ADR number and record the change in `Decision log`.
 - Validation: if any required gate fails after two focused fix attempts, stop,
   record the failing command and log path, and ask for direction.
 - Review: if `coderabbit review --agent` raises concerns that require
@@ -155,15 +154,11 @@ developer and user guidance, and a roadmap update. Later implementation task
   the developers' guide.
 - [x] (2026-05-17 11:35Z) Received explicit approval to implement the
   decision-record changes from this ExecPlan.
-- [x] (2026-05-17 11:35Z) Confirmed
-      [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md) is available
-      and the working tree
+- [x] (2026-05-17 11:35Z) Confirmed ADR 008 is available and the working tree
   starts clean against `origin/1-1-2-record-v1-object-tracking-boundary`.
 - [x] (2026-05-17 11:35Z) Updated this plan to `IN PROGRESS` before editing
   design documents.
-- [x] (2026-05-17 11:35Z) Created
-      [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md) and added
-      documentation signposts in
+- [x] (2026-05-17 11:35Z) Created ADR 008 and added documentation signposts in
   the technical design, developers' guide, users' guide, and roadmap.
 - [x] Create the ADR and documentation signposts.
 - [x] (2026-05-17 11:48Z) Ran `coderabbit review --agent`. The first
@@ -180,18 +175,16 @@ developer and user guidance, and a roadmap update. Later implementation task
   `origin/main`.
 - [x] Commit the approved implementation changes.
 - [x] (2026-05-17 12:05Z) Rebasing onto `origin/main` found that main had
-  introduced `docs/adr-004-two-tier-python-linting.md` (now
-  [ADR 0004](../adrs/adr-0004-two-tier-python-linting.md)) and architecture
-  checker guidance. Resolved the conflict by keeping main's architecture
-  guidance, preserving this branch's object-tracking boundary text, and
-  renumbering the object-tracking decision to
-  [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md).
+  introduced `docs/adr-004-two-tier-python-linting.md` and architecture checker
+  guidance. Resolved the conflict by keeping main's architecture guidance,
+  preserving this branch's object-tracking boundary text, and renumbering the
+  object-tracking decision to ADR 008.
 
 ## Surprises & discoveries
 
 - Observation: `docs/roadmap.md` already marks roadmap item 1.1.1 complete and
-  links the decision to [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md).
-  Impact: this work must not reopen the BeatCue JSON schema decision.
+  links the decision to ADR 007. Impact: this work must not reopen the BeatCue
+  JSON schema decision.
 
 - Observation:
   `docs/execplans/1-1-1-record-v1-schema-decision-for-beat-cue-json.md` already
@@ -230,17 +223,13 @@ developer and user guidance, and a roadmap update. Later implementation task
   to `Decision log`, and the rerun completed with zero findings.
 
 - Observation: The first implementation `coderabbit review --agent` run found
-  two minor [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md)
-  documentation issues: the title used `V1` instead of `v1`, and the first
-  `SAM 2` mention was not expanded. Impact: both findings were valid and fixed
-  before validation gates.
+  two minor ADR 008 documentation issues: the title used `V1` instead of `v1`,
+  and the first `SAM 2` mention was not expanded. Impact: both findings were
+  valid and fixed before validation gates.
 
 - Observation: Rebasing onto `origin/main` showed that main had already added
-  the historical path `docs/adr-004-two-tier-python-linting.md`, now
-  [ADR 0004](../adrs/adr-0004-two-tier-python-linting.md). Impact: the
-  object-tracking ADR was renamed to
-  [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md), so both
-  decisions remain addressable.
+  `docs/adr-004-two-tier-python-linting.md`. Impact: the object-tracking ADR
+  was renamed to ADR 008, so both decisions remain addressable.
 
 ## Decision log
 
@@ -279,13 +268,11 @@ The implementation should start by checking the working tree and ADR sequence:
 
 ```bash
 git status --short
-find docs/adrs -maxdepth 1 -type f -name 'adr-*.md' | sort
+find docs -maxdepth 1 -type f -name 'adr-*.md' | sort
 ```
 
-Because `origin/main` now owns
-[ADR 0004](../adrs/adr-0004-two-tier-python-linting.md), the implementation uses
-`docs/adrs/adr-0008-v1-object-tracking-boundary.md`. If
-[ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md) already exists in a
+Because `origin/main` now owns ADR 004, the implementation uses
+`docs/adr-008-v1-object-tracking-boundary.md`. If ADR 008 already exists in a
 future replay, use the next available number and update this plan. The ADR
 should include the sections required by `docs/documentation-style-guide.md` and
 should compare these options:
@@ -308,9 +295,8 @@ Update `docs/beatcue-technical-design.md` in the sections already cited by the
 roadmap:
 
 - Section 3.1 should continue to say object tracking is post-v1
-  implementation work, while noting that
-  [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md) records the
-  selected boundary for later tasks.
+  implementation work, while noting that ADR 008 records the selected boundary
+  for later tasks.
 - Section 8 should describe `ObjectTracker` as a domain-owned port whose
   default implementation may be centroid-association over detector observations.
 - Section 11 should keep the persistence requirement for object-entry and
@@ -356,14 +342,14 @@ from the `commit-message` skill:
 ```bash
 git status --short
 git diff -- \
-  docs/adrs/adr-0008-v1-object-tracking-boundary.md \
+  docs/adr-008-v1-object-tracking-boundary.md \
   docs/beatcue-technical-design.md \
   docs/developers-guide.md \
   docs/users-guide.md \
   docs/roadmap.md \
   docs/execplans/1-1-2-record-v1-object-tracking-boundary.md
 git add \
-  docs/adrs/adr-0008-v1-object-tracking-boundary.md \
+  docs/adr-008-v1-object-tracking-boundary.md \
   docs/beatcue-technical-design.md \
   docs/developers-guide.md \
   docs/users-guide.md \
@@ -403,12 +389,10 @@ the exact log paths in `Progress` when running the commands.
 
 ## Outcomes & retrospective
 
-The implementation records
-[ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md) as the durable
-object-tracking boundary: post-v1 tracking should use a domain-owned
-`ObjectTracker` port with a simple centroid-association default fed by detector
-observations. Florence-2 remains a detection and labelling adapter, not the
-persistence boundary.
+The implementation records ADR 008 as the durable object-tracking boundary:
+post-v1 tracking should use a domain-owned `ObjectTracker` port with a simple
+centroid-association default fed by detector observations. Florence-2 remains a
+detection and labelling adapter, not the persistence boundary.
 
 The documentation now signposts the decision from the technical design,
 developers' guide, users' guide, roadmap, and this ExecPlan. `docs/roadmap.md`
@@ -423,9 +407,13 @@ commit is `d52976f` (`Record object-tracking boundary`) after rebasing onto
 
 ## Addendum (2026-11-12): ADR filename migration
 
-The plan records the original ADR 0008 path as
-`docs/adr-008-v1-object-tracking-boundary.md`. It now lives at
-[ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md). Other ADR links in
-this completed plan follow the four-digit naming convention in
-`docs/documentation-style-guide.md`. The plan status, decisions, and outcomes
-are unchanged.
+The initial implementation commit `d52976f07365040680efb896a43a95b642b242bd`
+added `docs/adr-005-v1-object-tracking-boundary.md`. After rebasing, the PR
+base recorded the decision at `docs/adr-008-v1-object-tracking-boundary.md`.
+The canonical file is now
+[ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md). The original
+inventory command and decision record remain unchanged.
+
+The other ADRs named in this plan now live at
+[ADR 0004](../adrs/adr-0004-two-tier-python-linting.md) and
+[ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md).
