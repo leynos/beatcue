@@ -181,6 +181,6 @@ redaction, retention, failure, and auditability decisions.
 
 ## Addendum (2026-11-12): filename migration
 
-This ADR's filename and links were updated to follow the four-digit ADR naming
-convention in `docs/documentation-style-guide.md`. Its status and decision are
-unchanged.
+This ADR's H1 now uses the four-digit serial required by the imported style
+guide. Its filename and links follow the guide's ADR naming convention. Its
+status and decision are unchanged.
