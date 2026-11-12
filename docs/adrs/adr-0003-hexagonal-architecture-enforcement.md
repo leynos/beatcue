@@ -3,7 +3,7 @@
 ## Status
 
 Superseded on 2026-05-20 by
-[ADR 0005: Hecate architecture enforcement](adr-0005-hecate-architecture-enforcement.md).
+[ADR 005: Hecate architecture enforcement](adr-0005-hecate-architecture-enforcement.md).
 BeatCue now enforces its documented package dependency direction with Hecate
 rather than the repository-local Python checker described here.
 
@@ -112,6 +112,6 @@ are allowed to meet application services.
 ## Addendum (2026-11-12): filename migration
 
 The title and filename now use the four-digit serial required by the imported
-style guide. The supersession reference keeps the existing decision and points
-to [ADR 0005](adr-0005-hecate-architecture-enforcement.md) at its canonical
+style guide. The supersession link keeps its historical label and points to
+[ADR 0005](adr-0005-hecate-architecture-enforcement.md) at its canonical
 location. The status and decision are unchanged.

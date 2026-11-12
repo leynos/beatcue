@@ -304,9 +304,8 @@ roadmap:
 - Section 12 should preserve the rule that semantic annotation describes
   visible evidence only and does not replace tracking persistence.
 - Section 21 should replace the open deferral with a concise signpost to
-  [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md), while leaving
-  remote models, graphics processing unit (GPU) scheduling, and advanced
-  segmentation deferred.
+  ADR 008, while leaving remote models, graphics processing unit (GPU)
+  scheduling, and advanced segmentation deferred.
 
 Update `docs/developers-guide.md` with internal guidance for later
 implementers: keep tracker protocols in the domain, keep detector and tracker

@@ -12,11 +12,10 @@ existing Makefile gate.
 
 ## Context and problem statement
 
-[ADR 0003](adr-0003-hexagonal-architecture-enforcement.md) established a
-repository-local architecture checker in `beatcue.architecture`. That checker
-proved BeatCue's hexagonal dependency rule before the real domain, application,
-and adapter packages existed. It also made package-barrel re-exports visible to
-the local quality gate.
+ADR 003 established a repository-local architecture checker in
+`beatcue.architecture`. That checker proved BeatCue's hexagonal dependency rule
+before the real domain, application, and adapter packages existed. It also made
+package-barrel re-exports visible to the local quality gate.
 
 The local checker had become maintenance surface that duplicated Hecate, a
 shared df12 architecture-checking package. BeatCue needs the same boundary
@@ -102,6 +101,7 @@ work rely on the same quality gate.
 
 ## Addendum (2026-11-12): filename migration
 
-This ADR's filename and links were updated to follow the four-digit ADR naming
-convention in `docs/documentation-style-guide.md`. Its status and decision are
-unchanged.
+This ADR's title and filename use the four-digit serial required by the
+imported style guide. The historical ADR 003 reference above now resolves to
+[ADR 0003](adr-0003-hexagonal-architecture-enforcement.md) at its canonical
+location. The status and decision are unchanged.
