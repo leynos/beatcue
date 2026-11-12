@@ -511,3 +511,11 @@ inspecting
 rerunning `make markdownlint` successfully. The clean CodeRabbit rerun
 completed with zero findings. The implementation is ready for the required
 commit and push.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The implementation recorded ADR 0006 at its original
+`docs/adr-006-v1-local-only-model-and-privacy-policy.md` path. It now lives at
+[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). This
+addendum records the path migration; the plan's approval record, decisions,
+implementation outcomes, and status remain unchanged.
