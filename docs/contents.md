@@ -30,27 +30,34 @@ right source of truth for use, maintenance, design, and planning work.
 
 ## Decision records
 
-- [ADR 001: Colourgram domain boundary](adrs/adr-0001-colourgram-domain-boundary.md)
+- [ADR 0001: Colourgram domain boundary](
+  adrs/adr-0001-colourgram-domain-boundary.md)
   - Accepted boundary decision for colourgram domain ownership.
-- [ADR 002: V1 port surface](adrs/adr-0002-v1-port-surface.md) - Accepted v1
+- [ADR 0002: V1 port surface](adrs/adr-0002-v1-port-surface.md) - Accepted v1
   port surface and integration boundary.
-- [ADR 003: Hexagonal architecture enforcement](adrs/adr-0003-hexagonal-architecture-enforcement.md)
+- [ADR 0003: Hexagonal architecture enforcement](
+  adrs/adr-0003-hexagonal-architecture-enforcement.md)
   - Architecture enforcement policy for the Python package.
-- [ADR 004: Two-tier Python linting](adrs/adr-0004-two-tier-python-linting.md)
+- [ADR 0004: Two-tier Python linting](adrs/adr-0004-two-tier-python-linting.md)
   - Historical two-tier decision with dated addenda for the current four-tier
     Python lint architecture and Skylos gate.
-- [ADR 005: Hecate architecture enforcement](adrs/adr-0005-hecate-architecture-enforcement.md)
+- [ADR 0005: Hecate architecture enforcement](
+  adrs/adr-0005-hecate-architecture-enforcement.md)
   - Hecate-based enforcement decision for architecture boundaries.
-- [ADR 006: V1 local-only model and privacy policy](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
+- [ADR 0006: V1 local-only model and privacy policy](
+  adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
   - Accepted local-only model and privacy decision.
-- [ADR 007: V1 BeatCue JSON schema](adrs/adr-0007-v1-beatcue-json-schema.md) -
+- [ADR 0007: V1 BeatCue JSON schema](adrs/adr-0007-v1-beatcue-json-schema.md) -
   Accepted v1 BeatCue JSON schema decision.
-- [ADR 008: V1 object tracking boundary](adrs/adr-0008-v1-object-tracking-boundary.md)
+- [ADR 0008: V1 object tracking boundary](
+  adrs/adr-0008-v1-object-tracking-boundary.md)
   - Accepted object tracking ownership and extension boundary.
-- [ADR 009: Dependency extras and Python 3.14 markers](adrs/adr-0009-dependency-extras-and-python-314-markers.md)
+- [ADR 0009: Dependency extras and Python 3.14 markers](
+  adrs/adr-0009-dependency-extras-and-python-314-markers.md)
   - Accepted dependency-extra layout, headless media stack, and temporary
     Python 3.14 markers for optional packages.
-- [ADR 010: `main` owns coverage publication](adrs/adr-0010-main-owns-coverage-publication.md)
+- [ADR 0010: `main` owns coverage publication](
+  adrs/adr-0010-main-owns-coverage-publication.md)
   - Accepted split between the pull-request coverage ratchet and the
     CodeScene publisher on `main`.
 

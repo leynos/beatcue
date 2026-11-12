@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 004: Two-tier Python linting
+# Architectural decision record (ADR) 0004: Two-tier Python linting
 
 ## Status
 
@@ -198,3 +198,9 @@ cannot change the parsed grammar without a commit.
 module the PyPy runtime could not parse produced no messages at all and the
 lint passed without linting it. A parse failure now fails the lint. No module
 in this repository was skipped under the previous PyPy 3.11 pin.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 010: `main` owns coverage publication
+# Architectural decision record (ADR) 0010: `main` owns coverage publication
 
 ## Status
 
@@ -78,4 +78,10 @@ The contract this record names, `tests/test_codescene_contract.py`, has moved
 out of this repository. `make test-workflow-contracts` now runs the shared
 `cv005-contracts` library from `leynos/shared-actions`, pinned by full commit
 in the Makefile, and the `ci.yml` job runs that target. The decision above is
+unchanged.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
 unchanged.

@@ -1,9 +1,9 @@
-# Architectural decision record (ADR) 003: Hexagonal architecture enforcement
+# Architectural decision record (ADR) 0003: Hexagonal architecture enforcement
 
 ## Status
 
 Superseded on 2026-05-20 by
-[ADR 005: Hecate architecture enforcement](adr-0005-hecate-architecture-enforcement.md).
+[ADR 0005: Hecate architecture enforcement]( adr-0005-hecate-architecture-enforcement.md).
 BeatCue now enforces its documented package dependency direction with Hecate
 rather than the repository-local Python checker described here.
 
@@ -108,3 +108,9 @@ replaceable implementation detail. Enforcing import direction in the local
 quality gate turns that design rule into an executable constraint. Keeping the
 composition root explicit preserves the practical place where concrete adapters
 are allowed to meet application services.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

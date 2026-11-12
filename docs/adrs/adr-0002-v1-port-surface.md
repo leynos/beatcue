@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 002: V1 port surface
+# Architectural decision record (ADR) 0002: V1 port surface
 
 ## Status
 
@@ -79,3 +79,9 @@ to call one another directly.
   responsibility.
 - Grouping dependencies later must preserve testability and explicit
   composition-root wiring.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

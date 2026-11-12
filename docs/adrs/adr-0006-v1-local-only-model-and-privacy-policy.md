@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 006: v1 local-only model and privacy policy
+# Architectural decision record (ADR) 0006: v1 local-only model and privacy policy
 
 ## Status
 
@@ -178,3 +178,9 @@ deterministic local cue extraction and later local semantic enrichment without
 accidentally creating a remote-inference product. Remote execution remains a
 separate design problem because it needs its own credentials, consent,
 redaction, retention, failure, and auditability decisions.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

@@ -33,7 +33,8 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
   - Ratify `msgspec.Struct` as the selected v1 schema technology in an ADR if
     the project still wants a separate decision record.
   - See beatcue-technical-design.md §§7, 13.1, and 17.
-  - Decision: ADR 007 ratifies `msgspec.Struct` as the BeatCue JSON v1 schema
+  - Decision: [ADR 0007](adrs/adr-0007-v1-beatcue-json-schema.md) ratifies
+    `msgspec.Struct` as the BeatCue JSON v1 schema
     technology.
   - Success: the ADR or design signpost explains why `msgspec` is suitable for
     library callers, CLI output, round-trip validation, and stable snapshots.
@@ -42,7 +43,8 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
   - Decide whether v1 uses a centroid tracker, Florence-2-only detections, or a
     pluggable tracker port with a simple default.
   - See beatcue-technical-design.md §§8, 11, 12, and 21.
-  - Decision: ADR 008 ratifies a domain-owned `ObjectTracker` port with a
+  - Decision: [ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md) ratifies
+    a domain-owned `ObjectTracker` port with a
     simple centroid-association default fed by detector observations. Florence-2
     remains a detection and labelling adapter, not the persistence boundary.
   - Success: later object-entry tasks can implement one selected boundary
@@ -52,7 +54,9 @@ first public API boundary. See beatcue-technical-design.md §§2-8, §13.1, and
   - Confirm that remote model execution remains out of scope until a separate
     privacy and credentials design exists.
   - See beatcue-technical-design.md §§12, 19, and 21.
-  - Decision: ADR 006 ratifies BeatCue v1 as local-only for model execution.
+  - Decision:
+    [ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
+    ratifies BeatCue v1 as local-only for model execution.
     Remote backends are unavailable until a later privacy and credentials
     design is accepted, and requested remote backends that are not explicitly
     configured fail before inference with a capability error.
@@ -79,7 +83,8 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - See beatcue-technical-design.md §5.
   - Success: a deliberate adapter import in `beatcue.domain` fails the gate.
   - Implementation: Hecate now enforces the architecture policy through
-    `make check-architecture`; see ADR 005.
+    `make check-architecture`; see
+    [ADR 0005](adrs/adr-0005-hecate-architecture-enforcement.md).
 - [x] 1.2.3. Wire the development dependencies required by the design.
   - Requires 1.2.1.
   - Add runtime or optional dependency groups for Cyclopts, Rich, Cuprum,
@@ -91,7 +96,8 @@ task after this phase. See beatcue-technical-design.md §§5-8 and §17.
   - Success: `make all` installs the package and can discover the empty unit
     and behavioural test suites.
   - Implementation: dependency extras and dev tooling are declared in
-    `pyproject.toml`, Hecate tracks the actual import names, and ADR 009
+    `pyproject.toml`, Hecate tracks the actual import names, and
+    [ADR 0009](adrs/adr-0009-dependency-extras-and-python-314-markers.md)
     records the Python 3.14 marker policy.
 
 ### 1.3. Prove real I/O through a walking skeleton

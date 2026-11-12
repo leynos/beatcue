@@ -564,3 +564,9 @@ scenario should be replaced with plain pytest (`#15`).
 
 [^1]: Import Linter documentation, "Import Linter", accessed 2026-05-19,
     <https://import-linter.readthedocs.io/en/v2.4/readme.html>.
+
+## Addendum (2026-11-12): ADR filename migration
+
+ADR links in this completed plan were updated to follow the four-digit naming
+convention in `docs/documentation-style-guide.md`. The recorded status,
+decisions, and outcomes are unchanged.

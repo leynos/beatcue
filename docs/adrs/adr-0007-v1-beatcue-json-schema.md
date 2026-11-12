@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 007: V1 BeatCue JSON schema
+# Architectural decision record (ADR) 0007: V1 BeatCue JSON schema
 
 ## Status
 
@@ -199,3 +199,9 @@ ______________________________________________________________________
 
 [^1]: `msgspec` documentation, accessed 2026-05-10,
     <https://jcristharif.com/msgspec/>.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

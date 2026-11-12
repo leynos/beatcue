@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 001: Colourgram domain boundary
+# Architectural decision record (ADR) 0001: Colourgram domain boundary
 
 ## Status
 
@@ -81,3 +81,9 @@ configured series cap is not exceeded.
 - Feature names and units must be stable once snapshots exist.
 - If future detectors require richer image data, they need a new adapter port
   rather than expanding the colourgram value into raw image storage.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.

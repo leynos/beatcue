@@ -139,10 +139,11 @@ serializer and validation layer from this decision.
   `docs/adrs/adr-0007-v1-beatcue-json-schema.md` to ratify `msgspec.Struct` for
   the BeatCue JSON v1 serialization boundary.
 - [x] (2026-05-10 00:00Z) Added design, user-guide, and developer-guide
-  signposts so public and internal documentation point at ADR 007 without
-  claiming the serializer exists.
+  signposts so public and internal documentation point at
+  [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md) without claiming the
+  serializer exists.
 - [x] (2026-05-10 00:00Z) Marked roadmap item 1.1.1 done and linked the item
-  to ADR 007.
+  to [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md).
 - [x] (2026-05-10 00:00Z) Ran Markdown gates and the user-requested Python
   gates sequentially with tee logs under `/tmp`. `make markdownlint`,
   `make nixie`, `make check-fmt`, `make typecheck`, `make lint`, and
@@ -172,9 +173,12 @@ serializer and validation layer from this decision.
   consistency gap with an ADR and roadmap update.
 
 - Observation: The repository already has ADR conventions and two accepted
-  ADRs. Evidence: `docs/adrs/adr-0001-colourgram-domain-boundary.md` and
-  `docs/adrs/adr-0002-v1-port-surface.md` are accepted ADRs dated 2026-05-09.
-  Impact: the new ADR should probably be
+  ADRs. At the time, their paths were
+  `docs/adr-001-colourgram-domain-boundary.md` and
+  `docs/adr-002-v1-port-surface.md`; they are now
+  [ADR 0001](../adrs/adr-0001-colourgram-domain-boundary.md) and
+  [ADR 0002](../adrs/adr-0002-v1-port-surface.md). Both were accepted on
+  2026-05-09. Impact: the new ADR should probably be
   `docs/adrs/adr-0007-v1-beatcue-json-schema.md` unless another ADR is added
   first.
 
@@ -237,18 +241,23 @@ serializer and validation layer from this decision.
 
 - Decision: Use `docs/adrs/adr-0007-v1-beatcue-json-schema.md` as the ADR file.
   Rationale: no newer ADR number appeared before implementation, and the
-  existing repository sequence ends at ADR 002. Date/Author: 2026-05-10 / Codex.
+  existing repository sequence ends at
+  [ADR 0002](../adrs/adr-0002-v1-port-surface.md). Date/Author: 2026-05-10 /
+  Codex.
 
 - Decision: Do not add pytest, pytest-bdd, syrupy, or Hypothesis tests in this
   task. Rationale: the implementation is an ADR and documentation signpost
   change only; there is no executable serializer, CLI workflow, or public
-  output contract to test yet. ADR 007 records those test obligations for the
-  later BeatCue JSON writer implementation. Date/Author: 2026-05-10 / Codex.
+  output contract to test yet.
+  [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md) records those test
+  obligations for the later BeatCue JSON writer implementation. Date/Author:
+  2026-05-10 / Codex.
 
 ## Outcomes & retrospective
 
 Implemented the schema ratification as documentation-only work. The change adds
-`docs/adrs/adr-0007-v1-beatcue-json-schema.md`, signposts ADR 007 from
+`docs/adrs/adr-0007-v1-beatcue-json-schema.md`, signposts
+[ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md) from
 `docs/beatcue-technical-design.md`, `docs/users-guide.md`, and
 `docs/developers-guide.md`, and marks roadmap item 1.1.1 done in
 `docs/roadmap.md`.
@@ -276,9 +285,10 @@ Validation evidence:
   passed.
 
 No production serializer, package dependency, CLI command, inference-service
-behaviour, or test suite was added. ADR 007 records the required pytest,
-pytest-bdd, syrupy, Hypothesis, and Vidai Mock expectations for the later
-writer and inference-service implementation tasks.
+behaviour, or test suite was added.
+[ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md) records the required
+pytest, pytest-bdd, syrupy, Hypothesis, and Vidai Mock expectations for the
+later writer and inference-service implementation tasks.
 
 ## Context and orientation
 
@@ -489,3 +499,12 @@ This document is a plan only. Do not begin the implementation milestones above
 until the user explicitly approves this ExecPlan or requests specific
 revisions. Once approved, implement within the tolerances, update this plan as
 the work proceeds, and stop for direction if an exception trigger is reached.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The plan records the original ADR 0007 path as
+`docs/adr-007-v1-beatcue-json-schema.md`. It now lives at
+[ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md). Other ADR links in this
+completed plan follow the four-digit naming convention in
+`docs/documentation-style-guide.md`. The plan status, decisions, and outcomes
+are unchanged.

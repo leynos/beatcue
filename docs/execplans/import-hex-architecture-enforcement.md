@@ -156,7 +156,9 @@ the conflict in `Decision Log`, and ask for direction.
   `uv run pytest -q tests/test_architecture_enforcement.py`; all passed.
 - [x] (2026-05-11T00:00:00Z) Added `make check-architecture` and wired
   `make lint` to run the architecture checker after Ruff.
-- [x] (2026-05-11T00:00:00Z) Added ADR 003 and updated the developers' guide
+- [x] (2026-05-11T00:00:00Z) Added
+      [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+      updated the developers' guide
   with the enforced rules, Makefile targets, re-export handling, and fixture
   strategy.
 - [x] (2026-05-11T00:00:00Z) Ran all required gates with `tee` logs:
@@ -268,8 +270,9 @@ the conflict in `Decision Log`, and ask for direction.
   runs first and the architecture gate follows it explicitly.
 
 - Observation: The final CodeRabbit pass reported a minor spelling concern in
-  ADR 003, but the current file already uses `behavioural tests` and a search
-  of the touched documentation found no US spelling. Evidence:
+  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md), but the
+  current file already uses `behavioural tests` and a search of the touched
+  documentation found no US spelling. Evidence:
   `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` shows
   `behavioural tests` on line 81, and a repository search returned no matches.
   Impact: the finding was treated as stale after verification rather than
@@ -277,12 +280,12 @@ the conflict in `Decision Log`, and ask for direction.
 
 - Observation: A repeat CodeRabbit pass reported three Markdown blank-line
   concerns that were already satisfied and one valid Oxford-comma concern in
-  ADR 003. Evidence: `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`
-  showed blank lines around the code fence, table, and `## Goals and non-goals`
-  heading. The table row for `adapter` did omit the Oxford comma before
-  `and infrastructure`. Impact: the stale blank-line findings were skipped
-  after verification, and the table wording was changed to
-  `adapter groups, and infrastructure`.
+  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md). Evidence:
+  `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md` showed blank lines
+  around the code fence, table, and `## Goals and non-goals` heading. The table
+  row for `adapter` did omit the Oxford comma before `and infrastructure`.
+  Impact: the stale blank-line findings were skipped after verification, and
+  the table wording was changed to `adapter groups, and infrastructure`.
 
 - Observation: Tightening the checker to pass re-export indices explicitly
   initially exceeded Ruff's argument-count limit on `_violations_for_module`.
@@ -354,7 +357,8 @@ the conflict in `Decision Log`, and ask for direction.
   enforcement part of the ordinary local quality gate without adding another
   external tool. Date/Author: 2026-05-11T00:00:00Z / Codex.
 
-- Decision: Document architecture enforcement in both ADR 003 and the
+- Decision: Document architecture enforcement in both
+  [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and the
   developers' guide. Rationale: the ADR records the accepted architecture
   fitness function, while the developers' guide gives contributors the
   operational commands and fixture guidance they need during implementation.
@@ -379,8 +383,9 @@ The implemented outcome matches the planned behaviour. BeatCue now has a
 repository-local architecture checker under `beatcue.architecture`, fixture
 coverage for the intended future package graph, a production check for the
 current `beatcue/` package, an explicit `make check-architecture` target, and
-`make lint` runs Ruff before invoking the architecture gate. ADR 003 records
-the accepted fitness function, and the developers' guide explains the command,
+`make lint` runs Ruff before invoking the architecture gate.
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) records the
+accepted fitness function, and the developers' guide explains the command,
 scope, and fixture strategy.
 
 Reusable without change: the core mechanism transferred well. The useful pieces
@@ -504,7 +509,7 @@ The relevant source files are:
 - `tests/test_architecture_enforcement.py`;
 - `tests/features/architecture_enforcement.feature`;
 - `tests/steps/test_architecture_enforcement_steps.py`;
-- `docs/adr/adr-006-hexagonal-architecture-enforcement.md`.
+- `docs/adrs/adr-0003-hexagonal-architecture-enforcement.md`.
 
 The reusable mechanism parses Python files with `ast`, collects `import` and
 `from ... import ...` statements, resolves package-local relative imports,
@@ -766,7 +771,7 @@ episodic/architecture/reexports.py
 tests/test_architecture_enforcement.py
 tests/features/architecture_enforcement.feature
 tests/steps/test_architecture_enforcement_steps.py
-docs/adr/adr-006-hexagonal-architecture-enforcement.md
+docs/adrs/adr-0003-hexagonal-architecture-enforcement.md
 ```
 
 Prior-art notes from Firecrawl:
@@ -881,3 +886,9 @@ Initial draft created on 2026-05-10 after reading repository instructions,
 BeatCue design documents, the Episodic implementation, and prior-art
 documentation. The plan was approved for implementation on 2026-05-10 at
 23:24:32Z, progressed through implementation, and is now `COMPLETE`.
+
+## Addendum (2026-11-12): ADR filename migration
+
+ADR links in this completed plan were updated to follow the four-digit naming
+convention in `docs/documentation-style-guide.md`. The recorded status,
+decisions, and outcomes are unchanged.

@@ -21,9 +21,9 @@ consistent, and easy to maintain across projects.
   - and so forth.
 - The words **"outwith"** and **"caveat"** are acceptable.
 - Keep United States (US) spelling when used in an API, for example, `color`.
-  Wrap such API names in backticks: the spelling gate ignores backticked spans,
-  so quoting an identifier both documents its origin and exempts it from the
-  Oxford-spelling check.
+  Fenced code blocks are exempt from spelling checks. Inline backticked
+  identifiers are still checked, so add a narrow entry to `typos.local.toml`
+  when a specific identifier needs an exception.
 - The project uses the filename `LICENSE` for community consistency.
 - Markdown prose is checked against this spelling policy with
   [`typos`](https://github.com/crate-ci/typos).
@@ -248,12 +248,14 @@ _Table 1: Obligations when moving from v0.8.0 to v0.9.0._
 
 ### Before
 
+<!-- tested-example: migration-guide-before -->
 ```rust,no_run
 <old code>
 ```
 
 ### After
 
+<!-- tested-example: migration-guide-after -->
 ```rust,no_run
 <new code>
 ```
@@ -737,6 +739,7 @@ contents of the manual.
 /// # Examples
 ///
 /// ```rust
+/// # fn add(a: i32, b: i32) -> i32 { a + b }
 /// assert_eq!(add(2, 3), 5);
 /// ```
 #[inline]

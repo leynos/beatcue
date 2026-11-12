@@ -39,7 +39,7 @@ editorial = [
     "OpenTimelineIO>=0.18; python_full_version < '3.14'",
 ]
 
-# Post-v1 local model adapters. ADR 006 forbids remote execution; this
+# Post-v1 local model adapters. ADR 0006 forbids remote execution; this
 # extra is declared but never installed by default. `torch` has no cp314
 # wheel yet and the rest of the stack pulls it in transitively, so the
 # whole `models` set is marker-gated to keep `uv lock` solvable today.

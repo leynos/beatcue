@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 008: v1 object-tracking boundary
+# Architectural decision record (ADR) 0008: v1 object-tracking boundary
 
 ## Status
 
@@ -165,3 +165,9 @@ contracts.
 The decision also keeps the release boundary honest. V1 can ship deterministic
 cue extraction without object tracking, while later object-entry work can start
 from a documented and testable persistence boundary.
+
+## Addendum (2026-11-12): filename migration
+
+This ADR's filename and links were updated to follow the four-digit ADR naming
+convention in `docs/documentation-style-guide.md`. Its status and decision are
+unchanged.
