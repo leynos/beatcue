@@ -390,23 +390,26 @@ $(UV_ENV) $(UV) run ruff check
 $(PYLINT) $(PYLINT_TARGETS)
 $(MAKE) check-architecture
 $(MAKE) spelling
-$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) \\
-  --category dead_code --gate \\
-  --format concise --no-upload --no-provenance --no-grep-verify
+$(MAKE) skylos   # df12-skylos check --repository .
 ```
 
 Use the Makefile target rather than invoking its tools directly. This keeps the
 selected interpreter, cache directories, and pinned tool versions consistent
 between local development, CI, and review.
 
-Skylos is separately provisioned at exact release `4.33.2` with Python 3.14.
-Skylos parses source with its own runtime abstract syntax tree (AST), so the
-pinned runtime prevents newer project syntax from creating phantom dead-code
-findings. Its gate is strict, production-only, non-interactive, and disables
-uploads, provenance collection, and repository-wide grep verification. Test
-references therefore cannot keep production symbols live. Treat a finding as
-genuine dead code until a runtime caller is verified, then remove it. For an
-implicit runtime caller, first model the boundary with a typed
+Skylos runs through the installed `df12-skylos` command from
+[df12-python-lints](https://github.com/leynos/df12-python-lints), provisioned by
+`make skylos` at the commit in `DF12_PYTHON_LINTS_SHA` (its `skylos` extra
+carries the one Skylos pin) under Python 3.14. Skylos parses source with its
+own runtime abstract syntax tree (AST), so the pinned runtime prevents newer
+project syntax from creating phantom dead-code findings. The command owns the
+invocation, the configuration checks and the exception editor; this repository
+keeps only the policy: `[tool.df12_skylos]` (the production roots and the
+interpreter) and `[tool.skylos]`. The gate is strict and production-only, so
+test references cannot keep production symbols live. CI runs the same check
+through the shared-actions `df12-skylos` action. Treat a finding as genuine
+dead code until a runtime caller is verified, then remove it. For an implicit
+runtime caller, first model the boundary with a typed
 `[[tool.skylos.dead_code.entrypoints]]` rule. Only when that cannot model the
 boundary, record the named exception and its verified caller:
 
@@ -415,28 +418,10 @@ make skylos-allow SYMBOL=registered_handler \\
   REASON="Loaded by the plugin registry; verified in its contract test"
 ```
 
-Do not add speculative or bulk allow-list entries. The `skylos-allow` target
-requires both `SYMBOL` and `REASON` to contain non-whitespace text, rejects an
-absent or whitespace-only value with exit status 2, and serializes the
-read-modify-write update through `flock` on the ignored
-`.skylos/skylos-allow.lock` file. It records the exception in
-`[tool.skylos.whitelist]` in `pyproject.toml`.
-
-### Makefile contract parser
-
-The Skylos Makefile contract test uses the pinned
-[Makeutil](https://github.com/leynos/makeutil) parser. Before running
-`make test` locally, install the same parser and Rust toolchain used in
-Continuous Integration (CI):
-
-```bash
-rustup toolchain install nightly-2026-05-28 --profile minimal
-RUSTFLAGS="-Zpolonius=next" cargo +nightly-2026-05-28 install \\
-  --git https://github.com/leynos/makeutil \\
-  --rev 29fc5a1634ffbaa18a773eed9dff1b2838a45d9c \\
-  --locked --force makeutil
-make test
-```
+Do not add speculative or bulk allow-list entries. `df12-skylos allow` requires
+both a symbol and a reason, refuses wildcards, and records the exception in
+`[tool.skylos.whitelist]` in `pyproject.toml` under a lock that is shared with
+the other df12 commands.
 
 ### Lint Makefile variables
 
@@ -464,14 +449,10 @@ The lint target is configured by these Makefile variables:
     --from 'pylint==$(PYLINT_VERSION)' pylint
   ```
 
-- `SKYLOS_VERSION`: pins the separately provisioned Skylos release.
-- `SKYLOS_CLI`: assembles the command-only Python 3.14 Skylos invocation.
-- `SKYLOS`: adds the reviewed `pyproject.toml` scan configuration to
-  `SKYLOS_CLI`.
-- `SKYLOS_PRODUCTION_TARGETS`: defaults to `beatcue`, excluding test-only
-  references from dead-code liveness analysis.
-- `SKYLOS_EXCLUDE_FOLDERS`: defaults to `tests`, making the production-only
-  scan scope explicit.
+- `DF12_PYTHON_LINTS_SHA`: the full commit of `df12-python-lints` that
+  provides `df12-skylos`, and with it the Skylos pin.
+- `SKYLOS`: the `df12-skylos` command, provisioned through `UV_GATE` from that
+  commit with its `skylos` extra under Python 3.14.
 
 Override these variables only when diagnosing the lint toolchain itself. Pull
 requests should not depend on local overrides to pass.

@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      MAKEUTIL_REVISION: '29fc5a1634ffbaa18a773eed9dff1b2838a45d9c'
-      MAKEUTIL_TOOLCHAIN: 'nightly-2026-05-28'
     steps:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
@@ -34,16 +31,6 @@ jobs:
           MBAKE_VERSION: '1.4.6'
         run: |
           uv tool install "mbake==${MBAKE_VERSION}"
-
-      - name: Install Makefile parser
-        run: |
-          rustup toolchain install "${MAKEUTIL_TOOLCHAIN}" --profile minimal
-          RUSTFLAGS="-Zpolonius=next" cargo +"${MAKEUTIL_TOOLCHAIN}" install \
-            --git https://github.com/leynos/makeutil \
-            --rev "${MAKEUTIL_REVISION}" \
-            --locked \
-            --force \
-            makeutil
 
       - name: Validate Makefile
         run: mbake validate Makefile
@@ -73,6 +60,9 @@ jobs:
 
       - name: Run lint gates
         run: make lint
+
+      - name: Dead-code gate
+        uses: leynos/shared-actions/.github/actions/df12-skylos@7f453d1cb78953489bd9da9409bf385c44b224a3
 
       - name: Run typechecker
         run: make typecheck

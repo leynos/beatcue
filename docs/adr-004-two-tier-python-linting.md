@@ -161,7 +161,8 @@ Later additions extend, rather than replace, this decision. The current Python
 lint sequence is Ruff, focused Pylint, Hecate architecture checks, and Skylos
 dead-code detection.
 
-Skylos is pinned as an isolated tool and runs only against production
+Skylos runs through the installed `df12-skylos` command from df12-python-lints
+(which carries the pin) as an isolated tool, and runs only against production
 `beatcue/` modules, excluding tests, with strict dead-code gate behaviour. It
 runs under Python 3.14 because Skylos parses source with its own runtime
 abstract syntax tree; this pin prevents phantom findings when project syntax
