@@ -881,3 +881,12 @@ Initial draft created on 2026-05-10 after reading repository instructions,
 BeatCue design documents, the Episodic implementation, and prior-art
 documentation. The plan was approved for implementation on 2026-05-10 at
 23:24:32Z, progressed through implementation, and is now `COMPLETE`.
+
+## Addendum (2026-11-12): ADR filename migration
+
+BeatCue's architecture decisions referenced by this plan now live at
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md). The path
+`docs/adr/adr-006-hexagonal-architecture-enforcement.md` in the prior-art lists
+is a recorded Episodic path, not a local BeatCue target; this addendum does not
+assert that the source path still exists.

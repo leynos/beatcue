@@ -487,3 +487,13 @@ complete-branch CodeRabbit review raised one trivial Markdown-validation
 process concern that was addressed by inspecting ADR 006 and rerunning
 `make markdownlint` successfully. The clean CodeRabbit rerun completed with
 zero findings. The implementation is ready for the required commit and push.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The local-only policy was recorded at
+`docs/adr-006-v1-local-only-model-and-privacy-policy.md`. It now lives at
+[ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). The
+related architecture decisions now live at
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md). The plan's
+approval record, status, decisions, and implementation outcomes are unchanged.

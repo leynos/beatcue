@@ -199,3 +199,9 @@ ______________________________________________________________________
 
 [^1]: `msgspec` documentation, accessed 2026-05-10,
     <https://jcristharif.com/msgspec/>.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

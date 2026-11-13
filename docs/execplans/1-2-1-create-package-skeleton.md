@@ -564,3 +564,10 @@ scenario should be replaced with plain pytest (`#15`).
 
 [^1]: Import Linter documentation, "Import Linter", accessed 2026-05-19,
     <https://import-linter.readthedocs.io/en/v2.4/readme.html>.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The port-surface and architecture references in this plan now resolve to
+[ADR 0002](../adrs/adr-0002-v1-port-surface.md) and
+[ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md). The plan's
+recorded scope and outcomes are unchanged.

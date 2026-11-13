@@ -487,3 +487,15 @@ This document is a plan only. Do not begin the implementation milestones above
 until the user explicitly approves this ExecPlan or requests specific
 revisions. Once approved, implement within the tolerances, update this plan as
 the work proceeds, and stop for direction if an exception trigger is reached.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The initial implementation commit `42364399e96249c24b9b9bb1f4ba452a4cdbf182`
+added `docs/adr-003-v1-beatcue-json-schema.md`. After rebasing, the PR base
+recorded the decision at `docs/adr-007-v1-beatcue-json-schema.md`. The
+canonical file is now [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md).
+The recorded implementation history and decision remain unchanged.
+
+The other ADRs named in this plan now live at
+[ADR 0001](../adrs/adr-0001-colourgram-domain-boundary.md) and
+[ADR 0002](../adrs/adr-0002-v1-port-surface.md).

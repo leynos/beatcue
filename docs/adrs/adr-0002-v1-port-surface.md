@@ -79,3 +79,9 @@ to call one another directly.
   responsibility.
 - Grouping dependencies later must preserve testability and explicit
   composition-root wiring.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

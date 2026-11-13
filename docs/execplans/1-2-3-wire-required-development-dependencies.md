@@ -962,3 +962,14 @@ Hecate `infrastructure` group prefix changes: `cmdmox` → `cmd_mox`; add
   to it from the Decision log. The ADR draft is out of scope for the
   metadata-only milestone but should land in the same PR if reviewers want the
   policy captured before the next milestone.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The current locations for ADRs referenced by this plan are:
+
+- [ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md);
+- [ADR 0006](../adrs/adr-0006-v1-local-only-model-and-privacy-policy.md);
+- [ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md); and
+- [ADR 0009](../adrs/adr-0009-dependency-extras-and-python-314-markers.md).
+
+The recorded dependency decisions, validation, and outcomes are unchanged.
