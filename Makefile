@@ -27,19 +27,18 @@ PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= beatcue tests
 PYLINT = $(UV_GATE) tool --managed-python --python $(PYLINT_PYTHON) --from 'pylint==$(PYLINT_VERSION)' -- pylint
-SKYLOS_VERSION = 4.33.2
-# Skylos parses source with its own runtime AST; pinning Python 3.14 prevents
-# phantom findings when newer project syntax exceeds older runtime grammars.
-SKYLOS_CLI = $(UV_GATE) tool --python 3.14 --from 'skylos==$(SKYLOS_VERSION)' -- skylos
-SKYLOS = $(SKYLOS_CLI) --config-file pyproject.toml
-SKYLOS_PRODUCTION_TARGETS ?= beatcue
-SKYLOS_EXCLUDE_FOLDERS ?= tests
-SKYLOS_ALLOW_LOCK ?= .skylos/skylos-allow.lock
+# The dead-code gate is the installed df12-skylos command; its `skylos` extra
+# carries the one Skylos pin. Skylos parses source with its own runtime AST, so
+# the tool environment runs Python 3.14.
+DF12_PYTHON_LINTS_SHA = 1d6c3bba594651823c9ba8e8b40265cae59a1c52
+SKYLOS = $(UV_GATE) tool --python 3.14 --from \
+  'df12-python-lints[skylos] @ git+https://github.com/leynos/df12-python-lints.git@$(DF12_PYTHON_LINTS_SHA)' \
+  -- df12-skylos
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
 .PHONY: prepare help all clean build build-release lint fmt check-fmt \
-        check-architecture interrogate markdownlint makeutil nixie skylos-allow spelling test \
+        check-architecture interrogate markdownlint nixie skylos skylos-allow spelling test \
         test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
 
 prepare: .deps ## Install the locked development environment, offline first
@@ -145,15 +144,15 @@ lint: .deps ## Run linters
 	$(PYLINT) $(PYLINT_TARGETS)
 	$(MAKE) check-architecture
 	+$(MAKE) spelling
-	$(SKYLOS) $(SKYLOS_PRODUCTION_TARGETS) --exclude $(SKYLOS_EXCLUDE_FOLDERS) --category dead_code --gate --format concise --no-upload --no-provenance --no-grep-verify
+	$(MAKE) --no-print-directory skylos
+
+skylos: ## Detect dead production code
+	$(SKYLOS) check --repository .
 
 skylos-allow: export SKYLOS_SYMBOL = $(value SYMBOL)
 skylos-allow: export SKYLOS_REASON = $(value REASON)
-skylos-allow: ## Document one named Skylos exception, not an entry point
-	@case "$${SKYLOS_SYMBOL}" in *[![:space:]]*) ;; *) printf "Error: SYMBOL is required for a named whitelist exception\\n" >&2; exit 2;; esac
-	@case "$${SKYLOS_REASON}" in *[![:space:]]*) ;; *) printf "Error: REASON is required for a named whitelist exception\\n" >&2; exit 2;; esac
-	@mkdir -p "$(dir $(SKYLOS_ALLOW_LOCK))"
-	flock "$(SKYLOS_ALLOW_LOCK)" env $(SKYLOS_CLI) whitelist "$${SKYLOS_SYMBOL}" --reason "$${SKYLOS_REASON}"
+skylos-allow: ## Document one named Skylos exception (SYMBOL=name REASON=text)
+	$(SKYLOS) allow --repository . --symbol="$${SKYLOS_SYMBOL}" --reason="$${SKYLOS_REASON}"
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
@@ -181,10 +180,7 @@ nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,nixie)
 	$(NIXIE) --no-sandbox
 
-makeutil: ## Verify the Makefile parser used by contract tests
-	$(call ensure_tool,$@)
-
-test: .deps $(VENV_TOOLS) makeutil test-workflow-contracts ## Run tests
+test: .deps $(VENV_TOOLS) test-workflow-contracts ## Run tests
 	$(call ensure_uv)
 	$(UV_GATE) run -- pytest -v -n auto
 

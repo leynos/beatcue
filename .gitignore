@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .skylos/
+.pyproject.toml.df12.lock
 *.py[cod]
 *$py.class
 
