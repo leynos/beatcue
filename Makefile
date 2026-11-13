@@ -152,7 +152,7 @@ skylos: ## Detect dead production code
 skylos-allow: export SKYLOS_SYMBOL = $(value SYMBOL)
 skylos-allow: export SKYLOS_REASON = $(value REASON)
 skylos-allow: ## Document one named Skylos exception (SYMBOL=name REASON=text)
-	$(SKYLOS) allow --repository . --symbol "$${SKYLOS_SYMBOL}" --reason "$${SKYLOS_REASON}"
+	$(SKYLOS) allow --repository . --symbol="$${SKYLOS_SYMBOL}" --reason="$${SKYLOS_REASON}"
 
 check-architecture: .deps ## Verify hexagonal import boundaries
 	$(call ensure_uv)
