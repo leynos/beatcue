@@ -30,7 +30,7 @@ PYLINT = $(UV_GATE) tool --managed-python --python $(PYLINT_PYTHON) --from 'pyli
 # The dead-code gate is the installed df12-skylos command; its `skylos` extra
 # carries the one Skylos pin. Skylos parses source with its own runtime AST, so
 # the tool environment runs Python 3.14.
-DF12_PYTHON_LINTS_SHA = 1d6c3bba594651823c9ba8e8b40265cae59a1c52
+DF12_PYTHON_LINTS_SHA = 56ad71721c3f1f2164ec84b69150582488f1a927
 SKYLOS = $(UV_GATE) tool --python 3.14 --from \
   'df12-python-lints[skylos] @ git+https://github.com/leynos/df12-python-lints.git@$(DF12_PYTHON_LINTS_SHA)' \
   -- df12-skylos
