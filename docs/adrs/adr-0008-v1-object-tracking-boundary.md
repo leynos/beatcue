@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 0008: v1 object-tracking boundary
+# Architectural decision record (ADR) 008: v1 object-tracking boundary
 
 ## Status
 
@@ -168,6 +168,6 @@ from a documented and testable persistence boundary.
 
 ## Addendum (2026-11-12): filename migration
 
-This ADR's H1 now uses the four-digit serial required by the imported style
-guide. Its filename and links follow the guide's ADR naming convention. Its
-status and decision are unchanged.
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

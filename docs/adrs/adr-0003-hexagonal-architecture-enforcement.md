@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 0003: Hexagonal architecture enforcement
+# Architectural decision record (ADR) 003: Hexagonal architecture enforcement
 
 ## Status
 
@@ -111,7 +111,8 @@ are allowed to meet application services.
 
 ## Addendum (2026-11-12): filename migration
 
-The title and filename now use the four-digit serial required by the imported
-style guide. The supersession link keeps its historical label and points to
-[ADR 0005](adr-0005-hecate-architecture-enforcement.md) at its canonical
-location. The status and decision are unchanged.
+This migration preserves the original H1 and supersession label. Its filename
+follows the imported guide's four-digit scheme. The status link now points from
+historical path `docs/adr-005-hecate-architecture-enforcement.md` to canonical
+[ADR 0005](adr-0005-hecate-architecture-enforcement.md). The status and
+decision are unchanged.

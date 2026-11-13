@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 0005: Hecate architecture enforcement
+# Architectural decision record (ADR) 005: Hecate architecture enforcement
 
 ## Status
 
@@ -101,7 +101,8 @@ work rely on the same quality gate.
 
 ## Addendum (2026-11-12): filename migration
 
-This ADR's title and filename use the four-digit serial required by the
-imported style guide. The historical ADR 003 reference above now resolves to
-[ADR 0003](adr-0003-hexagonal-architecture-enforcement.md) at its canonical
-location. The status and decision are unchanged.
+This migration preserves the original H1. Its filename follows the imported
+guide's four-digit scheme. The historical reference to ADR 003 now points from
+`docs/adr-003-hexagonal-architecture-enforcement.md` to canonical
+[ADR 0003](adr-0003-hexagonal-architecture-enforcement.md). The status and
+decision are unchanged.

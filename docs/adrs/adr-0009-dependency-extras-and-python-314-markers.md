@@ -1,4 +1,4 @@
-# Architectural decision record (ADR) 0009: dependency extras and Python 3.14 markers
+# Architectural decision record (ADR) 009: dependency extras and Python 3.14 markers
 
 ## Status
 
@@ -76,7 +76,8 @@ Architecture policy must use importable module names. For example, the
 
 ## Addendum (2026-11-12): filename migration
 
-The title and filename now use the four-digit serial required by the imported
-style guide. The local-only policy reference points to
-[ADR 0006](adr-0006-v1-local-only-model-and-privacy-policy.md) at its canonical
-location. The status and decision are unchanged.
+This migration preserves the original H1 and non-goal label. Its filename
+follows the imported guide's four-digit scheme. The policy link now points from
+historical path `docs/adr-006-v1-local-only-model-and-privacy-policy.md` to
+canonical [ADR 0006](adr-0006-v1-local-only-model-and-privacy-policy.md). The
+status and decision are unchanged.
