@@ -81,3 +81,9 @@ configured series cap is not exceeded.
 - Feature names and units must be stable once snapshots exist.
 - If future detectors require richer image data, they need a new adapter port
   rather than expanding the colourgram value into raw image storage.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

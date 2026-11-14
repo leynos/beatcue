@@ -98,3 +98,11 @@ analysis do not. Moving those mechanics to Hecate keeps the boundary
 enforcement explicit while reducing local maintenance. Keeping the Makefile
 entry point stable preserves developer workflow and lets future implementation
 work rely on the same quality gate.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves the original H1. Its filename follows the imported
+guide's four-digit scheme. The historical reference to ADR 003 now points from
+`docs/adr-003-hexagonal-architecture-enforcement.md` to canonical
+[ADR 0003](adr-0003-hexagonal-architecture-enforcement.md). The status and
+decision are unchanged.

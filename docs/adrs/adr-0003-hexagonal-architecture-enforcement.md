@@ -3,7 +3,7 @@
 ## Status
 
 Superseded on 2026-05-20 by
-[ADR 005: Hecate architecture enforcement](adr-005-hecate-architecture-enforcement.md).
+[ADR 005: Hecate architecture enforcement](adr-0005-hecate-architecture-enforcement.md).
 BeatCue now enforces its documented package dependency direction with Hecate
 rather than the repository-local Python checker described here.
 
@@ -108,3 +108,11 @@ replaceable implementation detail. Enforcing import direction in the local
 quality gate turns that design rule into an executable constraint. Keeping the
 composition root explicit preserves the practical place where concrete adapters
 are allowed to meet application services.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves the original H1 and supersession label. Its filename
+follows the imported guide's four-digit scheme. The status link now points from
+historical path `docs/adr-005-hecate-architecture-enforcement.md` to canonical
+[ADR 0005](adr-0005-hecate-architecture-enforcement.md). The status and
+decision are unchanged.

@@ -198,3 +198,9 @@ cannot change the parsed grammar without a commit.
 module the PyPy runtime could not parse produced no messages at all and the
 lint passed without linting it. A parse failure now fails the lint. No module
 in this repository was skipped under the previous PyPy 3.11 pin.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

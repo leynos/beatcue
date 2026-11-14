@@ -79,3 +79,9 @@ out of this repository. `make test-workflow-contracts` now runs the shared
 `cv005-contracts` library from `leynos/shared-actions`, pinned by full commit
 in the Makefile, and the `ci.yml` job runs that target. The decision above is
 unchanged.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

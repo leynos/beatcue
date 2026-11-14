@@ -18,7 +18,9 @@ exhaustive listing of every file.
 |   |-- config/
 |   `-- domain/
 |-- docs/
-|   `-- execplans/
+|   |-- adrs/
+|   |-- execplans/
+|   `-- rfcs/       # created with the first RFC
 |-- tests/
 |   |-- features/
 |   `-- fixtures/
@@ -28,6 +30,8 @@ exhaustive listing of every file.
 |-- pyproject.toml
 `-- uv.lock
 ```
+
+_Figure 1: Important paths in the BeatCue repository._
 
 ## Path responsibilities
 
@@ -61,6 +65,15 @@ Long-lived project documentation lives here. Use
 [documentation contents](contents.md) as the index, and keep design decisions
 in the technical design or Architecture Decision Records (ADRs) rather than
 only in code comments.
+
+### `docs/adrs/` and `docs/rfcs/`
+
+Accepted architecture decisions live in `docs/adrs/` as
+`adr-nnnn-title-slug.md` files. Proposed changes that need review live in
+`docs/rfcs/` as `rfc-nnnn-title-slug.md` files; the RFC directory is created
+when the first RFC is added. The two sequences use independent four-digit
+numbers. See the [documentation style guide](documentation-style-guide.md) for
+the full naming and content conventions.
 
 ### `docs/execplans/`
 

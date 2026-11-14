@@ -24,10 +24,12 @@ planned commands as available until the implementation lands.
 The v1 implementation boundary is deterministic cue extraction for single-scene
 or single-shot videos. Semantic annotation, object tracking, OTIO enrichment,
 remote model execution, graphics processing unit (GPU) scheduling, and advanced
-segmentation are post-v1 unless a later design update changes the boundary. ADR
-005 records the selected object-tracking boundary for that later work. ADR 006
-records the v1 local-only model and privacy policy: remote model execution is
-out of scope until a separate privacy and credentials design is accepted.
+segmentation are post-v1 unless a later design update changes the boundary.
+[ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md) records the selected
+object-tracking boundary for that later work.
+[ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) records the
+v1 local-only model and privacy policy: remote model execution is out of scope
+until a separate privacy and credentials design is accepted.
 
 ## Architectural rules
 
@@ -150,14 +152,15 @@ use deterministic centroid association over plain detector observations, so
 fixtures can prove stable track IDs, entry and exit edges, missing detections,
 and confidence handling without model inference.
 
-Future model adapters must follow ADR 006. Backends advertise locality and
-capabilities explicitly through the configured capability set; do not infer
-remote support from an installed package, model name, or adapter brand. A
-requested remote backend that is not configured must fail before inference with
-a capability error that names the backend and points to the local-only v1
-policy. Adapters must not silently fall back from local execution to remote
-execution, and local adapters should use explicit offline or local-file
-controls where their underlying libraries provide them.
+Future model adapters must follow
+[ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md). Backends
+advertise locality and capabilities explicitly through the configured
+capability set; do not infer remote support from an installed package, model
+name, or adapter brand. A requested remote backend that is not configured must
+fail before inference with a capability error that names the backend and points
+to the local-only v1 policy. Adapters must not silently fall back from local
+execution to remote execution, and local adapters should use explicit offline
+or local-file controls where their underlying libraries provide them.
 
 ## Subprocess tooling
 
@@ -207,10 +210,11 @@ uv sync --group dev --all-extras
 
 `core` contains the lightweight runtime libraries used by the CLI, human
 output, command execution, and BeatCue JSON. `media`, `editorial`, and `models`
-remain optional capability groups. ADR 009 records the current dependency
-policy: use the headless OpenCV and PySceneDetect distributions for server and
-CI use, and keep Python 3.14-incompatible optional packages behind temporary
-PEP 508 markers until upstream support lands.
+remain optional capability groups.
+[ADR 0009](adrs/adr-0009-dependency-extras-and-python-314-markers.md) records
+the current dependency policy: use the headless OpenCV and PySceneDetect
+distributions for server and CI use, and keep Python 3.14-incompatible optional
+packages behind temporary PEP 508 markers until upstream support lands.
 
 Hecate configuration tracks importable module names, not PyPI distribution
 names. In particular, `cmd-mox` imports as `cmd_mox`, PySceneDetect imports as
@@ -281,9 +285,10 @@ the source of truth for another writer.
 Writer expectations:
 
 - BeatCue JSON is the lossless output and should round-trip through the
-  selected `msgspec.Struct` schema. ADR 007 records this decision; implement
-  schema structs at the serialization boundary and map from immutable domain
-  values rather than importing writer types into the domain.
+  selected `msgspec.Struct` schema.
+  [ADR 0007](adrs/adr-0007-v1-beatcue-json-schema.md) records this decision;
+  implement schema structs at the serialization boundary and map from immutable
+  domain values rather than importing writer types into the domain.
 - WebVTT contains compact metadata cues with ASCII JSON payloads by default.
 - Post-v1 OTIO output should use the OpenTimelineIO library rather than
   hand-written OTIO JSON.
@@ -359,8 +364,8 @@ peer modules.
 ### Linting architecture
 
 BeatCue uses the linting architecture recorded in
-[ADR 004](adr-004-two-tier-python-linting.md). The lint gate has four Python
-tiers:
+[ADR 0004](adrs/adr-0004-two-tier-python-linting.md). The lint gate has four
+Python tiers:
 
 1. Ruff runs first from the project virtual environment.
 2. Pylint runs second through `uv tool run`, pinned to a PyPy 3.12 interpreter
@@ -539,7 +544,8 @@ themselves, not the surrounding comments, and carries its own mutation check.
 
 Coverage has two workflows, and the split is a contract (concordat's CV-005,
 `main-owned-codescene-coverage`), not a convention.
-[ADR 010](adr-010-main-owns-coverage-publication.md) records the decision.
+[ADR 0010](adrs/adr-0010-main-owns-coverage-publication.md) records the
+decision.
 
 - `ci.yml` measures Cobertura coverage on every pull request with the shared
   `generate-coverage` action (`language: python`, `python-source: ./beatcue`, a

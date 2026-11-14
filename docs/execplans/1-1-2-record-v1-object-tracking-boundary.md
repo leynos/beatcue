@@ -304,9 +304,9 @@ roadmap:
 - Section 12 should preserve the rule that semantic annotation describes
   visible evidence only and does not replace tracking persistence.
 - Section 21 should replace the open deferral with a concise signpost to
-  [ADR 008](../adr-008-v1-object-tracking-boundary.md), while leaving remote
-  models, graphics processing unit (GPU) scheduling, and advanced segmentation
-  deferred.
+  [ADR 008](../adrs/adr-0008-v1-object-tracking-boundary.md), while leaving
+  remote models, graphics processing unit (GPU) scheduling, and advanced
+  segmentation deferred.
 
 Update `docs/developers-guide.md` with internal guidance for later
 implementers: keep tracker protocols in the domain, keep detector and tracker
@@ -404,3 +404,17 @@ on the final run, and `make markdownlint`, `make nixie`, `make check-fmt`,
 `make lint`, `make typecheck`, and `make test` all passing. The implementation
 commit is `d52976f` (`Record object-tracking boundary`) after rebasing onto
 `origin/main`.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The initial implementation commit `d52976f07365040680efb896a43a95b642b242bd`
+added `docs/adr-005-v1-object-tracking-boundary.md`. After rebasing, the PR
+base recorded the decision at `docs/adr-008-v1-object-tracking-boundary.md`.
+The completed-plan Section 21 signpost retains its historical `ADR 008` label;
+its target moved from `../adr-008-v1-object-tracking-boundary.md` to the
+canonical [ADR 0008](../adrs/adr-0008-v1-object-tracking-boundary.md). The
+object-tracking decision and original inventory command remain unchanged.
+
+The other ADRs named in this plan now live at
+[ADR 0004](../adrs/adr-0004-two-tier-python-linting.md) and
+[ADR 0007](../adrs/adr-0007-v1-beatcue-json-schema.md).

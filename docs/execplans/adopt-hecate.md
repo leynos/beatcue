@@ -684,3 +684,10 @@ design, the developers' guide, the users' guide, and the roadmap.
 Follow-up: repository-wide `make fmt` still reports pre-existing Markdown
 line-length findings outside the Hecate migration. This migration did not take
 ownership of that older documentation debt.
+
+## Addendum (2026-11-12): ADR filename migration
+
+The hexagonal-architecture and Hecate decisions referenced by this plan now
+live at [ADR 0003](../adrs/adr-0003-hexagonal-architecture-enforcement.md) and
+[ADR 0005](../adrs/adr-0005-hecate-architecture-enforcement.md). Their status
+and decisions are unchanged.

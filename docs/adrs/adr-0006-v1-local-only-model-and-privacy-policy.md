@@ -178,3 +178,9 @@ deterministic local cue extraction and later local semantic enrichment without
 accidentally creating a remote-inference product. Remote execution remains a
 separate design problem because it needs its own credentials, consent,
 redaction, retention, failure, and auditability decisions.
+
+## Addendum (2026-11-12): filename migration
+
+This migration preserves this ADR's original three-digit H1 serial. Its
+filename and current links follow the imported guide's four-digit ADR naming
+scheme; its status and decision are unchanged.

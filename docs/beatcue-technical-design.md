@@ -87,8 +87,10 @@ exit cues, OTIO enrichment, remote model execution, graphics processing unit
 (GPU) scheduling, advanced video segmentation, and trainable genre profiles.
 These features remain behind ports in the design, but they are not required for
 the first credible release unless a later architectural decision record (ADR)
-changes the boundary. ADR 008 records the selected object-tracking boundary for
-later implementation tasks without moving tracking into v1. ADR 006 records the
+changes the boundary. [ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md)
+records the selected object-tracking boundary for later implementation tasks
+without moving tracking into v1.
+[ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) records the
 v1 local-only model and privacy policy, so remote model execution remains out
 of scope until a separate privacy and credentials design is accepted.
 
@@ -156,8 +158,9 @@ The dependency rule is strict:
 The import boundary is a CI fitness function. BeatCue enforces it with Hecate,
 configured in `pyproject.toml` and run by `make check-architecture`. The Hecate
 policy fails if domain code imports from adapters, Cyclopts, Rich, OpenCV,
-librosa, Transformers, Cuprum, or CmdMox. ADR 005 records the decision to
-replace the repository-local checker with pinned Hecate.
+librosa, Transformers, Cuprum, or CmdMox.
+[ADR 0005](adrs/adr-0005-hecate-architecture-enforcement.md) records the
+decision to replace the repository-local checker with pinned Hecate.
 
 ### 5.1. Alternatives considered
 
@@ -247,11 +250,13 @@ Missing optional dependencies are capability errors, not import-time crashes.
 `core` and subprocess tools installed. `analyse` requires the `media` group and
 fails before side effects if a required deterministic dependency is missing.
 Post-v1 model commands require locally available model dependencies and model
-weights; BeatCue v1 must not trigger remote downloads. ADR 006 defines backend
-locality as an explicit configured capability rather than something inferred
-from a package name or model name.
+weights; BeatCue v1 must not trigger remote downloads.
+[ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) defines
+backend locality as an explicit configured capability rather than something
+inferred from a package name or model name.
 
-ADR 009 records the packaging policy for these groups. BeatCue uses
+[ADR 0009](adrs/adr-0009-dependency-extras-and-python-314-markers.md) records
+the packaging policy for these groups. BeatCue uses
 `[project.optional-dependencies]` for runtime capability extras and
 `[dependency-groups].dev` for tooling. Optional packages that do not yet
 resolve cleanly on Python 3.14 are declared with temporary
@@ -408,12 +413,13 @@ _Table 3: Domain-owned driven ports._
 The twelve-port surface is intentional as the long-term boundary, but v1
 implementation work should prioritize the ports marked required. Object and
 semantic ports exist, so post-v1 enrichment cannot leak model packages into the
-domain. ADR 002 records this decision. ADR 008 records `ObjectTracker` as a
-domain-owned port whose first implementation should be a simple
-centroid-association default fed by detector observations. Group injected
-dependencies only after constructor arity becomes a demonstrated maintenance
-problem; premature grouping would hide the pipeline dependencies that the first
-implementation needs to make visible.
+domain. [ADR 0002](adrs/adr-0002-v1-port-surface.md) records this decision.
+[ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md) records
+`ObjectTracker` as a domain-owned port whose first implementation should be a
+simple centroid-association default fed by detector observations. Group
+injected dependencies only after constructor arity becomes a demonstrated
+maintenance problem; premature grouping would hide the pipeline dependencies
+that the first implementation needs to make visible.
 
 The riskiest v1 ports have these protocol contracts. The names are normative;
 supporting value objects may be split across modules during implementation.
@@ -445,8 +451,10 @@ class CueWriter(typ.Protocol):
 
 `FrameSample` is a domain-owned timestamp plus an implementation-neutral pixel
 buffer, not an OpenCV or NumPy object. Raw OpenCV frames, NumPy arrays, and
-librosa arrays remain adapter-internal. ADR 001 records that the colourgram is
-a domain-facing feature series derived from adapter-owned frame data.
+librosa arrays remain adapter-internal.
+[ADR 0001](adrs/adr-0001-colourgram-domain-boundary.md) records that the
+colourgram is a domain-facing feature series derived from adapter-owned frame
+data.
 
 Application services receive port implementations through constructor
 injection. The CLI never instantiates adapters directly; it calls a composition
@@ -649,7 +657,8 @@ length, and contributing signals in `features`.
 Object entry and exit classification requires persistence. A single detection
 near a boundary does not create an entry cue. The object tracker must observe a
 track for at least `min_track_persistence_s`, and the first or last centroid
-must fall inside the configured frame-edge margin. ADR 008 records the selected
+must fall inside the configured frame-edge margin.
+[ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md) records the selected
 object-tracking boundary for that persistence requirement.
 
 ## 12. Semantic annotation
@@ -697,10 +706,10 @@ serialization layer maps those values to typed `msgspec` structures for fast
 JSON encoding, decoding, and validation. This choice keeps the schema close to
 the Python data model, gives tests a concrete round-trip contract, and avoids
 deferring a decision that blocks writer and snapshot work. Replacing `msgspec`
-requires an ADR or design update before implementation continues. ADR 007 is
-the durable decision record for this schema choice. This resolves the schema
-deferral called out in `docs/beatcue-logisphere-design-stage-review.md` §7
-finding 7.
+requires an ADR or design update before implementation continues.
+[ADR 0007](adrs/adr-0007-v1-beatcue-json-schema.md) is the durable decision
+record for this schema choice. This resolves the schema deferral called out in
+`docs/beatcue-logisphere-design-stage-review.md` §7 finding 7.
 
 ### 13.2. WebVTT
 
@@ -988,8 +997,10 @@ _Table 7: Required failure behaviour._
 Video frames, audio, captions, and model prompts may contain sensitive content.
 This version runs local analysis only. Remote model execution and remote model
 adapters are fully out of scope until a future privacy and credentials design
-explicitly introduces them. ADR 006 records this local-only policy and the
-future capability-error contract for unsupported requested remote backends.
+explicitly introduces them.
+[ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md) records
+this local-only policy and the future capability-error contract for unsupported
+requested remote backends.
 
 Security rules:
 
@@ -1033,14 +1044,16 @@ commands. Phase 5 and Phase 6 are post-v1 enrichment and extension work.
 
 ## 21. Deferred decisions
 
-- ADR 008 resolves the first object-tracking boundary: later implementation
-  work should add a domain-owned `ObjectTracker` port with a simple
-  centroid-association default fed by detector observations. Florence-2
-  detection is useful for labels and boxes, but it does not own persistence.
+- [ADR 0008](adrs/adr-0008-v1-object-tracking-boundary.md) resolves the first
+  object-tracking boundary: later implementation work should add a domain-owned
+  `ObjectTracker` port with a simple centroid-association default fed by
+  detector observations. Florence-2 detection is useful for labels and boxes,
+  but it does not own persistence.
 - Remote model execution and remote adapters are deferred because they require
   a future privacy and credentials design before any implementation can opt in.
-  ADR 006 records the v1 policy: requested remote backends fail before
-  inference unless they are explicitly present in the configured capability set.
+  [ADR 0006](adrs/adr-0006-v1-local-only-model-and-privacy-policy.md)
+  records the v1 policy: requested remote backends fail before inference unless
+  they are explicitly present in the configured capability set.
 - GPU scheduling, remote models, and advanced segmentation remain deferred. The
   initial composition root may select CPU-only adapters and fail clearly when a
   requested model requires unavailable hardware.
