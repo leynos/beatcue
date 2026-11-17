@@ -314,6 +314,8 @@ git diff --name-only 9f219c8 -- . ':(exclude)docs/execplans' | wc -l
   conditions", "approve with changes", and "revise".
 - [x] (2026-11-17 15:40Z) Planning probe P8 (MPEG-4 generation, narrowed
   ffprobe query) completed; review findings applied in this revision.
+- [x] (2026-11-17 16:10Z) Plan pushed; draft pull request
+  [#142](https://github.com/leynos/beatcue/pull/142) opened for review.
 - [ ] Plan approved by the user (including decision D8).
 - [ ] `EP-M0` feasibility probes P5–P7 in the implementation environment.
 - [ ] `EP-M1` dependency self-reference and media-tools test tier.
