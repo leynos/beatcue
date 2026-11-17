@@ -29,6 +29,10 @@ ignore = [
   # does not use it, and the search that proved so.
   '`behavior`',
   '`grep -R "behavior" \.\.\.`',
+  # An environment variable name; uv prints ANSI colour codes when it is set.
+  'FORCE_COLOR',
+  # FFmpeg's `color` source filter, quoted in the walking-skeleton plan.
+  'color=c=0x3366cc',
 ]
 
 [files]
