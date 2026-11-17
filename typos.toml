@@ -35,6 +35,7 @@ extend-ignore-re = [
     "(?x)\n\\#\\[\\s*tokio::main\\s*\\(\\s*\nflavor\\s*=\\s*(?:\\\\\"local\\\\\"|\"local\")\n(?:\\s*,\\s*|\\s*)\\)\\s*\\]",
     "--[A-Za-z0-9_-]*color(?:ed|s|ing|ize[ds]?|izing)?(?:\\b|_)",
     "Azure\\s+Architecture\\s+Center\\s*\\|\\s*Microsoft\\s+Learn\\b",
+    "FORCE_COLOR",
     "GitHub\\s+Flavored\\s+Markdown\\b(?:\\s\\(GFM\\))?",
     "HashiCorp",
     "How to organise your Rust tests",
@@ -51,6 +52,7 @@ extend-ignore-re = [
     "`fe0ba04`",
     "`grep -R \"behavior\" \\.\\.\\.`",
     "`var\\.iamge_id` instead of `var\\.image_id`",
+    "color=c=0x3366cc",
     "currentColor",
     "nl -ba",
 ]
