@@ -1,4 +1,4 @@
-"""Contract: every uv call in the Makefile goes through the vendored helper.
+"""Contract: every uv call in the Makefile but the builder's goes through the helper.
 
 The helper (``scripts/uv_gate.py``) is copied byte for byte from
 leynos/shared-actions and audited by concordat's ``uv-gate-baseline`` rule.
@@ -25,16 +25,14 @@ EXPECTED_DEFAULT_GOAL = "all"
 # the project only through a recursive $(MAKE) is covered by that sub-target).
 GATES: tuple[tuple[str, tuple[str, ...], bool, bool], ...] = (
     ("pytest", ("which",), True, True),
-    ("spelling", ("python", "typos"), True, True),
     ("check-architecture", ("hecate",), True, True),
     ("skylos", ("df12-skylos",), False, False),
     (
         "lint",
-        ("df12-skylos", "hecate", "pylint", "python", "ruff", "typos"),
+        ("df12-skylos", "hecate", "pylint", "ruff"),
         True,
         True,
     ),
-    ("markdownlint", ("python", "typos"), True, False),
     ("fmt", ("ruff",), True, True),
     ("typecheck", ("ty",), True, True),
     ("test-workflow-contracts", ("cv005-contracts",), False, False),
@@ -46,10 +44,8 @@ GATES: tuple[tuple[str, tuple[str, ...], bool, bool], ...] = (
             "hecate",
             "pylint",
             "pytest",
-            "python",
             "ruff",
             "ty",
-            "typos",
             "which",
         ),
         True,
@@ -65,6 +61,7 @@ PREPARE_TARGETS: tuple[str, ...] = ("prepare", ".deps")
 ALLOWED_UV_LINES: tuple[str, ...] = (
     ".deps: pyproject.toml uv.lock .venv",
     '@command -v "$(UV)" >/dev/null 2>&1 || { printf "Error: \'uv\' is required, but not installed or not executable at \'%s\'\\n" "$(UV)" >&2; exit 1; }',  # ruff: ignore[line-too-long]
+    'TYPOS_CONFIG_BUILDER = uv tool run --python 3.14 --from "git+https://github.com/leynos/typos-config-builder.git@$(TYPOS_CONFIG_BUILDER_VERSION)" typos-config-builder',  # ruff: ignore[line-too-long]
     "UV ?= uv",
     "export PATH := $(if $(findstring /,$(UV)),$(patsubst %/,%,$(dir $(UV))):)$(PATH)",
 )
