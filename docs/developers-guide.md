@@ -291,7 +291,7 @@ Writer expectations:
   domain values rather than importing writer types into the domain.
 - WebVTT contains compact metadata cues with ASCII JSON payloads by default.
 - Post-v1 OTIO output should use the OpenTimelineIO library rather than
-  hand-written OTIO JSON.
+  handwritten OTIO JSON.
 - Human summaries use Rich and do not affect JSON, WebVTT, or OTIO output.
 
 Syrupy snapshots should cover externally visible output contracts. When a
