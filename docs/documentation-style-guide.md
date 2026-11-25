@@ -21,9 +21,9 @@ consistent, and easy to maintain across projects.
   - and so forth.
 - The words **"outwith"** and **"caveat"** are acceptable.
 - Keep United States (US) spelling when used in an API, for example, `color`.
-  Fenced code blocks are exempt from spelling checks. Inline backticked
-  identifiers are still checked, so add a narrow entry to `typos.local.toml`
-  when a specific identifier needs an exception.
+  Wrap such API names in backticks: the spelling gate ignores backticked spans,
+  so quoting an identifier both documents its origin and exempts it from the
+  Oxford-spelling check.
 - The project uses the filename `LICENSE` for community consistency.
 - Markdown prose is checked against this spelling policy with
   [`typos`](https://github.com/crate-ci/typos).
@@ -248,14 +248,12 @@ _Table 1: Obligations when moving from v0.8.0 to v0.9.0._
 
 ### Before
 
-<!-- tested-example: migration-guide-before -->
 ```rust,no_run
 <old code>
 ```
 
 ### After
 
-<!-- tested-example: migration-guide-after -->
 ```rust,no_run
 <new code>
 ```
@@ -379,6 +377,11 @@ Name RFC files using the pattern `rfcs/rfc-nnnn-title-slug.md`, relative to the
 - Number RFCs sequentially in allocation order rather than by date.
 - Do not renumber existing RFCs after publication. Gaps are acceptable when
   numbers are reserved, drafted on another branch, or intentionally skipped.
+  Exception: where two RFCs share a number, renumber the later one (by first
+  appearance in history; if both first appear in the same commit, the one whose
+  title sorts later alphabetically) to the next free number, record "Renumbered
+  from NNNN on YYYY-MM-DD (duplicate number)" under its title, and update every
+  inbound link, including number-only references.
 - Keep the slug stable once the RFC is published. If the title changes
   materially, rename the file, keep the number, and update every inbound link.
 
@@ -531,7 +534,12 @@ Name ADR files using the pattern `adrs/adr-nnnn-title-slug.md`, relative to the
   `Architectural decision record (ADR) nnnn:` prefix, following the same slug
   rules as RFC filenames.
 - Number ADRs sequentially in allocation order rather than by date, and do not
-  renumber an ADR after publication.
+  renumber an ADR after publication. Exception: where two ADRs share a number,
+  renumber the later one (by first appearance in history; if both first appear
+  in the same commit, the one whose title sorts later alphabetically) to the
+  next free number, record "Renumbered from NNNN on YYYY-MM-DD (duplicate
+  number)" under its title, and update every inbound link, including
+  number-only references.
 
 ### Required sections
 
@@ -718,6 +726,9 @@ contents of the manual.
 - Place examples under `# Examples`. Let examples run as documentation tests
   when they can execute correctly, so the compiler verifies that they compile
   and behave as documented.
+- Import the documented item in each example. Rustdoc compiles a doctest as an
+  external crate that depends on the documented crate, so a bare call to the
+  item cannot resolve; use a hidden `# use crate_name::item;` line.
 - Use `no_run` for complete examples that must compile but must not execute,
   such as examples that require external resources, environment-specific setup,
   or a long-running service.
@@ -739,7 +750,7 @@ contents of the manual.
 /// # Examples
 ///
 /// ```rust
-/// # fn add(a: i32, b: i32) -> i32 { a + b }
+/// # use mycrate::add;
 /// assert_eq!(add(2, 3), 5);
 /// ```
 #[inline]
@@ -747,6 +758,9 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 ```
+
+Only the outer fence needs `no_run`, because it is a complete item that must
+compile but is not a program to execute; the inner doctest compiles and runs.
 
 ## Diagrams and images
 
